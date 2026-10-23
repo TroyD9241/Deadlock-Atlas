@@ -1,0 +1,51 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# build output
+dist/
+build/
+
+# env — never commit
+.env
+.env.local
+.env.*.local
+
+# database
+prisma/*.db
+prisma/*.db-journal
+*.sqlite
+*.sqlite3
+
+# raw API cache — regenerable via scripts/ingest/fetch.ts
+data/raw/
+
+# character artwork: Valve's assets, gitignored pending the fan-site policy
+# question in design.md §11. Present on disk, never in version control.
+data/characters/**/*.png
+data/characters/**/*.jpg
+data/characters/**/*.jpeg
+data/characters/**/*.webp
+data/characters/**/*.gif
+data/characters/**/*.avif
+
+# the original art dump we copy data/characters/ from
+deadlock files/
+
+# third-party layout reference mockups (design.md §12: layout ideas only,
+# never for look or assets). Keep on disk, out of history.
+reference/designreferences/
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# typescript
+*.tsbuildinfo

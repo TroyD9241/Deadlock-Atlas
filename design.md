@@ -1,0 +1,418 @@
+# Deadlock Atlas: Design Guide
+
+The source of truth for how the site looks, behaves, and is organized. Read this before building or changing any page. Pair it with `DEADLOCK_SITE_PLAN.md` (stack, data model, milestones).
+
+**Visual source of truth:** `deadlock-atlas.html` (the working mock, extended from the original `index.html`). When this document and the mock disagree, ask. When this document is silent, copy the mock.
+
+> Fan project. Not affiliated with Valve. Deadlock and related assets belong to Valve. This line appears in every page footer.
+>
+> Lore text, movement notes, and voice line references link out to [The Deadlock Wiki](https://deadlock.wiki) (text licensed CC BY-SA 4.0). Credit the wiki on every page that links to it.
+
+---
+
+## 1. Principles
+
+1. **Reference tool first.** The site exists to help people learn and look things up. Interaction serves understanding; it is never decoration. Do not copy marketing-site layouts (big hero videos, "play now" calls to action).
+2. **The mock's look is final.** Flat dark panels, soft radial glows, rounded corners, pill buttons, letter-spaced eyebrows. Do not introduce a new visual language (glassmorphism, neon gradients, different fonts) without asking.
+3. **Characters drive color.** Every page takes its colors from character artwork: the featured Hero of the Patch across the site, a hero's own palette on that hero's pages, and an item's own palette on that item's pages (section 3).
+4. **No accounts.** There is no login and no per-user data. Nothing is saved per user, so no favourites, history, or profiles.
+5. **Data-driven.** Every page renders from structured data. A patch is a data update, never a page rewrite.
+6. **One source for changes.** Patch changes are stored once, per entity per patch, and displayed in several places (section 5.6).
+7. **Honest placeholders.** Anything not verified against real game data is shown in brackets (`[old value]`, `[Patch name]`) or labeled as sample data. Never invent stats, patch notes, or lore.
+8. **Accessible by default.** Contrast, keyboard use, and touch targets are requirements, not polish (section 8).
+
+## 2. Visual language
+
+All values below come from the mock. Keep them as CSS custom properties.
+
+### 2.1 Tokens
+
+```css
+:root {
+  color-scheme: dark;
+  --bg: #090b12;            /* page background */
+  --panel: #141824;         /* panel base */
+  --line: #ffffff19;        /* borders and dividers */
+  --text: #f4f2f8;
+  --muted: #a6a9ba;
+  --accent: #c09fc8;        /* site default; overridden per hero */
+  --accent-rgb: 192,159,200;
+  --on-accent: #17131b;     /* text on accent fills (computed, section 3) */
+  --buff: #6fcf97;         /* semantic, never themed */
+  --nerf: #ff8a80;         /* semantic, never themed */
+  --radius-card: 18px;
+  --radius-hero: 28px;
+}
+```
+
+Page background: two radial glows over `--bg` (purple at top right, teal at bottom left) as in the mock. Hero pages and themed Home pages replace the glow color with a mix of `--accent`.
+
+### 2.2 Shapes and surfaces
+
+- Panels: 1px `--line` border, `--radius-card`, subtle diagonal gradient (`#171b28e8` to `#111520e8`).
+- Hero banner: `--radius-hero`, gradient base, plus a radial glow `color-mix(in srgb, var(--accent) 34%, transparent)` behind the artwork.
+- Buttons: primary = accent fill with `--on-accent` text; secondary = translucent fill with a `#ffffff2b` border; navigation and filters = pills (`border-radius: 999px`).
+- Max content width 1240px, centered.
+
+### 2.3 Typography
+
+- Font: Inter, falling back to the system UI stack (as in the mock). No other fonts unless approved.
+- Eyebrows: 10px, uppercase, 0.17-0.2em letter-spacing, weight 850, accent colored.
+- Hero names: `clamp(44px, 7vw, 82px)`, tight negative letter-spacing.
+- Section headings: 21px, letter-spacing -0.03em. Supporting text: 12px, `--muted`.
+
+### 2.4 Components (from the mock; port these as React components)
+
+`Header` (brand + pill nav), `HeroBanner`, `QuickStats`, `ProfileSwitcher`, `AbilityList`, `BuildList`, `SkinCard`, `PaletteGrid`, `Card` (art + name + tagline + swatches), `Panel`, `PatchTimeline`, `DiffBox` (before/after), `ChangeRow` (name, old to new, badge), `ItemRow`, `ItemPopover`, `Badge`.
+
+### 2.5 Icons and imagery
+
+- Icons: inline SVG, stroke style, `currentColor`. No emoji.
+- Buff/nerf badges always pair color with an arrow and a word or label (up/down). Color alone never carries meaning.
+
+## 3. Theming system (character colors)
+
+### 3.1 Rule
+
+Every themed surface reads its colors from CSS variables. Pages never hard-code a hero's hex values. Switching hero means switching variables.
+
+### 3.2 Variables
+
+| Variable | Meaning |
+|---|---|
+| `--accent`, `--accent-rgb` | The hero's main accent |
+| `--p1` ... `--p5` | The hero's five-color palette, darkest to lightest (as in the mock's color study) |
+| `--on-accent` | Text color for accent fills, chosen for contrast |
+| `--glow` | Derived: accent mixed with transparent, used in banner and page glow |
+
+Register the main colors so changes can animate:
+
+```css
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #c09fc8; }
+@property --glow   { syntax: '<color>'; inherits: true; initial-value: #c09fc855; }
+```
+
+### 3.3 Applying a theme
+
+One function sets everything on a scope element (the page root, a banner, or a single card):
+
+```ts
+function applyTheme(el: HTMLElement, hero: { accent: string; palette: string[] }) {
+  el.style.setProperty('--accent', hero.accent);
+  el.style.setProperty('--accent-rgb', hexToRgb(hero.accent));
+  hero.palette.forEach((c, i) => el.style.setProperty(`--p${i + 1}`, c));
+  el.style.setProperty('--on-accent', readableTextOn(hero.accent)); // dark or light by contrast
+}
+```
+
+- Scope matters. A card sets its own variables so a grid can show many heroes at once.
+- Changing the hero changes the variables only. No component swaps classes per hero.
+- Transitions: 300-400ms color transitions on theme switches; none under `prefers-reduced-motion`.
+
+### 3.4 Where colors come from: the shared `extractPalette` function
+
+One function defines colors for heroes **and items**. Input: artwork (hero art, or an item icon). Output, stored on the record: `accent`, `accentText`, `onAccent`, `palette[5]`. Items use the same function and the same `applyTheme()`; there are no hand-picked category colors.
+
+Steps (deterministic, so the same image always gives the same result):
+1. Downscale to about 160px; ignore transparent pixels and near-black.
+2. Convert to Lab color space.
+3. Weight pixels by saturation, so flat dark backgrounds do not dominate.
+4. Cluster with k-means (k = 10, fixed seed).
+5. **Accent:** the colorful, mid-lightness cluster with the best combined score of presence and chroma.
+6. **Palette:** the accent plus the four most distinct present clusters, ordered dark to light (`--p1` to `--p5`).
+7. **`accentText`:** the accent lightened in Lab until it reaches 4.5:1 contrast on `--panel`. The original accent is kept for fills and glows.
+8. **`onAccent`:** dark or white, whichever contrasts better with the accent.
+
+Reference prototype: `extract_palette.py` (port to TypeScript for the site). Results against the colors curated by hand in the mock:
+
+| Hero | Curated accent | Function output |
+|---|---|---|
+| Abrams | `#BE7052` | `#BB7352` |
+| Mina | `#C83A31` | `#D43B31` |
+| Celeste | `#C09FC8` | `#BB8BCC` |
+| Deadman Danny | none yet | `#EB662C` |
+
+The accents land very close to the curated ones, so the function can replace hand curation. Mid-tones in the full palette can differ from hand-picked ones.
+
+Rules:
+- Run at ingest, never in the browser.
+- A manual override field exists on every hero and item, because automatic extraction can pick a poor accent.
+- Low-chroma art (gray items) falls back to the site default accent and is flagged for review.
+- Banner art should be a cutout or a wallpaper with calm negative space; splash art with baked-in logos can bias the result.
+- Validate every output: `accentText` must reach 4.5:1 on `--panel`, and `onAccent` must have the best available contrast on the accent.
+- The Deadlock API also returns an official accent per hero in `colors.style_hex`. **Extraction wins.** Store it anyway as `apiAccent` and use it as the fallback when a hero has no artwork, plus as a drift check: if the two disagree badly, that hero is worth a look.
+
+### 3.5 Site theme: Hero of the Patch
+
+The site takes its theme from the **Hero of the Patch**, as a nod to the featured character. It is set once on the page root, so the glow, accents, timeline highlight, active nav item, and links all follow it. It applies to every page except character-specific and item-specific pages (section 3.6). It is dynamic: when the featured hero changes, the whole site retheme with no code change.
+
+**Selection:** a weighted score that combines what changed and how much the hero is played.
+
+1. **Change impact** (per patch). For every changed value, `magnitude = min(|new - old| / old, 1)`, multiplied by two weights, then summed per hero:
+   - Kind of change: stat tweak 1.0, ability value tweak 1.5, new or reworked ability 2.5.
+   - Direction: buff 1.0, nerf 1.25.
+   Buffs and nerfs both add to impact, since a large nerf makes a hero as notable as a large buff. The banner also shows the net direction (buffed, nerfed, or mixed).
+2. **Popularity.** The hero's share of matches played in a recent window, from the Deadlock API (endpoint and window to be verified against the API when building).
+3. **Combined:** `score = 0.6 x impactPercentile + 0.4 x playPercentile`, where each percentile ranks the hero among all heroes.
+
+> **Work in progress: this formula is not close to complete.** The structure above is a starting sketch only. The weights are guesses, and the inputs are not defined yet (see the list below). Treat nothing in this section as final until it is revisited in the API data milestone.
+>
+> **Deferred.** Patch work is paused, so this formula is paused with it. It needs change impact (which needs patch diffs) *and* play counts. Until then no page has a Hero of the Patch, and the site theme uses the default accent. See the decisions log.
+
+**Still to define (needed before the formula can be built):**
+- Which stats count, and how each is measured (health, resists, move speed, damage, cooldowns, costs, ability values, and so on).
+- What counts as a buff or a nerf for each stat. Direction is not always "higher is better": a lower cooldown is a buff, higher damage taken is a nerf, a cost increase is a nerf. Each stat needs a polarity.
+- How to treat mixed changes (a buff and a nerf in the same patch) and how to scale magnitude across stats with different units.
+- How item changes are scored, and whether items ever compete with heroes for the headline slot.
+- Which Deadlock API endpoint and time window supply play counts, and how often the data refreshes.
+
+All weights are starting values. Keep them in one config file and tune them against real patches.
+
+Behavior:
+- Recompute when a patch is ingested, and daily for 7 days afterwards while play data settles; then lock until the next patch (proposed, so the theme does not flip constantly).
+- If play data is unavailable, rank by impact only.
+- A patch record may carry a manual `featuredHeroId`, which always wins.
+- Store the score breakdown with the result and show a short reason on Home (for example "most changes and most played"), so the choice is transparent.
+- If there is no hero data yet, use the site default accent.
+
+### 3.6 Which theme applies where
+
+| Page | Theme source |
+|---|---|
+| Home, Heroes directory, Items list, Patches, Lore, Map, Relationships | Hero of the Patch |
+| Hero profile (`/heroes/[slug]`) | That hero's own palette |
+| Item page (`/items/[slug]`) | That item's palette, from `extractPalette` on its icon |
+
+- Cards and rows theme themselves inside a page. On the Heroes directory, the page glow is the Hero of the Patch, but each hero card keeps that hero's colors. On the Items list, each row uses its own item palette.
+- An item's category (Weapon, Vitality, Spirit) is shown as a label, not as a theme color.
+- Changing page type changes the variables only; components do not change.
+
+### 3.7 Fixed colors
+
+`--buff` and `--nerf` never change with the theme. Neither do text, muted text, or line colors.
+
+## 4. Hero artwork and source folders
+
+### 4.1 Artwork types
+
+| Type | Example | Use |
+|---|---|---|
+| Transparent cutout (PNG or WebP, about 1400-1700px tall) | Abrams, Mina | Best for banners; sits on the page glow |
+| Wallpaper with calm negative space on one side | Deadman Danny (1920x1080, dark left half) | Banner background with a fade mask; text goes over the dark area |
+| Square splash with background and baked-in text | Celeste | Cards only, cropped to hide text |
+
+- Banner art must not contain baked-in text. The page supplies the name, tagline, and eyebrow.
+- Store the original artwork reference, the extracted palette, and the manual override together on the record.
+- All art is Valve's. Confirm usage terms before self-hosting.
+
+### 4.2 Character source folder
+
+Each hero has a folder:
+
+```
+deadlock files/characters/<Hero Name>/
+  <Hero Name>.md      links to the source pages
+  <hero photo>        artwork used for the palette and the card or banner
+```
+
+The `.md` file has one `KEY: URL` line per source, under a heading line with the hero's wiki name. Example (Deadman Danny):
+
+```
+Deadman_Danny:
+
+CHARACTER INFO: https://deadlock.wiki/Deadman_Danny/Lore
+MOVEMENT: https://deadlock.wiki/Deadman_Danny/Movement
+VOICE LINES: https://deadlock.wiki/Deadman_Danny/Voice_lines
+```
+
+| Key | How we use it |
+|---|---|
+| CHARACTER INFO | A credited "Lore on the wiki" link card on the hero profile, plus our own short factual summary where needed |
+| MOVEMENT | A credited link card to the hero's movement page |
+| VOICE LINES | A credited link card to the hero's voice lines page (see open question 2) |
+
+- Ingest reads the folder, runs `extractPalette` on the photo, and stores the source links. It does **not** copy wiki text.
+- **License (verified from the wiki's footer):** text on the Deadlock Wiki is licensed under Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA), **except non-text media and any game content**. *Deadlock* is a trademark of Valve.
+  - Wiki prose (bios, personality, appearance, relationship write-ups) was written by the community. It is not Valve's, and it is free to reuse only under CC BY-SA: credit the wiki, link the source page, say if changes were made, and release adapted text under the same license.
+  - Game content (voice line text, art, icons, names, in-game stats) is excluded from that license and belongs to Valve. Voice line transcriptions are game content.
+  - **Decision: credit and reference, do not copy.** The site links to the wiki for lore, movement, and voice lines, with a visible credit ("Source: The Deadlock Wiki, CC BY-SA 4.0"). No wiki prose is reproduced. Any text we write ourselves is our own words from the facts. Structured facts we record (for example, that two heroes are related) are our own data, with a source link.
+  - This is not legal advice. Valve's own policy for fan sites and fan-hosted game assets has not been checked; confirm it separately.
+- **What a wiki Lore page contains**, and where it goes:
+
+| Wiki section | How we use it |
+|---|---|
+| Biography, Personality, Appearance | Linked and credited; not copied |
+| Character Relationships (named characters and groups) | Our own relationship edges (facts), each with a source link |
+| Character Interactions (which heroes they react to, and how) | Source for our own interaction edges; no quoted text |
+| References (voice line citations) | Linked only; voice line text is game content, not ours to republish |
+- Adding a hero means adding a folder. No code changes.
+
+## 5. Pages
+
+### 5.1 Site map
+
+| Route | Purpose |
+|---|---|
+| `/` | Home dashboard (latest patch changes, Hero of the Patch) |
+| `/heroes` | Directory |
+| `/heroes/[slug]` | Hero profile (the current mock, as is) |
+| `/abilities` | Ability index across all heroes, with a search box |
+| `/items` | Item list |
+| `/items/[slug]` | Dedicated item page |
+| `/patches` | Patch list with summaries |
+| `/patches/[version]` | One patch's summary |
+| `/lore` | General lore overview (kept simple for now) |
+| `/map` | Interactive map (later) |
+| `/stats`, `/esports` | Later phases; shown as "coming soon" |
+
+### 5.2 Header and navigation
+
+- Brand `DEADLOCK ATLAS` (letter-spaced, accent on "ATLAS"), then pill nav: Home, Heroes, Items, Lore, Map, Patches.
+- Active page is highlighted. On narrow screens the nav becomes a horizontally scrolling row; it is never hidden.
+- A global search sits on Home and the directory pages. Pressing Enter opens results.
+- "Hero profile" in the nav returns to the last hero viewed.
+
+### 5.3 Home (dashboard)
+
+Layout: main column plus a right rail (collapses to one column under 1000px).
+
+Main column, in order:
+1. **Hero of the Patch banner** (themed, uses the hero profile banner pattern; stats show old to new).
+2. **Heroes row** (cards with swatches and change badges, plus an "All heroes" card).
+3. **Patch timeline** (hero picker, patch dots, before/after).
+4. **Lore and locations** (general; section 5.5).
+5. **Explore the world** (map and relationship previews).
+
+Right rail: latest patch summary, latest changes, most changed items. (The mock currently shows a "Recently viewed" panel. Remove it in the port; there are no accounts or saved history.)
+
+Home shows the **actual detailed changes of the latest patch**. Older patches live on hero and item pages and, in summary form, on `/patches`.
+
+### 5.4 Heroes
+
+Use the current mock as is: hero profile (banner, quick stats, abilities and builds, looks and cosmetics, color study), profile switcher, directory with search. Add a patch history section later using the shared `PatchTimeline` component.
+
+### 5.5 Items
+
+**List page** in the site's style: grouped or filterable by category (Weapon, Vitality, Spirit), searchable, each row showing icon, name, category, cost/tier from data, and a change badge if changed in the latest patch. Style it as a clean list or grid of `ItemRow` components, not a spreadsheet.
+
+**Hover popout that solidifies:**
+
+| State | Trigger | Appearance | Behavior |
+|---|---|---|---|
+| Preview | Pointer hovers or keyboard focus lands on an item (after a short ~150ms delay) | Translucent card with a subtle progress ring | Not interactive; follows the item |
+| Pinned | Pointer or focus stays on the item or the popout for **5 seconds** | Becomes solid (opaque background, full border); progress ring completes | Interactive: scrollable, has an "Open item page" button |
+| Closed | Pointer and focus leave both item and popout; Esc; click outside | Fades out | Timer resets |
+
+Rules:
+- Leaving the item or popout before 5 seconds cancels the pin and resets the timer. Moving between the item and its popout counts as staying.
+- Keyboard focus follows the same states. Esc closes. The popout never traps focus.
+- **Touch devices have no hover:** a tap opens the popout already pinned. A second tap on the button opens the item page.
+- Popout content: name, category, cost, effect text, key stats, "changed in latest patch" summary, link to the item page.
+- Under `prefers-reduced-motion`, skip the ring animation; pin after 5 seconds with no motion.
+- Popout stays inside the viewport (flip or shift near edges).
+
+**Item page:** header with icon and name, category label and cost, description and stats, patch history using the shared timeline, and later (Phase 2) which heroes build it. Themed by the item's own palette (section 3.6), not by the Hero of the Patch.
+
+### 5.6 Where patch changes appear
+
+One data source (snapshot per entity per patch), shown in different forms:
+
+| Place | Shows |
+|---|---|
+| Home | The latest patch's changes in full detail |
+| Hero page | That hero's full change history |
+| Item page | That item's full change history |
+| `/patches` | A **list of patches with summaries** (counts, buffs and nerfs, notable changes) and links to the affected heroes and items |
+| `/patches/[version]` | The summary for one patch, linking to entity pages. It does not duplicate full diffs |
+
+Summary only on Patches; detail lives with the thing that changed.
+
+### 5.7 Lore (general for now)
+
+Keep it simple until the direction is decided: a landing page listing locations and factions as cards, each linking to a basic detail page with text and an image placeholder. No deep features yet. Hero lore stays on hero pages. Every lore entry needs a source note so it can be corrected when the game changes.
+
+### 5.8 Map (later, hard)
+
+Interactive, so it is deferred. Intended progression, not a commitment:
+1. Static annotated image with labeled hotspots (call-out names and lore).
+2. Pan and zoom, hotspot detail panels.
+3. Layers and filters (objectives, buff spawns, ziplines).
+
+Home shows only a small preview linking to `/map`. Do not block other pages on the map.
+
+### 5.9 Relationships
+
+Graph of heroes and factions (React Flow or Cytoscape). Home shows a preview; the full page is `/relationships`. Lower priority than Items and Patches.
+
+## 6. Interaction patterns
+
+- **PatchTimeline** (shared): hero or item picker, patch dots (selected state in accent), before/after `DiffBox` with changed values in accent. Used on Home, hero pages, item pages.
+- **ChangeRow:** name, `[old] to [new]`, buff/nerf badge with arrow. Whole row is a link to the entity.
+- **Search:** one search index across heroes, items, lore, patches.
+- Every clickable thing is a real link or button. Hover is never the only way to reach information.
+
+## 7. Responsive behavior
+
+- Under 1000px: Home grid collapses to one column; lore and tool grids stack.
+- Under 780px: nav becomes a scrolling row; two-column diffs and location grids stack; hero banner stacks art under text.
+- Under 480px: directory cards go to one column.
+- Horizontal rows (hero row, locations) scroll within their own container; the page never scrolls sideways.
+
+## 8. Accessibility
+
+- Text contrast at least 4.5:1 (3:1 for large text). Themed accents are validated at ingest (section 3.4).
+- Interactive targets at least 44px.
+- Visible focus styles on all controls, using the accent.
+- Buff/nerf never relies on color alone.
+- All images have alt text; decorative glows are hidden from assistive tech.
+- Respect `prefers-reduced-motion` and `prefers-color-scheme` is fixed dark.
+
+## 9. Data and content rules
+
+- Real data comes from the Deadlock API assets endpoints, normalized into the database (see the plan). Cross-check against the Deadlock Wiki data when unsure.
+- Placeholders are bracketed. The footer says sample or editorial content is unverified.
+- Never present ability, build, or lore text as official unless it comes from verified data.
+- **Valve's own text from the API may be shown.** Each hero carries an official in-game `role`, `playstyle` and `lore` from the assets API. This is official game content, not wiki prose, so the credit-and-link rule does not apply to it. On a hero page, our own words come first and Valve's official text appears below it, clearly labelled as official. The wiki is still linked and credited for lore detail.
+- Never copy wiki prose. Link and credit instead (section 4.2).
+- Stats and Esports pages stay "coming soon" until their phases.
+
+## 10. Build order (design-driven)
+
+1. Scaffold the project and port the **tokens and theme system** (section 2 and 3), including `applyTheme` and `@property` registration.
+2. Port the **Header** and **hero profile and directory** from the mock, driven by data.
+3. Build the **Home dashboard** with Hero of the Patch theming.
+4. Build the shared **PatchTimeline** and **ChangeRow**.
+5. Build **Items**: list, popover, item page.
+6. Build **Patches** list and patch summary pages.
+7. **Lore** (general), then **Relationships**.
+8. **Map** last.
+
+## 11. Open questions
+
+1. **Hero of the Patch formula:** incomplete by design (section 3.5). Stats, buff/nerf polarity, and the API play-count source are defined at the API data milestone.
+2. **Voiceline explorer and interaction widget:** with the link-out policy, voice line text and audio cannot be copied from the wiki, and they are Valve game content in any case. Decide whether these features become link-based, wait for an official data source, or are cut. The Home page already dropped the voiceline panel; the hero page still plans one.
+3. **Valve's fan-site policy:** not yet checked; confirm before self-hosting any game art or audio.
+4. **Lore:** direction is undecided. Build only the general version (section 5.7) until it is decided.
+5. **Map:** on hold.
+
+## 12. Decisions log
+
+- The glass-style redesign was rejected. The flat mock look is final.
+- Reference designs (Valorant dashboard, Dota 2 site, Dribbble concept) are for layout ideas only, never for look or assets.
+- Patch details live on Home and entity pages; the Patches page only summarizes.
+- Voiceline explorer was removed from Home; it stays on hero pages when voiceline data is available.
+- Theme scope: the Hero of the Patch theme applies to every page except character-specific pages (their own hero palette) and item-specific pages (the item's own palette).
+- Item pages are themed by the item's own palette.
+- No accounts and no per-user features. Favourites and Recently viewed are cut.
+- Items popout pins after 5 seconds of continuous hover or focus.
+- Lore stays general until a direction is chosen.
+- Item colors come from the same `extractPalette` function as heroes, not from fixed category colors.
+- Hero of the Patch is decided by a weighted score of change impact (buffs vs nerfs, weighted) and play popularity from the Deadlock API.
+- Each hero is added through a source folder with a links file and a photo (section 4.2).
+- Map: on hold.
+- The Hero of the Patch formula is explicitly unfinished; its definitions are deferred to the API data milestone.
+- Wiki text is CC BY-SA 4.0 (game content excluded). Credit and link the wiki wherever its text or structure is used.
+- Wiki lore is referenced and credited, not copied (section 4.2).
+- Accent precedence: `extractPalette` wins; the API's `colors.style_hex` is a fallback and a drift check (section 3.4).
+- Hero pages show our own words first, then Valve's official in-game description from the API, clearly labelled (section 9).
+- Patch data is deferred for now: no patch diffing, no `/patches` pages, no Hero of the Patch. Hero, ability and item data is still stamped with the game build it came from, so nothing needs backfilling when this resumes. The site theme falls back to the default accent until a featured hero exists.
