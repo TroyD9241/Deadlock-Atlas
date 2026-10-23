@@ -39,6 +39,12 @@ A fan-made, interactive Deadlock reference: an "upscaled wiki" first, then play 
 
 Verify current versions and compatibility before installing; don't assume.
 
+**Runtimes are LTS only.** Never pin an odd-numbered or pre-release runtime.
+Node 24 LTS; Python on a supported 3.x with a full bugfix cycle. Neither the
+official Python installer nor winget can install on this machine without
+elevation, so both runtimes are installed side by side from archives: Node from
+the win-x64 zip, Python from the nuget package. See `AGENTS.md` for paths.
+
 ## 3. Data sources
 
 | Need | Source | Notes |
@@ -52,6 +58,7 @@ Verify current versions and compatibility before installing; don't assume.
 | Relationship edges | Our own curated facts, each with a source link | Kumu graph and wiki are references only |
 | Locations and factions | Our own short descriptions plus links | Direction undecided; keep general |
 | Reference project | **Deadlock.io** (JustSereja/Deadlock.io on GitHub) | Similar architecture; read before building to avoid duplicated effort |
+| **Measured** | **`DATA_INVENTORY.md`** | Generated from the cached responses by `scripts/ingest/inventory.ts`. What the API actually returns, field coverage per field, and what is missing. Regenerate it rather than trusting this table |
 
 **Rule:** an ingest script fetches from the APIs, validates with Zod, normalizes to our shape, and upserts into the database through Prisma. The site reads only from the database, never directly from live APIs. Save raw API responses to `data/raw/` so ingests are reproducible and API outages or changes don't block work.
 

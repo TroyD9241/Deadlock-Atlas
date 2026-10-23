@@ -32,8 +32,22 @@ re-litigate these without asking.
   replaces `migrate dev` with `contract emit` + `migration plan` + `db migrate`.
   Anywhere a Prisma command is run outside the project (CI, one-off), use
   `npx prisma@7`.
-- Node 24 LTS. Prisma supports `^20.19 / ^22.12 / ^24`; odd-numbered Node
-  releases are unsupported.
+- **Always use LTS runtimes.** Never pin an odd-numbered or pre-release
+  runtime. Node LTS only (currently 24.x "Krypton"); Prisma supports
+  `^20.19 / ^22.12 / ^24` and explicitly does not support odd-numbered
+  "Current" releases. Python LTS-equivalent, which means a supported 3.x with
+  a full bugfix cycle rather than the newest major. When either runtime
+  releases a new LTS, upgrade to it and update the versions below.
+- **Tooling that cannot install system-wide.** This machine cannot grant
+  elevation, so installers that need UAC will hang. Install side by side with
+  no elevation instead:
+  - Node: unzip the official win-x64 archive to `%LOCALAPPDATA%\node24`, do
+    not use the MSI. Prefix `$env:Path = "C:\Users\Troy\AppData\Local\node24;$env:Path"`.
+  - Python: the nuget package
+    (`https://www.nuget.org/api/v2/package/python/<version>`) unzipped to
+    `%LOCALAPPDATA%\python315\tools`. It is a complete, portable interpreter
+    with pip, and needs no admin. numpy and Pillow are installed into it for
+    running `reference/extract_palette.py`.
 - **PostgreSQL 17**, via `docker-compose.yml`, with `@prisma/adapter-pg`. Run
   `docker compose up -d` before any `db:*` script. Host port is **5433, not
   5432**: a Postgres under WSL already holds `127.0.0.1:5432` on this machine
