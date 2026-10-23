@@ -512,6 +512,7 @@ export type HeroAbilityCreateOrConnectWithoutHeroInput = {
 
 export type HeroAbilityCreateManyHeroInputEnvelope = {
   data: Prisma.HeroAbilityCreateManyHeroInput | Prisma.HeroAbilityCreateManyHeroInput[]
+  skipDuplicates?: boolean
 }
 
 export type HeroAbilityUpsertWithWhereUniqueWithoutHeroInput = {
@@ -564,6 +565,7 @@ export type HeroAbilityCreateOrConnectWithoutAbilityInput = {
 
 export type HeroAbilityCreateManyAbilityInputEnvelope = {
   data: Prisma.HeroAbilityCreateManyAbilityInput | Prisma.HeroAbilityCreateManyAbilityInput[]
+  skipDuplicates?: boolean
 }
 
 export type HeroAbilityUpsertWithWhereUniqueWithoutAbilityInput = {
@@ -1380,6 +1382,7 @@ export type HeroAbilityCreateManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * The data used to create many HeroAbilities.
    */
   data: Prisma.HeroAbilityCreateManyInput | Prisma.HeroAbilityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1398,6 +1401,7 @@ export type HeroAbilityCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ext
    * The data used to create many HeroAbilities.
    */
   data: Prisma.HeroAbilityCreateManyInput | Prisma.HeroAbilityCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

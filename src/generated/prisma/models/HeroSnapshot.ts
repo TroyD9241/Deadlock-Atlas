@@ -452,6 +452,7 @@ export type HeroSnapshotCreateOrConnectWithoutPatchInput = {
 
 export type HeroSnapshotCreateManyPatchInputEnvelope = {
   data: Prisma.HeroSnapshotCreateManyPatchInput | Prisma.HeroSnapshotCreateManyPatchInput[]
+  skipDuplicates?: boolean
 }
 
 export type HeroSnapshotUpsertWithWhereUniqueWithoutPatchInput = {
@@ -498,6 +499,7 @@ export type HeroSnapshotCreateOrConnectWithoutHeroInput = {
 
 export type HeroSnapshotCreateManyHeroInputEnvelope = {
   data: Prisma.HeroSnapshotCreateManyHeroInput | Prisma.HeroSnapshotCreateManyHeroInput[]
+  skipDuplicates?: boolean
 }
 
 export type HeroSnapshotUpsertWithWhereUniqueWithoutHeroInput = {
@@ -1286,6 +1288,7 @@ export type HeroSnapshotCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many HeroSnapshots.
    */
   data: Prisma.HeroSnapshotCreateManyInput | Prisma.HeroSnapshotCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1304,6 +1307,7 @@ export type HeroSnapshotCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many HeroSnapshots.
    */
   data: Prisma.HeroSnapshotCreateManyInput | Prisma.HeroSnapshotCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

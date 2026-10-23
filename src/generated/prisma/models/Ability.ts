@@ -1609,6 +1609,7 @@ export type AbilityCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * The data used to create many Abilities.
    */
   data: Prisma.AbilityCreateManyInput | Prisma.AbilityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1627,6 +1628,7 @@ export type AbilityCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many Abilities.
    */
   data: Prisma.AbilityCreateManyInput | Prisma.AbilityCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

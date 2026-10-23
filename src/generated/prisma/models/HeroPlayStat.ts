@@ -440,6 +440,7 @@ export type HeroPlayStatCreateOrConnectWithoutHeroInput = {
 
 export type HeroPlayStatCreateManyHeroInputEnvelope = {
   data: Prisma.HeroPlayStatCreateManyHeroInput | Prisma.HeroPlayStatCreateManyHeroInput[]
+  skipDuplicates?: boolean
 }
 
 export type HeroPlayStatUpsertWithWhereUniqueWithoutHeroInput = {
@@ -1218,6 +1219,7 @@ export type HeroPlayStatCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many HeroPlayStats.
    */
   data: Prisma.HeroPlayStatCreateManyInput | Prisma.HeroPlayStatCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1236,6 +1238,7 @@ export type HeroPlayStatCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many HeroPlayStats.
    */
   data: Prisma.HeroPlayStatCreateManyInput | Prisma.HeroPlayStatCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

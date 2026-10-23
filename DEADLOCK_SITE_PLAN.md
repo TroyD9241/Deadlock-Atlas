@@ -26,7 +26,7 @@ A fan-made, interactive Deadlock reference: an "upscaled wiki" first, then play 
 | Framework | **Next.js (App Router)** | React throughout; `generateStaticParams` makes data-driven pages (one per hero/item) easy; good SEO for wiki-style content; server code can call Prisma directly |
 | Language | **TypeScript** | Type-safe data and components |
 | Styling | **Tailwind CSS**, mapped to the CSS variables in `design.md` | Fast iteration; theme colors stay in variables, never hard-coded |
-| Database | **SQLite** now, **PostgreSQL** later (local via Docker, hosted on Neon/Supabase/similar) | JSON columns are verified working on SQLite, so the cheap start is safe. Postgres is still the destination: it supports scalar lists, JSON filtering and case-insensitive matching, and handles Phase 2 stats volume |
+| Database | **PostgreSQL** 17 (local via Docker Compose, hosted on Neon/Supabase/similar) | JSON columns, scalar lists, JSON filtering and case-insensitive matching all work, and it handles Phase 2 stats volume. Started on SQLite for one day and moved, because Prisma Studio cannot open a SQLite `file:` URL |
 | ORM | **Prisma 7**, pinned to `^7` (`prisma/schema.prisma`, migrations, typed client, seed script) | Typed queries, migrations, good fit for relational data like patch history. Pinned because `prisma@latest` now installs 8.x RC, which renames the whole workflow |
 | Validation | **Zod** at the ingest boundary | Validate API responses before they are written to the DB |
 | Long-form content | **MDX** for our own pages only (about, credits). No wiki prose | Lore is linked and credited, not copied |
@@ -84,7 +84,8 @@ deadlock-atlas/
 ├─ .env                       # DATABASE_URL (never commit)
 ├─ prisma/
 │  ├─ schema.prisma
-│  ├─ migrations/
+│  ├─ migrations/             # Postgres history, the only one that is live
+│  ├─ archive/sqlite-migrations/   # discarded, kept for reference, never edited
 │  └─ seed.ts
 ├─ scripts/
 │  ├─ ingest/
@@ -127,7 +128,9 @@ Reviewed against live API responses, not a sketch. Four things the real data for
 - **`Item.slotType` is design.md's "category".** The API's `type` field is a different axis and is only `ability`/`weapon`/`upgrade`.
 - **`Patch` lost every patch-page field** (`title`, `url`, `summary`, `featuredHeroId`, `heroOfPatch`) because patches are deferred (section 7).
 
-SQLite constraints, all verified against Prisma 7.10.1: `Json` works, `enum` works (stored as `TEXT`), scalar lists (`String[]`) do **not** (use `Json?`), filtering inside a `Json` column is unavailable, and `mode: "insensitive"` is unavailable. Promote anything we need to filter or sort on to a real column.
+Postgres was not the first choice and the reason is worth keeping. SQLite was tried first because it needs no daemon, and `Json` columns were verified working on it. It was dropped for one concrete blocker: **Prisma Studio cannot open a SQLite `file:` URL in Prisma 7** — it rejects the protocol outright, so M0's "prisma studio opens" criterion was unsatisfiable. Provider switches also force a fresh migration history, so the sooner the switch happens the less history is discarded.
+
+What was learned on SQLite and still applies: `enum` works (stored as `TEXT`), scalar lists (`String[]`) are Postgres-only, filtering inside a `Json` column needs Postgres, and `mode: "insensitive"` needs Postgres. The schema is unchanged by the move; only the connector and the URL differ.
 
 ### Reference model
 
@@ -138,7 +141,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"   // → "postgresql" later; no @db.* types, no scalar lists
+  provider = "postgresql"
 }
 
 /// One ingested game build. Patch notes, per-patch diffs and /patches pages are
@@ -189,7 +192,7 @@ model Hero {
   itemSlots       Json?                 // the Hero.items class-name map
   itemSlotInfo    Json?
   physics         Json?
-  tags            Json?                 // string[] — SQLite has no scalar lists
+  tags            Json?                 // string[] kept as Json so the shape is explicit
   removedContent  Json?
 
   abilities     HeroAbility[]
@@ -387,7 +390,7 @@ Defined in `design.md` section 5 (pages) and section 6 (interaction patterns). S
 Work milestone by milestone. Finish and verify each before the next.
 
 **M0: Scaffold and theme system**
-- Next.js (App Router, TypeScript), Tailwind, Prisma 7 against SQLite with a `docker-compose.yml` staged for Postgres later, folder layout above.
+- Next.js (App Router, TypeScript), Tailwind, Prisma 7 against Postgres from `docker-compose.yml`, folder layout above.
 - Port the tokens from `design.md` section 2 into `src/styles/tokens.css`, register `--accent` and `--glow` with `@property`, and build `applyTheme` in `src/lib/theme.ts`.
 - Header and footer from the mock, with the Valve disclaimer and the wiki credit line.
 - *Done when:* the dev server shows an empty themed shell, the theme can be switched by calling `applyTheme`, and `prisma studio` opens.
@@ -448,7 +451,7 @@ Work milestone by milestone. Finish and verify each before the next.
 - **Abilities are shared between heroes.** 80 of 282 abilities are universal (`hero: null`) and appear on nearly every hero. Anything that assumes a hero owns its abilities will duplicate data and drift.
 - **API ids overflow 32-bit integers.** Ability and item ids reach 4,284,855,775, so they are stored as strings.
 - **The assets endpoint is large.** `/v1/assets/items` is about 4.4 MB in a single response. Use `/v1/assets/items/by-slot-type/{weapon|vitality|spirit}` and cache every response to `data/raw/`.
-- **SQLite limits what we can query.** JSON-column filtering and case-insensitive matching are unavailable, so hero and item search (M9) will need either real columns or the move to Postgres. Do not build search on SQLite without checking this first.
+- **Local Postgres runs on port 5433, not 5432.** A Postgres under WSL already holds `127.0.0.1:5432` on this machine and its relay shadows Docker's published port on loopback, so the obvious `localhost:5432` reaches the wrong server and fails with an authentication error that looks like a bad password. Keep `docker-compose.yml` and `.env` in step.
 - **Database access at build time:** pre-rendering needs the build environment to reach the database. Decide between a Node host with hosted Postgres (suits Phase 2) and exporting a static site from a local database.
 - **Overlap with Deadlock.io:** review it first; decide whether to collaborate, borrow ideas, or stay separate.
 

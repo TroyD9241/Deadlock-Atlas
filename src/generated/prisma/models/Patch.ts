@@ -1332,6 +1332,7 @@ export type PatchCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * The data used to create many Patches.
    */
   data: Prisma.PatchCreateManyInput | Prisma.PatchCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1350,6 +1351,7 @@ export type PatchCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many Patches.
    */
   data: Prisma.PatchCreateManyInput | Prisma.PatchCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

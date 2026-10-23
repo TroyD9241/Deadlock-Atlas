@@ -9,8 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:theme": "tsx scripts/check-theme.ts",
+    "check:db": "tsx scripts/check-db.ts",
     "check:contrast": "tsx scripts/check-contrast.ts",
-    "check": "npm run typecheck && npm run lint && npm run check:theme && npm run check:contrast",
+    "check": "npm run typecheck && npm run lint && npm run check:theme && npm run check:contrast && npm run check:db",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -19,11 +20,11 @@
     "db:reset": "prisma migrate reset"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.10.1",
+    "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
-    "better-sqlite3": "^13.0.3",
     "dotenv": "^18.0.9",
     "next": "16.4.2",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "sharp": "^0.35.5",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -42,8 +44,6 @@
     "typescript": "^5"
   },
   "allowScripts": {
-    "better-sqlite3@12.11.1": true,
-    "better-sqlite3@13.0.3": true,
     "@prisma/engines@7.10.1": true,
     "esbuild@0.28.2": true,
     "prisma@7.10.1": true,

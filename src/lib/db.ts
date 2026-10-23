@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@/generated/prisma/client";
 
@@ -7,13 +7,13 @@ import { PrismaClient } from "@/generated/prisma/client";
  * Prisma client singleton.
  *
  * SERVER CODE ONLY. Never import this from a `"use client"` file: the adapter
- * opens a real filesystem connection and would be pulled into the browser
+ * opens a real database connection and would be pulled into the browser
  * bundle. Components are server components by default; mark only interactive
  * widgets as `"use client"`.
  *
- * The adapter is required from Prisma 7 onwards. When we move to Postgres,
- * swap `PrismaBetterSqlite3` for `PrismaPg` and the connection string in
- * `.env` — nothing else in the app changes.
+ * Prisma 7 requires an explicit driver adapter. We use `@prisma/adapter-pg`
+ * against the Postgres from docker-compose.yml in development; in production
+ * point DATABASE_URL at Neon or Supabase and nothing else changes here.
  */
 
 const globalForPrisma = globalThis as unknown as {
@@ -21,9 +21,14 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createClient() {
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error(
+      "DATABASE_URL is not set. Copy .env.example to .env, or start Postgres with `docker compose up -d`.",
+    );
+  }
+
+  const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({ adapter });
 }
 

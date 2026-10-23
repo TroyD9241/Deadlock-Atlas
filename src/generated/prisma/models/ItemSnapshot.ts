@@ -452,6 +452,7 @@ export type ItemSnapshotCreateOrConnectWithoutPatchInput = {
 
 export type ItemSnapshotCreateManyPatchInputEnvelope = {
   data: Prisma.ItemSnapshotCreateManyPatchInput | Prisma.ItemSnapshotCreateManyPatchInput[]
+  skipDuplicates?: boolean
 }
 
 export type ItemSnapshotUpsertWithWhereUniqueWithoutPatchInput = {
@@ -498,6 +499,7 @@ export type ItemSnapshotCreateOrConnectWithoutItemInput = {
 
 export type ItemSnapshotCreateManyItemInputEnvelope = {
   data: Prisma.ItemSnapshotCreateManyItemInput | Prisma.ItemSnapshotCreateManyItemInput[]
+  skipDuplicates?: boolean
 }
 
 export type ItemSnapshotUpsertWithWhereUniqueWithoutItemInput = {
@@ -1286,6 +1288,7 @@ export type ItemSnapshotCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many ItemSnapshots.
    */
   data: Prisma.ItemSnapshotCreateManyInput | Prisma.ItemSnapshotCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1304,6 +1307,7 @@ export type ItemSnapshotCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many ItemSnapshots.
    */
   data: Prisma.ItemSnapshotCreateManyInput | Prisma.ItemSnapshotCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

@@ -507,6 +507,7 @@ export type RelationshipCreateOrConnectWithoutFromInput = {
 
 export type RelationshipCreateManyFromInputEnvelope = {
   data: Prisma.RelationshipCreateManyFromInput | Prisma.RelationshipCreateManyFromInput[]
+  skipDuplicates?: boolean
 }
 
 export type RelationshipCreateWithoutToInput = {
@@ -531,6 +532,7 @@ export type RelationshipCreateOrConnectWithoutToInput = {
 
 export type RelationshipCreateManyToInputEnvelope = {
   data: Prisma.RelationshipCreateManyToInput | Prisma.RelationshipCreateManyToInput[]
+  skipDuplicates?: boolean
 }
 
 export type RelationshipUpsertWithWhereUniqueWithoutFromInput = {
@@ -1375,6 +1377,7 @@ export type RelationshipCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
    * The data used to create many Relationships.
    */
   data: Prisma.RelationshipCreateManyInput | Prisma.RelationshipCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1393,6 +1396,7 @@ export type RelationshipCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * The data used to create many Relationships.
    */
   data: Prisma.RelationshipCreateManyInput | Prisma.RelationshipCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

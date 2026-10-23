@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"   // -> "postgresql" later; no @db.* types, no scalar lists
+  provider = "postgresql"
 }
 
 /// One ingested game build. Patch notes, per-patch diffs and /patches pages are
@@ -55,7 +55,7 @@ model Hero {
   itemSlots       Json?                 // the Hero.items class-name map
   itemSlotInfo    Json?
   physics         Json?
-  tags            Json?                 // string[] -- SQLite has no scalar lists
+  tags            Json?                 // string[] kept as Json so the shape is explicit
   removedContent  Json?
 
   abilities     HeroAbility[]

@@ -19,7 +19,7 @@ dist/
 .env.local
 .env.*.local
 
-# database
+# database — Postgres runs in Docker, only stray local files are ignored
 prisma/*.db
 prisma/*.db-journal
 prisma/*.db-shm

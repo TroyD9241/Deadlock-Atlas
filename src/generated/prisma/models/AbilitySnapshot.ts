@@ -452,6 +452,7 @@ export type AbilitySnapshotCreateOrConnectWithoutPatchInput = {
 
 export type AbilitySnapshotCreateManyPatchInputEnvelope = {
   data: Prisma.AbilitySnapshotCreateManyPatchInput | Prisma.AbilitySnapshotCreateManyPatchInput[]
+  skipDuplicates?: boolean
 }
 
 export type AbilitySnapshotUpsertWithWhereUniqueWithoutPatchInput = {
@@ -498,6 +499,7 @@ export type AbilitySnapshotCreateOrConnectWithoutAbilityInput = {
 
 export type AbilitySnapshotCreateManyAbilityInputEnvelope = {
   data: Prisma.AbilitySnapshotCreateManyAbilityInput | Prisma.AbilitySnapshotCreateManyAbilityInput[]
+  skipDuplicates?: boolean
 }
 
 export type AbilitySnapshotUpsertWithWhereUniqueWithoutAbilityInput = {
@@ -1286,6 +1288,7 @@ export type AbilitySnapshotCreateManyArgs<ExtArgs extends runtime.Types.Extensio
    * The data used to create many AbilitySnapshots.
    */
   data: Prisma.AbilitySnapshotCreateManyInput | Prisma.AbilitySnapshotCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1304,6 +1307,7 @@ export type AbilitySnapshotCreateManyAndReturnArgs<ExtArgs extends runtime.Types
    * The data used to create many AbilitySnapshots.
    */
   data: Prisma.AbilitySnapshotCreateManyInput | Prisma.AbilitySnapshotCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

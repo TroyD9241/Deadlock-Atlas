@@ -1029,6 +1029,7 @@ export type FactionCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * The data used to create many Factions.
    */
   data: Prisma.FactionCreateManyInput | Prisma.FactionCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1047,6 +1048,7 @@ export type FactionCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many Factions.
    */
   data: Prisma.FactionCreateManyInput | Prisma.FactionCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

@@ -34,13 +34,20 @@ re-litigate these without asking.
   `npx prisma@7`.
 - Node 24 LTS. Prisma supports `^20.19 / ^22.12 / ^24`; odd-numbered Node
   releases are unsupported.
-- SQLite via `@prisma/adapter-better-sqlite3` for now, Postgres via Docker
-  Compose later. `docker-compose.yml` stays in the repo so the switch is small.
-- The schema is deliberately Postgres-portable. Verified on SQLite: `Json`
-  works, `enum` works (stored as `TEXT`), but scalar lists (`String[]`) are
-  **not** supported (use `Json?`), filtering inside a `Json` column is not
-  available, and `mode: "insensitive"` is not available. Promote any field we
-  need to filter or sort on to a real column.
+- **PostgreSQL 17**, via `docker-compose.yml`, with `@prisma/adapter-pg`. Run
+  `docker compose up -d` before any `db:*` script. Host port is **5433, not
+  5432**: a Postgres under WSL already holds `127.0.0.1:5432` on this machine
+  and its relay shadows Docker's published port on loopback, so 5432 reaches
+  the wrong server. Change `docker-compose.yml` and `.env` together.
+- Postgres was originally SQLite, switched in revision M0.5. Prisma Studio
+  cannot open a SQLite `file:` URL in Prisma 7 — it rejects the protocol — so
+  the M0 "prisma studio opens" criterion was unsatisfiable. Switching provider
+  also forces a fresh migration history, so the earlier the switch the less
+  history is discarded. The discarded SQLite history is kept at
+  `prisma/archive/sqlite-migrations/`, never edited.
+- Schema notes learned on SQLite and still true: `enum` works (stored as
+  `TEXT`); `String[]` scalar lists are Postgres-only; filtering inside a `Json`
+  column needs Postgres; `mode: "insensitive"` needs Postgres.
 
 **Schema**
 
@@ -86,7 +93,7 @@ re-litigate these without asking.
 Do M0 only, then the "check the API docs" step of M1:
 
 1. Scaffold Next.js (App Router, TypeScript) with Tailwind and the folder layout in the plan.
-2. Set up Prisma 7 against SQLite for now, with a `docker-compose.yml` staged for Postgres later. Check the current Prisma docs rather than assuming setup details.
+2. Set up Prisma 7 against Postgres. Check the current Prisma docs rather than assuming setup details.
 3. Port the tokens into `src/styles/tokens.css`, register `--accent` and `--glow` with `@property`, and write `applyTheme` in `src/lib/theme.ts`.
 4. Build Header and Footer from the mock. Footer includes the Valve disclaimer and the wiki credit line.
 5. Read the Deadlock API docs and list the real endpoints and response shapes you will use for heroes, abilities, items, and patches. Report them. Do not write ingest code yet.
