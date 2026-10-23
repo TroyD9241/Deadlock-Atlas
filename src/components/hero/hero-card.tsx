@@ -29,6 +29,8 @@ export type HeroCardProps = {
   label: string;
   /** One line under the name. */
   tagline: string;
+  /** The full lore text for hover expansion. */
+  lore: string;
   /** The wide motif, 4096x2312 with an alpha channel. */
   background: string | null;
   /** The 280x380 character portrait. */
@@ -50,6 +52,7 @@ export function HeroCard({
   name,
   label,
   tagline,
+  lore,
   background,
   portrait,
   wordmark,
@@ -282,6 +285,44 @@ export function HeroCard({
           </span>
         ) : null}
       </div>
+
+      {/*
+        Expanded lore overlay on hover: replaces the bottom content with the
+        full lore text, filling the available space.
+      */}
+      <div
+        className="hero-card-lore"
+        style={{
+          position: "absolute",
+          left: 14,
+          right: 14,
+          bottom: 14,
+          maxHeight: 0,
+          opacity: 0,
+          overflow: "hidden",
+          background: "var(--panel)",
+          border: "1px solid var(--line)",
+          borderRadius: "var(--radius-card)",
+          padding: 12,
+          fontSize: 11,
+          color: "var(--text)",
+          lineHeight: 1.6,
+          transition: "max-height 0.25s ease, opacity 0.2s ease",
+          pointerEvents: "none",
+          zIndex: 10,
+        }}
+      >
+        {lore}
+      </div>
+
+      <style>{`
+        .hero-card:hover .hero-card-lore {
+          max-height: 200px;
+          opacity: 1;
+          top: 60px;
+          bottom: 14;
+        }
+      `}</style>
     </Link>
   );
 }

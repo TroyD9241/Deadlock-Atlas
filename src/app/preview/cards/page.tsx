@@ -41,6 +41,7 @@ export default async function CardPreviewPage() {
             wordmark={h.artwork?.images?.nameImage ?? null}
             accent={h.accent ?? "#c09fc8"}
             accentText={h.accentText ?? null}
+            lore={h.officialLore ?? ""}
             palette={h.palette}
           />
         ))}
