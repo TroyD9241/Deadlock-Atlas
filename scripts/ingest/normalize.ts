@@ -62,6 +62,44 @@ export function panelContrast(hex: string, panel = "#141824"): number {
  */
 export const accentTextFor = readableAccentText;
 
+// ── markup ─────────────────────────────────────────────────────────────────
+
+/**
+ * Strip the markup the API puts in its text fields.
+ *
+ * 34 of the 44 released heroes have `<br>` in their lore, and Sinclair's
+ * playstyle and lore contain `<i>` and `<span class="italics">`. These are
+ * Valve's own strings from the assets API, formatted for the game's UI.
+ *
+ * `<br>` becomes a newline, which is meaningful: a blank line separates
+ * paragraphs. Every other tag is removed, because the site renders plain
+ * text and has no markup of its own to preserve.
+ */
+export function cleanMarkup(input: string | null | undefined): string | null {
+  if (input === null || input === undefined) return null;
+
+  let text = input
+    // Line breaks first, so they are not eaten by the tag stripper.
+    .replace(/<br\s*\/?>/gi, "\n")
+    // Any remaining tag.
+    .replace(/<\/?[a-zA-Z][^>]*>/g, "")
+    // Entities.
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/&quot;|&ldquo;|&rdquo;/gi, '"')
+    .replace(/&[a-z]+;/gi, "");
+
+  // Collapse runs of blank lines to a single paragraph break, and trim.
+  text = text.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+
+  const trimmed = text.trim();
+  return trimmed.length ? trimmed : null;
+}
+
 // ── slugs ───────────────────────────────────────────────────────────────────
 
 export function slugify(name: string): string {
@@ -184,9 +222,9 @@ export function normaliseHero(
     name: h.name,
     complexity: h.complexity ?? null,
     heroType: h.hero_type ?? null,
-    officialRole: h.description?.role ?? null,
-    officialPlaystyle: h.description?.playstyle ?? null,
-    officialLore: h.description?.lore ?? null,
+    officialRole: cleanMarkup(h.description?.role),
+    officialPlaystyle: cleanMarkup(h.description?.playstyle),
+    officialLore: cleanMarkup(h.description?.lore),
     accent,
     accentText: accent ? accentTextFor(accent) : null,
     onAccent: accent ? readableTextOn(accent) : null,

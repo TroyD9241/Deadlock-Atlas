@@ -131,7 +131,7 @@ export function HeroBanner({
           <span className="visually-hidden">{name}</span>
           <NameWordmark
             src={art?.nameImage ?? null}
-            height={92}
+            width={340}
             color="var(--accent)"
           />
         </h1>

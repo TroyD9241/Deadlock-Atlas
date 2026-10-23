@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { themeStyle } from "@/lib/theme";
 
+import { NameWordmark } from "./name-wordmark";
+
 /**
  * Hero card — the directory card from reference/deadlock-atlas.html.
  *
@@ -31,6 +33,8 @@ export type HeroCardProps = {
   background: string | null;
   /** The 280x380 character portrait. */
   portrait: string | null;
+  /** The hero's official name wordmark. */
+  wordmark?: string | null;
   /** The hero's accent. */
   accent?: string | null;
   /** Readable variant of the accent, for accent-coloured text. */
@@ -48,6 +52,7 @@ export function HeroCard({
   tagline,
   background,
   portrait,
+  wordmark,
   accent,
   accentText,
   palette,
@@ -184,18 +189,33 @@ export function HeroCard({
             justifyContent: "space-between",
             alignItems: "center",
             gap: 8,
+            minHeight: 40,
           }}
         >
-          {/* The name uses accentText, the readable variant of the accent. */}
-          <h3
-            style={{
-              fontSize: 16,
-              margin: 0,
-              color: "var(--accent-text)",
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {name}
+          {/*
+            The hero's own name wordmark, tinted with their accent, exactly as
+            on the banner. It is an image, so the accessible name is carried
+            by hidden text in the same heading.
+          */}
+          <h3 style={{ margin: 0, flex: "1 1 auto", minWidth: 0 }}>
+            <span className="visually-hidden">{name}</span>
+            {wordmark ? (
+              <NameWordmark
+                src={wordmark}
+                width={168}
+                color="var(--accent-text)"
+              />
+            ) : (
+              <span
+                style={{
+                  fontSize: 16,
+                  color: "var(--accent-text)",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                {name}
+              </span>
+            )}
           </h3>
           <span
             style={{

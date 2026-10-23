@@ -14,7 +14,16 @@
 export type NameWordmarkProps = {
   /** The hero's `name_image` URL. */
   src: string | null;
-  /** Height of the wordmark in pixels. */
+  /**
+   * Width of the wordmark frame in pixels.
+   *
+   * Every wordmark is drawn in the same 1198x605 frame, but the glyphs fill
+   * different fractions of it: Celeste's nearly fills it, Abrams' uses about
+   * two thirds. Sizing by width keeps every logo the same width, so the
+   * difference in apparent size is the artwork's own, exactly as in the game.
+   */
+  width?: number;
+  /** Height of the wordmark frame in pixels. Defaults from the width. */
   height?: number;
   /** The fill colour. Defaults to the surrounding --accent. */
   color?: string;
@@ -24,9 +33,13 @@ export type NameWordmarkProps = {
   style?: React.CSSProperties;
 };
 
+/** The shared viewBox every name wordmark is drawn in. */
+const FRAME_ASPECT = 1198 / 605;
+
 export function NameWordmark({
   src,
-  height = 56,
+  width = 240,
+  height,
   color,
   align = "left",
   className,
@@ -34,14 +47,17 @@ export function NameWordmark({
 }: NameWordmarkProps) {
   if (!src) return null;
 
+  const boxHeight = height ?? Math.round(width / FRAME_ASPECT);
+
   return (
     <span
       aria-hidden="true"
       className={className}
       style={{
         display: "block",
-        width: "100%",
-        height,
+        width,
+        height: boxHeight,
+        maxWidth: "100%",
         backgroundColor: color ?? "var(--accent)",
         WebkitMaskImage: `url(${src})`,
         maskImage: `url(${src})`,

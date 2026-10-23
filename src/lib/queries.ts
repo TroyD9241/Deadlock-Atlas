@@ -50,22 +50,38 @@ export type HeroSummary = {
  *
  * The API's `playstyle` is missing for 18 of the 44 released heroes, and for
  * exactly those 18 the `role` is missing too. Only `lore` is always present,
- * so the fallback is its first sentence. Everything here is Valve's own text
- * from the assets API, not wiki prose.
+ * so the fallback is its first sentence.
+ *
+ * The text may contain newlines, because the ingest turns the API's `<br>`
+ * into real line breaks. A card wants one line, so this takes the first
+ * paragraph and then the first sentence of it.
  */
 export function cardTagline(hero: {
   officialPlaystyle: string | null;
   officialLore: string | null;
 }): string {
   const playstyle = hero.officialPlaystyle?.trim();
-  if (playstyle) return playstyle;
+  if (playstyle) return firstSentence(firstParagraph(playstyle));
 
   const lore = hero.officialLore?.trim();
   if (!lore) return "";
 
-  // First sentence, but never a fragment of a word.
-  const match = lore.match(/^(.+?[.!?])(\s|$)/);
-  return (match ? match[1] : lore).trim();
+  return firstSentence(firstParagraph(lore));
+}
+
+/** The first non-empty paragraph. */
+function firstParagraph(text: string): string {
+  for (const block of text.split(/\n{2,}/)) {
+    const trimmed = block.trim();
+    if (trimmed) return trimmed.replace(/\n/g, " ");
+  }
+  return text.trim().replace(/\n/g, " ");
+}
+
+/** The first sentence, never a fragment of a word. */
+function firstSentence(text: string): string {
+  const match = text.match(/^(.+?[.!?])(\s|$)/);
+  return (match ? match[1] : text).trim();
 }
 
 const HERO_SELECT = {
