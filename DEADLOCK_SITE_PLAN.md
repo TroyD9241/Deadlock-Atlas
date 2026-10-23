@@ -343,8 +343,22 @@ model Relationship {
   @@unique([fromId, toId, type])
 }
 
-model Faction  { id Int @id @default(autoincrement()) slug String @unique name String summary String? sourceUrl String? }
-model Location { id Int @id @default(autoincrement()) slug String @unique name String region String? summary String? sourceUrl String? }
+model Faction {
+  id        Int     @id @default(autoincrement())
+  slug      String  @unique
+  name      String
+  summary   String?
+  sourceUrl String?
+}
+
+model Location {
+  id        Int     @id @default(autoincrement())
+  slug      String  @unique
+  name      String
+  region    String?
+  summary   String?
+  sourceUrl String?
+}
 
 /// M8. Popularity input for Hero of the Patch (design.md section 3.5), from
 /// /v1/analytics/hero-stats. Blocked on the same deferral as the formula.
