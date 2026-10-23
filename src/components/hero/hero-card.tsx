@@ -73,7 +73,6 @@ export function HeroCard({
         display: "block",
         textDecoration: "none",
         color: "inherit",
-        position: "relative",
         // The card body carries the hero's darkest palette colours, so the
         // whole card is themed rather than just its accent.
         background: p1
@@ -315,15 +314,6 @@ export function HeroCard({
       >
         {lore}
       </div>
-
-      <style>{`
-        .hero-card:hover .hero-card-lore {
-          max-height: 200px;
-          opacity: 1;
-          top: 60px;
-          bottom: 14;
-        }
-      `}</style>
     </Link>
   );
 }
