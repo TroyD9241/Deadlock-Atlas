@@ -2,6 +2,8 @@ import Image from "next/image";
 
 import { themeStyle } from "@/lib/theme";
 
+import { NameWordmark } from "./name-wordmark";
+
 /**
  * The image URLs the API gives a hero.
  *
@@ -113,16 +115,25 @@ export function HeroBanner({
         <div className="eyebrow" style={{ marginBottom: 17 }}>
           {eyebrow}
         </div>
+        {/*
+          The hero's official name art, tinted with the hero's accent. It is
+          an image, so the accessible name is carried by the heading text
+          below it for screen readers.
+        */}
         <h1
           style={{
+            margin: "0 0 10px",
             fontSize: "clamp(44px,7vw,82px)",
             lineHeight: 0.9,
             letterSpacing: "-0.065em",
-            margin: "0 0 14px",
-            color: "var(--text)",
           }}
         >
-          {name}
+          <span className="visually-hidden">{name}</span>
+          <NameWordmark
+            src={art?.nameImage ?? null}
+            height={92}
+            color="var(--accent)"
+          />
         </h1>
         <div
           style={{

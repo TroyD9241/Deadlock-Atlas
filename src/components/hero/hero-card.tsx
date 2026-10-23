@@ -13,12 +13,12 @@ import { themeStyle } from "@/lib/theme";
  *
  * Artwork. The API's `icon_hero_card` is a 280x380 portrait crop and the mock
  * crops its image to a 200px landscape band, which cuts most of the character
- * off. So the card uses the wide `background_image` motif as the backdrop and
- * layers the portrait over it, sized to fit the band and fully visible.
+ * off. So the card uses the wide `background_image` as a backdrop with the
+ * portrait laid over it, both centred.
  *
- * Each card sets its own --accent, --p1..--p5 and --glow, so a grid of cards
- * keeps every hero's colours (design.md 3.6). The page around them keeps the
- * site theme.
+ * Each card sets its own --accent, --accent-text, --on-accent, --p1..--p5 and
+ * --glow, so a grid of cards keeps every hero's colours (design.md 3.6). The
+ * page around them keeps the site theme.
  */
 export type HeroCardProps = {
   slug: string;
@@ -32,7 +32,9 @@ export type HeroCardProps = {
   /** The 280x380 character portrait. */
   portrait: string | null;
   /** The hero's accent. */
-  accent: string;
+  accent?: string | null;
+  /** Readable variant of the accent, for accent-coloured text. */
+  accentText?: string | null;
   /** Five colours, darkest to lightest. */
   palette: string[];
   /** True when the hero has no verified artwork yet. */
@@ -47,24 +49,26 @@ export function HeroCard({
   background,
   portrait,
   accent,
+  accentText,
   palette,
   missingArtwork = false,
 }: HeroCardProps) {
   const p1 = palette[0];
+  const p2 = palette[1];
 
   return (
     <Link
       href={`/heroes/${slug}`}
       className="hero-card"
       style={{
-        ...themeStyle({ accent, palette }),
+        ...themeStyle({ accent, accentText, palette }),
         display: "block",
         textDecoration: "none",
         color: "inherit",
-        // The card body carries the hero's darkest palette colour, so the
+        // The card body carries the hero's darkest palette colours, so the
         // whole card is themed rather than just its accent.
         background: p1
-          ? `linear-gradient(160deg, ${p1} 0%, #171b27 62%)`
+          ? `linear-gradient(165deg, ${p1} 0%, ${p2 ?? "#171b27"} 44%, #12151f 100%)`
           : "#171b27",
       }}
     >
@@ -73,11 +77,11 @@ export function HeroCard({
           position: "relative",
           height: 200,
           overflow: "hidden",
-          background: "#202431",
+          background: "#141824",
         }}
       >
-        {/* The hero's own wide motif, filling the band. Dimmed so a busy
-            motif never competes with the portrait in front of it. */}
+        {/* The hero's own wide motif, zoomed so its art sits behind the
+            character rather than off to one side. Dimmed to a texture. */}
         {background ? (
           <div
             aria-hidden="true"
@@ -85,41 +89,38 @@ export function HeroCard({
               position: "absolute",
               inset: 0,
               backgroundImage: `url(${background})`,
-              backgroundSize: "cover",
-              backgroundPosition: "right center",
-              opacity: 0.8,
+              backgroundSize: "230% auto",
+              backgroundPosition: "76% 42%",
+              opacity: 0.5,
             }}
           />
         ) : null}
 
-        {/* A tint from the hero's palette, so the band reads as themed even
-            where the motif is empty. */}
+        {/* The accent glow, centred on the character. This is the hero's
+            colour scheme, and it is what gives the card its theme. */}
         <div
           aria-hidden="true"
           style={{
             position: "absolute",
             inset: 0,
-            background: `linear-gradient(to right, ${p1 ?? "#141824"} 0%, transparent 58%)`,
-            opacity: 0.9,
+            background:
+              "radial-gradient(ellipse 62% 88% at 50% 68%, var(--glow), transparent 72%)",
           }}
         />
 
-        {/* A soft accent glow along the bottom, tying the portrait to the band. */}
+        {/* A wash of the hero's own palette from the bottom, tying the art
+            into the body. */}
         <div
           aria-hidden="true"
           style={{
             position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: "55%",
-            background:
-              "radial-gradient(ellipse at 78% 100%, var(--glow), transparent 70%)",
-            opacity: 0.7,
+            inset: 0,
+            background: `linear-gradient(to top, ${p1 ?? "#141824"} 2%, transparent 58%)`,
+            opacity: 0.85,
           }}
         />
 
-        {/* The character portrait, fully visible and sized to the band. */}
+        {/* The character portrait, centred and fully visible. */}
         {portrait ? (
           <Image
             src={portrait}
@@ -129,14 +130,15 @@ export function HeroCard({
             unoptimized
             style={{
               position: "absolute",
-              right: 6,
+              left: "50%",
               bottom: 0,
-              height: 190,
+              transform: "translateX(-50%)",
+              height: 196,
               width: "auto",
-              maxWidth: "62%",
+              maxWidth: "78%",
               objectFit: "contain",
               objectPosition: "center bottom",
-              filter: "drop-shadow(0 12px 26px #000b)",
+              filter: "drop-shadow(0 16px 30px #000b)",
             }}
           />
         ) : null}
@@ -158,6 +160,21 @@ export function HeroCard({
             No artwork
           </div>
         ) : null}
+
+        {/* An accent hairline along the top of the band. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+            background:
+              "linear-gradient(to right, transparent, var(--accent), transparent)",
+            opacity: 0.75,
+          }}
+        />
       </div>
 
       <div style={{ padding: 14 }}>
@@ -169,15 +186,26 @@ export function HeroCard({
             gap: 8,
           }}
         >
-          <h3 style={{ fontSize: 16, margin: 0 }}>{name}</h3>
+          {/* The name uses accentText, the readable variant of the accent. */}
+          <h3
+            style={{
+              fontSize: 16,
+              margin: 0,
+              color: "var(--accent-text)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {name}
+          </h3>
           <span
             style={{
               fontSize: 10,
-              color: "var(--accent)",
-              border: "1px solid color-mix(in srgb, var(--accent) 45%, transparent)",
-              background: "color-mix(in srgb, var(--accent) 12%, transparent)",
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              color: "var(--on-accent)",
+              background: "var(--accent)",
               borderRadius: 999,
-              padding: "4px 7px",
+              padding: "4px 8px",
               whiteSpace: "nowrap",
             }}
           >

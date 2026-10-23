@@ -84,6 +84,20 @@
   [aria-hidden="true"] {
     pointer-events: none;
   }
+
+  /* Visible to screen readers, not to the eye. Used when a heading's visual
+     content is an image, such as the hero name wordmark. */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 @layer components {

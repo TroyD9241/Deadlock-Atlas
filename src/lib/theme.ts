@@ -19,6 +19,11 @@ export type Theme = {
    * against `--panel`. Falls back to a contrast computation if absent.
    */
   onAccent?: string | null;
+  /**
+   * The readable variant of the accent, used for accent-coloured text on a
+   * panel background. The accent itself is often too dark to read as text.
+   */
+  accentText?: string | null;
   /** The API's `colors.style_hex`, used only as a fallback. */
   apiAccent?: string | null;
 };
@@ -129,6 +134,10 @@ export function applyTheme(el: HTMLElement, theme: Theme): void {
     "--on-accent",
     normalizeHex(theme.onAccent) ?? readableTextOn(accent),
   );
+  el.style.setProperty(
+    "--accent-text",
+    normalizeHex(theme.accentText) ?? accent,
+  );
   el.style.setProperty("--glow", glowFrom(accent));
 
   const palette = (theme.palette ?? [])
@@ -162,6 +171,7 @@ export function themeStyle(theme: Theme): Record<string, string> {
     "--accent": accent,
     "--accent-rgb": hexToRgb(accent),
     "--on-accent": normalizeHex(theme.onAccent) ?? readableTextOn(accent),
+    "--accent-text": normalizeHex(theme.accentText) ?? accent,
     "--glow": glowFrom(accent),
   };
 

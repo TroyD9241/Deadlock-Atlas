@@ -39,6 +39,7 @@ export default async function CardPreviewPage() {
             background={h.artwork?.images?.background ?? null}
             portrait={h.artwork?.images?.card ?? null}
             accent={h.accent ?? "#c09fc8"}
+            accentText={h.accentText ?? null}
             palette={h.palette}
           />
         ))}

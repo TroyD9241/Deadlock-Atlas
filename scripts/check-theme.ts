@@ -69,10 +69,11 @@ applyTheme(el as unknown as HTMLElement, {
 check("--accent", el.set.get("--accent"), "#be7052");
 check("--accent-rgb", el.set.get("--accent-rgb"), "190, 112, 82");
 check("--on-accent", el.set.get("--on-accent"), "#17131b");
+check("--accent-text", el.set.get("--accent-text"), "#17131b");
 check("--glow has alpha", /^#[0-9a-f]{8}$/.test(el.set.get("--glow") ?? ""), true);
 check("--p1", el.set.get("--p1"), "#2b1d18");
 check("--p5", el.set.get("--p5"), "#f2d5c4");
-check("set exactly 9 properties", el.set.size, 9);
+check("set exactly 10 properties", el.set.size, 10);
 
 console.log("");
 console.log("--- applyTheme scope isolation ---");
