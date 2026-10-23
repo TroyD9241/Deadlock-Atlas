@@ -85,8 +85,16 @@ re-litigate these without asking.
 
 **Data rules**
 
-- **The API's `colors.style_hex` is the hero accent.** It is Valve's own UI
-  colour, so it is authoritative, and all 42 selectable heroes have one.
+- **`isReleased` comes from `heroes?only_active=true`, never from the
+  `in_development` flag.** That flag lags: at build 6819 it still marks **Baba
+  and Violet** as in development when both are live and playable. The
+  `only_active` list returns exactly the 44 heroes we hold artwork for, with no
+  extras and none missing, which is how the discrepancy was caught. Keep
+  `isDisabled` and `isInDevelopment` as recorded truth so the lag stays visible
+  rather than hidden behind the derived column. The API also leaks a literal
+  `hero_testhero` record, which is stored but never released.
+- **The API's `style_hex` is the hero accent.** It is Valve's own UI
+  colour, so it is authoritative, and all 44 released heroes have one.
   Precedence for a hero is: manual override, then `style_hex`, then
   `extractPalette`, then the site default. A hero with essentially zero chroma
   (Sinclair is `#6B6B6B`, chroma 0.0) falls back to the site default accent and

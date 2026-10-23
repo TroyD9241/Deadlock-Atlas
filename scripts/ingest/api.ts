@@ -30,6 +30,7 @@ const SIMPLE_ENDPOINTS = [
   "fonts",
   "generic-data",
   "heroes",
+  "heroes-active",
   "icons",
   "images",
   "items",
@@ -93,6 +94,7 @@ const SIMPLE_CACHE: Record<string, string | null> = {
   convars: "convars.json",
   "generic-data": "generic-data.json",
   heroes: "heroes.json",
+  "heroes-active": "heroes-active.json",
   items: "items.json",
   map: "map.json",
   "misc-entities": "misc-entities.json",
@@ -160,14 +162,23 @@ export async function sweepAssets(opts?: {
   const results: EndpointResult[] = [];
 
   const targets: Array<{ name: string; path: string; cache: string | null }> = [
-    ...SIMPLE_ENDPOINTS.map((e) => ({
-      name: e,
-      path:
-        e === "heroes" || e === "items"
-          ? `assets/${e}?language=${LANGUAGE}&client_version=${clientVersion}`
+    ...SIMPLE_ENDPOINTS.map((e) => {
+      // Heroes and items need a language and a build to be meaningful.
+      const needsVersion =
+        e === "heroes" || e === "heroes-active" || e === "items";
+      // `only_active=true` is the API's own definition of released. Its
+      // `in_development` flag lags, and still marks Baba and Violet as in
+      // development when both are live and playable.
+      const extra =
+        e === "heroes-active" ? "&only_active=true" : "";
+      return {
+        name: e,
+        path: needsVersion
+          ? `assets/${e.replace("-active", "")}?language=${LANGUAGE}&client_version=${clientVersion}${extra}`
           : `assets/${e}`,
-      cache: SIMPLE_CACHE[e] ?? null,
-    })),
+        cache: SIMPLE_CACHE[e] ?? null,
+      };
+    }),
     ...EXPANDED.map((e) => ({
       name: e.name,
       path: `assets/${e.path(clientVersion)}`,

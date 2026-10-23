@@ -26,6 +26,8 @@ type HeroRow = {
   palette: unknown;
   artwork: unknown;
   needsReview: boolean;
+  isReleased: boolean;
+  isInDevelopment: boolean;
 };
 
 type FolderArtwork = { folder?: string; links?: { lore?: string | null } };
@@ -118,8 +120,38 @@ async function main() {
   const loreLinks = heroes.filter((h) => (h.artwork as FolderArtwork | null)?.links?.lore);
   check("wiki lore links stored", loreLinks.length >= 42, `withLink=${loreLinks.length}`);
 
+  // ── release state ────────────────────────────────────────────────────────
+  const released = await db.hero.count({ where: { isReleased: true } });
+  check(
+    "released count equals character folders",
+    released === 44,
+    `released=${released} folders=44`,
+  );
+  const releasedWithFolder = heroes.filter(
+    (h) => h.isReleased && (h.artwork as FolderArtwork | null)?.folder,
+  ).length;
+  check("every released hero has artwork", releasedWithFolder === released, `${releasedWithFolder}/${released}`);
+
+  // The API's in_development flag lags; these two are live regardless.
+  const flaggedButReleased = await db.hero.findMany({
+    where: { isReleased: true, isInDevelopment: true },
+    select: { name: true },
+  });
+  console.log(
+    `      note: ${flaggedButReleased.length} hero(es) are released but still flagged in_development by the API: ` +
+      flaggedButReleased.map((h) => h.name).join(", "),
+  );
+  check(
+    "Baba and Violet are treated as released",
+    ["Baba", "Violet"].every((n) => flaggedButReleased.some((h) => h.name === n)),
+    flaggedButReleased.map((h) => h.name),
+  );
+
+  const leaked = await db.hero.count({ where: { slug: "hero-testhero" } });
+  console.log(`      note: placeholder API records stored but not released: ${leaked}`);
+
   console.log("");
-  console.log(`heroes ${heroes.length}, abilities ${abilities} (${universal} universal)`);
+  console.log(`heroes ${heroes.length} (${await db.hero.count({ where: { isReleased: true } })} released), abilities ${abilities} (${universal} universal)`);
   console.log(`heroAbility join ${join}, items ${items}, patches ${patches}`);
   console.log(`snapshots ${snapHeroes} hero / ${snapAbilities} ability`);
   console.log("");

@@ -124,10 +124,19 @@ Steps (deterministic, so the same image always gives the same result):
 8. **`onAccent`:** dark or white, whichever contrasts better with the accent.
 
 **Scope.** This function themes **items only**. The Deadlock API returns an
-official accent per hero in `colors.style_hex`, and all 42 selectable heroes
+official accent per hero in `colors.style_hex`, and all 44 released heroes
 have one, so heroes use that and never run extraction. Items carry **no**
 colour field of any kind across all 781 records, so their icon is the only
 available source. The same `applyTheme()` still themes both.
+
+**Release state does not come from the API's flags.** A hero belongs on the
+site when it appears in `GET /v1/assets/heroes?only_active=true`. Do not derive
+it from `in_development`: at build 6819 that flag still marked **Baba and
+Violet** as in development when both were live and playable, and it lists a
+literal `hero_testhero`. The `only_active` list returned exactly the 44 heroes
+we held artwork for, no extras and none missing, which is how the discrepancy
+surfaced. The raw `isDisabled` and `isInDevelopment` flags are still stored so
+the lag stays visible rather than being hidden behind the derived flag.
 
 > **Known instability.** k-means runs from a single initialisation, so the
 > result depends on the random draw and can land in a different local optimum.

@@ -44,6 +44,9 @@ export type HeroMinAggregateOutputType = {
   apiId: number | null
   name: string | null
   complexity: number | null
+  isReleased: boolean | null
+  isDisabled: boolean | null
+  isInDevelopment: boolean | null
   tagline: string | null
   summary: string | null
   officialRole: string | null
@@ -65,6 +68,9 @@ export type HeroMaxAggregateOutputType = {
   apiId: number | null
   name: string | null
   complexity: number | null
+  isReleased: boolean | null
+  isDisabled: boolean | null
+  isInDevelopment: boolean | null
   tagline: string | null
   summary: string | null
   officialRole: string | null
@@ -86,6 +92,9 @@ export type HeroCountAggregateOutputType = {
   apiId: number
   name: number
   complexity: number
+  isReleased: number
+  isDisabled: number
+  isInDevelopment: number
   tagline: number
   summary: number
   officialRole: number
@@ -134,6 +143,9 @@ export type HeroMinAggregateInputType = {
   apiId?: true
   name?: true
   complexity?: true
+  isReleased?: true
+  isDisabled?: true
+  isInDevelopment?: true
   tagline?: true
   summary?: true
   officialRole?: true
@@ -155,6 +167,9 @@ export type HeroMaxAggregateInputType = {
   apiId?: true
   name?: true
   complexity?: true
+  isReleased?: true
+  isDisabled?: true
+  isInDevelopment?: true
   tagline?: true
   summary?: true
   officialRole?: true
@@ -176,6 +191,9 @@ export type HeroCountAggregateInputType = {
   apiId?: true
   name?: true
   complexity?: true
+  isReleased?: true
+  isDisabled?: true
+  isInDevelopment?: true
   tagline?: true
   summary?: true
   officialRole?: true
@@ -297,6 +315,9 @@ export type HeroGroupByOutputType = {
   apiId: number | null
   name: string
   complexity: number | null
+  isReleased: boolean
+  isDisabled: boolean
+  isInDevelopment: boolean
   tagline: string | null
   summary: string | null
   officialRole: string | null
@@ -354,6 +375,9 @@ export type HeroWhereInput = {
   apiId?: Prisma.IntNullableFilter<"Hero"> | number | null
   name?: Prisma.StringFilter<"Hero"> | string
   complexity?: Prisma.IntNullableFilter<"Hero"> | number | null
+  isReleased?: Prisma.BoolFilter<"Hero"> | boolean
+  isDisabled?: Prisma.BoolFilter<"Hero"> | boolean
+  isInDevelopment?: Prisma.BoolFilter<"Hero"> | boolean
   tagline?: Prisma.StringNullableFilter<"Hero"> | string | null
   summary?: Prisma.StringNullableFilter<"Hero"> | string | null
   officialRole?: Prisma.StringNullableFilter<"Hero"> | string | null
@@ -393,6 +417,9 @@ export type HeroOrderByWithRelationInput = {
   apiId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   complexity?: Prisma.SortOrderInput | Prisma.SortOrder
+  isReleased?: Prisma.SortOrder
+  isDisabled?: Prisma.SortOrder
+  isInDevelopment?: Prisma.SortOrder
   tagline?: Prisma.SortOrderInput | Prisma.SortOrder
   summary?: Prisma.SortOrderInput | Prisma.SortOrder
   officialRole?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -435,6 +462,9 @@ export type HeroWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.HeroWhereInput | Prisma.HeroWhereInput[]
   name?: Prisma.StringFilter<"Hero"> | string
   complexity?: Prisma.IntNullableFilter<"Hero"> | number | null
+  isReleased?: Prisma.BoolFilter<"Hero"> | boolean
+  isDisabled?: Prisma.BoolFilter<"Hero"> | boolean
+  isInDevelopment?: Prisma.BoolFilter<"Hero"> | boolean
   tagline?: Prisma.StringNullableFilter<"Hero"> | string | null
   summary?: Prisma.StringNullableFilter<"Hero"> | string | null
   officialRole?: Prisma.StringNullableFilter<"Hero"> | string | null
@@ -474,6 +504,9 @@ export type HeroOrderByWithAggregationInput = {
   apiId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   complexity?: Prisma.SortOrderInput | Prisma.SortOrder
+  isReleased?: Prisma.SortOrder
+  isDisabled?: Prisma.SortOrder
+  isInDevelopment?: Prisma.SortOrder
   tagline?: Prisma.SortOrderInput | Prisma.SortOrder
   summary?: Prisma.SortOrderInput | Prisma.SortOrder
   officialRole?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -516,6 +549,9 @@ export type HeroScalarWhereWithAggregatesInput = {
   apiId?: Prisma.IntNullableWithAggregatesFilter<"Hero"> | number | null
   name?: Prisma.StringWithAggregatesFilter<"Hero"> | string
   complexity?: Prisma.IntNullableWithAggregatesFilter<"Hero"> | number | null
+  isReleased?: Prisma.BoolWithAggregatesFilter<"Hero"> | boolean
+  isDisabled?: Prisma.BoolWithAggregatesFilter<"Hero"> | boolean
+  isInDevelopment?: Prisma.BoolWithAggregatesFilter<"Hero"> | boolean
   tagline?: Prisma.StringNullableWithAggregatesFilter<"Hero"> | string | null
   summary?: Prisma.StringNullableWithAggregatesFilter<"Hero"> | string | null
   officialRole?: Prisma.StringNullableWithAggregatesFilter<"Hero"> | string | null
@@ -549,6 +585,9 @@ export type HeroCreateInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -588,6 +627,9 @@ export type HeroUncheckedCreateInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -626,6 +668,9 @@ export type HeroUpdateInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -665,6 +710,9 @@ export type HeroUncheckedUpdateInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -704,6 +752,9 @@ export type HeroCreateManyInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -737,6 +788,9 @@ export type HeroUpdateManyMutationInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -771,6 +825,9 @@ export type HeroUncheckedUpdateManyInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -805,6 +862,9 @@ export type HeroCountOrderByAggregateInput = {
   apiId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   complexity?: Prisma.SortOrder
+  isReleased?: Prisma.SortOrder
+  isDisabled?: Prisma.SortOrder
+  isInDevelopment?: Prisma.SortOrder
   tagline?: Prisma.SortOrder
   summary?: Prisma.SortOrder
   officialRole?: Prisma.SortOrder
@@ -845,6 +905,9 @@ export type HeroMaxOrderByAggregateInput = {
   apiId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   complexity?: Prisma.SortOrder
+  isReleased?: Prisma.SortOrder
+  isDisabled?: Prisma.SortOrder
+  isInDevelopment?: Prisma.SortOrder
   tagline?: Prisma.SortOrder
   summary?: Prisma.SortOrder
   officialRole?: Prisma.SortOrder
@@ -866,6 +929,9 @@ export type HeroMinOrderByAggregateInput = {
   apiId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   complexity?: Prisma.SortOrder
+  isReleased?: Prisma.SortOrder
+  isDisabled?: Prisma.SortOrder
+  isInDevelopment?: Prisma.SortOrder
   tagline?: Prisma.SortOrder
   summary?: Prisma.SortOrder
   officialRole?: Prisma.SortOrder
@@ -983,6 +1049,9 @@ export type HeroCreateWithoutSnapshotsInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1021,6 +1090,9 @@ export type HeroUncheckedCreateWithoutSnapshotsInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1074,6 +1146,9 @@ export type HeroUpdateWithoutSnapshotsInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1112,6 +1187,9 @@ export type HeroUncheckedUpdateWithoutSnapshotsInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1149,6 +1227,9 @@ export type HeroCreateWithoutAbilitiesInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1187,6 +1268,9 @@ export type HeroUncheckedCreateWithoutAbilitiesInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1240,6 +1324,9 @@ export type HeroUpdateWithoutAbilitiesInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1278,6 +1365,9 @@ export type HeroUncheckedUpdateWithoutAbilitiesInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1315,6 +1405,9 @@ export type HeroCreateWithoutRelationsFromInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1353,6 +1446,9 @@ export type HeroUncheckedCreateWithoutRelationsFromInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1395,6 +1491,9 @@ export type HeroCreateWithoutRelationsToInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1433,6 +1532,9 @@ export type HeroUncheckedCreateWithoutRelationsToInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1486,6 +1588,9 @@ export type HeroUpdateWithoutRelationsFromInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1524,6 +1629,9 @@ export type HeroUncheckedUpdateWithoutRelationsFromInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1572,6 +1680,9 @@ export type HeroUpdateWithoutRelationsToInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1610,6 +1721,9 @@ export type HeroUncheckedUpdateWithoutRelationsToInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1647,6 +1761,9 @@ export type HeroCreateWithoutPlayStatsInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1685,6 +1802,9 @@ export type HeroUncheckedCreateWithoutPlayStatsInput = {
   apiId?: number | null
   name: string
   complexity?: number | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: string | null
   summary?: string | null
   officialRole?: string | null
@@ -1738,6 +1858,9 @@ export type HeroUpdateWithoutPlayStatsInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1776,6 +1899,9 @@ export type HeroUncheckedUpdateWithoutPlayStatsInput = {
   apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1881,6 +2007,9 @@ export type HeroSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   apiId?: boolean
   name?: boolean
   complexity?: boolean
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: boolean
   summary?: boolean
   officialRole?: boolean
@@ -1921,6 +2050,9 @@ export type HeroSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   apiId?: boolean
   name?: boolean
   complexity?: boolean
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: boolean
   summary?: boolean
   officialRole?: boolean
@@ -1955,6 +2087,9 @@ export type HeroSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   apiId?: boolean
   name?: boolean
   complexity?: boolean
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: boolean
   summary?: boolean
   officialRole?: boolean
@@ -1989,6 +2124,9 @@ export type HeroSelectScalar = {
   apiId?: boolean
   name?: boolean
   complexity?: boolean
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
   tagline?: boolean
   summary?: boolean
   officialRole?: boolean
@@ -2017,7 +2155,7 @@ export type HeroSelectScalar = {
   updatedAt?: boolean
 }
 
-export type HeroOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "apiId" | "name" | "complexity" | "tagline" | "summary" | "officialRole" | "officialPlaystyle" | "officialLore" | "accent" | "accentText" | "onAccent" | "apiAccent" | "accentSource" | "palette" | "paletteOverride" | "needsReview" | "artwork" | "sourceLinks" | "startingStats" | "heroStatsUi" | "statsDisplay" | "shopStatDisplay" | "itemSlots" | "itemSlotInfo" | "physics" | "tags" | "removedContent" | "createdAt" | "updatedAt", ExtArgs["result"]["hero"]>
+export type HeroOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "apiId" | "name" | "complexity" | "isReleased" | "isDisabled" | "isInDevelopment" | "tagline" | "summary" | "officialRole" | "officialPlaystyle" | "officialLore" | "accent" | "accentText" | "onAccent" | "apiAccent" | "accentSource" | "palette" | "paletteOverride" | "needsReview" | "artwork" | "sourceLinks" | "startingStats" | "heroStatsUi" | "statsDisplay" | "shopStatDisplay" | "itemSlots" | "itemSlotInfo" | "physics" | "tags" | "removedContent" | "createdAt" | "updatedAt", ExtArgs["result"]["hero"]>
 export type HeroInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   abilities?: boolean | Prisma.Hero$abilitiesArgs<ExtArgs>
   snapshots?: boolean | Prisma.Hero$snapshotsArgs<ExtArgs>
@@ -2044,6 +2182,9 @@ export type $HeroPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     apiId: number | null
     name: string
     complexity: number | null
+    isReleased: boolean
+    isDisabled: boolean
+    isInDevelopment: boolean
     tagline: string | null
     summary: string | null
     officialRole: string | null
@@ -2503,6 +2644,9 @@ export interface HeroFieldRefs {
   readonly apiId: Prisma.FieldRef<"Hero", 'Int'>
   readonly name: Prisma.FieldRef<"Hero", 'String'>
   readonly complexity: Prisma.FieldRef<"Hero", 'Int'>
+  readonly isReleased: Prisma.FieldRef<"Hero", 'Boolean'>
+  readonly isDisabled: Prisma.FieldRef<"Hero", 'Boolean'>
+  readonly isInDevelopment: Prisma.FieldRef<"Hero", 'Boolean'>
   readonly tagline: Prisma.FieldRef<"Hero", 'String'>
   readonly summary: Prisma.FieldRef<"Hero", 'String'>
   readonly officialRole: Prisma.FieldRef<"Hero", 'String'>

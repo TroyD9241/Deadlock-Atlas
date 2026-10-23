@@ -36,13 +36,15 @@ function check(label: string, ok: boolean, detail?: unknown) {
 async function main() {
   assertLocal();
 
-  // Start from a known state so a failed previous run cannot skew results.
-  await db.patch.deleteMany();
-  await db.hero.deleteMany();
+  const SLUG = "zz-check-db-smoke-test";
+
+  // Remove only our own leftovers. Never deleteMany(): this table holds the
+  // real ingest, and an earlier version of this script wiped it.
+  await db.hero.deleteMany({ where: { slug: SLUG } });
 
   const hero = await db.hero.create({
     data: {
-      slug: "smoke-test-hero",
+      slug: SLUG,
       apiId: 99999,
       name: "Smoke Test",
       palette: ["#1b1d2a", "#3b204c", "#8a6fa8", "#c09fc8", "#f4f2f8"],
@@ -53,7 +55,7 @@ async function main() {
   await db.patch.create({
     data: {
       clientVersion: 99999,
-      isCurrent: true,
+      isCurrent: false, // never mark the real build non-current
       heroSnapshots: {
         create: [
           { heroId: hero.id, stats: { max_health: 650, nested: { a: [1, 2, 3] } } },
@@ -87,16 +89,17 @@ async function main() {
   // Unique constraint must actually bite, or upserts in M1 would duplicate.
   let uniqueHeld = false;
   try {
-    await db.hero.create({ data: { slug: "smoke-test-hero", name: "Dupe" } });
+    await db.hero.create({ data: { slug: SLUG, name: "Dupe" } });
   } catch {
     uniqueHeld = true;
   }
   check("unique constraint enforced", uniqueHeld);
 
-  await db.patch.deleteMany();
-  await db.hero.deleteMany();
+  // Clean up only our own rows. The snapshot goes with the patch cascade.
+  await db.patch.deleteMany({ where: { clientVersion: 99999 } });
+  await db.hero.deleteMany({ where: { slug: SLUG } });
 
-  const left = await db.hero.count();
+  const left = await db.hero.count({ where: { slug: SLUG } });
   check("cleanup left no rows", left === 0, `heroes=${left}`);
 
   console.log("");

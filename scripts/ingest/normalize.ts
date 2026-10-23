@@ -131,11 +131,28 @@ export type NormalisedHero = {
   tags: unknown;
   selectable: boolean;
   inDevelopment: boolean;
+  isDisabled: boolean;
+  isInDevelopment: boolean;
 };
 
+/**
+ * Release state.
+ *
+ * `isReleased` comes from the API's `only_active=true` list, never from the
+ * `in_development` flag. That flag lags: at build 6819 it still marks Baba
+ * and Violet as in development when both are live and playable, and it lists a
+ * literal `hero_testhero`. The only_active list returns exactly the 44 heroes
+ * we hold artwork for, no extras and none missing.
+ *
+ * `isDisabled` and `isInDevelopment` are kept as recorded truth so the
+ * discrepancy stays visible instead of being hidden behind the derived column.
+ */
 export function normaliseHero(
   h: ApiHero,
-  opts: { extracted?: { accent: string; palette: string[] } | null } = {},
+  opts: {
+    extracted?: { accent: string; palette: string[] } | null;
+    isReleased?: boolean;
+  } = {},
 ): NormalisedHero {
   const apiAccent = normalizeHex(h.colors?.style_hex ?? null);
   const extracted = opts.extracted?.accent
@@ -194,8 +211,10 @@ export function normaliseHero(
     shopStatDisplay: h.shop_stat_display ?? null,
     physics: h.physics ?? null,
     tags: h.tags ?? null,
-    selectable: isSelectable(h),
+    selectable: opts.isReleased ?? isSelectable(h),
     inDevelopment: h.in_development,
+    isDisabled: h.disabled,
+    isInDevelopment: h.in_development,
   };
 }
 

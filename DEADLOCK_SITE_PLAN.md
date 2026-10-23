@@ -171,6 +171,13 @@ model Hero {
   name       String
   complexity Int?
 
+  // Release state. `isReleased` comes from the API's own `only_active=true`
+  // list, NOT from the in_development flag: that flag lags, and it still marks
+  // Baba and Violet as in development when both are live and playable.
+  isReleased      Boolean @default(false)
+  isDisabled      Boolean @default(false)
+  isInDevelopment Boolean @default(false)
+
   // Our own words (design.md section 9). Never wiki prose.
   tagline String?
   summary String?

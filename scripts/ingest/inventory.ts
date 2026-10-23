@@ -124,12 +124,14 @@ async function main() {
   };
 
   const heroes = (await readJson(dir, "heroes.json")) as Array<Record<string, unknown>>;
+  const activeHeroes = (await readJson(dir, "heroes-active.json")) as Array<Record<string, unknown>>;
   const items = (await readJson(dir, "items.json")) as Array<Record<string, unknown>>;
 
   // ── hero analysis ────────────────────────────────────────────────────────
-  const selectable = heroes.filter(
-    (h) => h.player_selectable === true && h.disabled !== true && h.in_development !== true,
-  );
+  // Release state comes from only_active, not from the lagging flags.
+  const activeIds = new Set(activeHeroes.map((h) => h.id));
+  const selectable = heroes.filter((h) => activeIds.has(h.id as number));
+  const staleInDev = selectable.filter((h) => h.in_development === true);
   const heroStats = profile(heroes, HERO_WANTED);
 
   // ── item analysis ────────────────────────────────────────────────────────
@@ -219,8 +221,9 @@ async function main() {
   // ── heroes ───────────────────────────────────────────────────────────────
   p("## 2. Heroes");
   p("");
-  p(`- **${heroes.length}** hero records returned, **${selectable.length}** are player-selectable and not disabled or in development. Only the selectable set belongs on the site.`);
-  p(`- The directory and every page should filter on \`player_selectable\`, \`disabled\` and \`in_development\`; ${heroes.length - selectable.length} rows are cut on those three flags alone.`);
+  p(`- **${heroes.length}** hero records returned, **${selectable.length}** are released, per the API's own \`only_active=true\` list. Only those belong on the site.`);
+  p(`- Do **not** derive release state from \`in_development\`. It lags: ${staleInDev.length} released hero(es) are still flagged that way (${staleInDev.map((h) => h.name).join(", ") || "none"}). The API also ships a placeholder record literally named \`hero_testhero\`.`);
+  p(`- Every released hero has a \`colors.style_hex\`, so the accent never falls back to extraction for them.`);
   p("");
   p("### Field coverage across all hero rows");
   p("");

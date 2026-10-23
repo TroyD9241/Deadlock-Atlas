@@ -70,10 +70,21 @@ async function main() {
     await readFile(path.join(dir, "items.json"), "utf8"),
   ) as unknown[];
 
+  // Release state comes from the API's own only_active list, not from the
+  // lagging in_development flag.
+  const rawActive = JSON.parse(
+    await readFile(path.join(dir, "heroes-active.json"), "utf8"),
+  ) as unknown[];
+  const activeIds = new Set(
+    (rawActive as ApiHero[]).map((h) => h.id),
+  );
+
   const heroes = rawHeroes.map((h) => ApiHeroSchema.parse(h)) as ApiHero[];
   const items = rawItems.map((i) => ApiItemSchema.parse(i)) as ApiItem[];
 
-  console.log(`validated ${heroes.length} heroes, ${items.length} items`);
+  console.log(
+    `validated ${heroes.length} heroes (${activeIds.size} released per only_active), ${items.length} items`,
+  );
 
   // ── character folders and their palettes ────────────────────────────────
   const folders = await readAllCharacterFolders();
@@ -99,13 +110,14 @@ async function main() {
 
   // ── heroes ──────────────────────────────────────────────────────────────
   const normalisedHeroes = heroes.map((raw) => {
-    const n = normaliseHero(raw);
+    const released = activeIds.has(raw.id);
+    const n = normaliseHero(raw, { isReleased: released });
     const folder = folders.find((f) => matchFolder(f, n));
     const extracted = folder ? palettes.get(folder.folder)?.palette ?? null : null;
     if (extracted) {
-      // Re-normalise with artwork available, so items-and-heroes both have a
-      // stored palette for the colour study.
-      const withArt = normaliseHero(raw, { extracted });
+      // Re-normalise with artwork available, so heroes keep a stored palette
+      // for the colour study even though their accent comes from the API.
+      const withArt = normaliseHero(raw, { extracted, isReleased: released });
       return { ...withArt, folder };
     }
     return { ...n, folder: folder ?? null };
@@ -121,6 +133,9 @@ async function main() {
         apiId: h.apiId,
         name: h.name,
         complexity: h.complexity,
+        isReleased: h.selectable,
+        isDisabled: h.isDisabled,
+        isInDevelopment: h.isInDevelopment,
         officialRole: h.officialRole,
         officialPlaystyle: h.officialPlaystyle,
         officialLore: h.officialLore,
@@ -153,6 +168,9 @@ async function main() {
         apiId: h.apiId,
         name: h.name,
         complexity: h.complexity,
+        isReleased: h.selectable,
+        isDisabled: h.isDisabled,
+        isInDevelopment: h.isInDevelopment,
         artwork: json(
           h.folder
             ? {
