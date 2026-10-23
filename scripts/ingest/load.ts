@@ -133,6 +133,7 @@ async function main() {
         apiId: h.apiId,
         name: h.name,
         complexity: h.complexity,
+        heroType: h.heroType,
         isReleased: h.selectable,
         isDisabled: h.isDisabled,
         isInDevelopment: h.isInDevelopment,
@@ -149,11 +150,14 @@ async function main() {
         artwork: json(
           h.folder
             ? {
-                type: h.folder.artworkType,
+                // The API's own art. The banner is built from the wide
+                // background_image plus the icon_hero_card cutout.
+                images: h.apiImages,
                 folder: h.folder.folder,
+                artworkType: h.folder.artworkType,
                 links: h.folder.links,
               }
-            : h.artwork,
+            : { images: h.apiImages },
         ),
         startingStats: h.startingStats as never,
         itemSlots: h.itemSlots as never,
@@ -168,17 +172,21 @@ async function main() {
         apiId: h.apiId,
         name: h.name,
         complexity: h.complexity,
+        heroType: h.heroType,
         isReleased: h.selectable,
         isDisabled: h.isDisabled,
         isInDevelopment: h.isInDevelopment,
         artwork: json(
           h.folder
             ? {
-                type: h.folder.artworkType,
+                // The API's own art. The banner is built from the wide
+                // background_image plus the icon_hero_card cutout.
+                images: h.apiImages,
                 folder: h.folder.folder,
+                artworkType: h.folder.artworkType,
                 links: h.folder.links,
               }
-            : h.artwork,
+            : { images: h.apiImages },
         ),
         officialRole: h.officialRole,
         officialPlaystyle: h.officialPlaystyle,

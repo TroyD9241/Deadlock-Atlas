@@ -31,6 +31,9 @@ export const HeroImagesSchema = z
     minimap_image_webp: nullableish(z.string()),
     top_bar_vertical_image: nullableish(z.string()),
     background_image: nullableish(z.string()),
+    hero_card_critical: nullableish(z.string()),
+    hero_card_gloat: nullableish(z.string()),
+    name_image: nullableish(z.string()),
   })
   .loose();
 

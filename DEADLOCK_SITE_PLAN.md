@@ -170,6 +170,8 @@ model Hero {
   apiId      Int?   @unique
   name       String
   complexity Int?
+  /** In-game class: mystic, marksman, brawler or assassin. */
+  heroType   String?
 
   // Release state. `isReleased` comes from the API's own `only_active=true`
   // list, NOT from the in_development flag: that flag lags, and it still marks

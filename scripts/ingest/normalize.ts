@@ -110,6 +110,8 @@ export type NormalisedHero = {
   apiId: number;
   name: string;
   complexity: number | null;
+  /** In-game class: mystic, marksman, brawler or assassin. */
+  heroType: string | null;
   officialRole: string | null;
   officialPlaystyle: string | null;
   officialLore: string | null;
@@ -121,6 +123,22 @@ export type NormalisedHero = {
   palette: string[] | null;
   needsReview: boolean;
   artwork: Record<string, unknown> | null;
+  /**
+   * The API's own image URLs, flattened to the ones we actually use.
+   *
+   * `background` is the wide 4096x2312 hero motif with an alpha channel:
+   * art on the right, empty space on the left, which is exactly where the
+   * banner's text goes. `card` is the 280x380 character cutout.
+   */
+  apiImages: {
+    background: string | null;
+    card: string | null;
+    cardCritical: string | null;
+    cardGloat: string | null;
+    small: string | null;
+    vertical: string | null;
+    nameImage: string | null;
+  } | null;
   startingStats: unknown;
   itemSlots: unknown;
   itemSlotInfo: unknown;
@@ -192,6 +210,7 @@ export function normaliseHero(
     apiId: h.id,
     name: h.name,
     complexity: h.complexity ?? null,
+    heroType: h.hero_type ?? null,
     officialRole: h.description?.role ?? null,
     officialPlaystyle: h.description?.playstyle ?? null,
     officialLore: h.description?.lore ?? null,
@@ -203,6 +222,17 @@ export function normaliseHero(
     palette: palette?.length ? palette : null,
     needsReview,
     artwork: h.images ? (h.images as Record<string, unknown>) : null,
+    apiImages: h.images
+      ? {
+          background: h.images.background_image ?? null,
+          card: h.images.icon_hero_card ?? null,
+          cardCritical: h.images.hero_card_critical ?? null,
+          cardGloat: h.images.hero_card_gloat ?? null,
+          small: h.images.icon_image_small ?? null,
+          vertical: h.images.top_bar_vertical_image ?? null,
+          nameImage: h.images.name_image ?? null,
+        }
+      : null,
     startingStats: h.starting_stats ?? null,
     itemSlots: h.items ?? null,
     itemSlotInfo: h.item_slot_info ?? null,

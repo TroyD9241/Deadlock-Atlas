@@ -97,6 +97,7 @@ export const HeroScalarFieldEnum = {
   apiId: 'apiId',
   name: 'name',
   complexity: 'complexity',
+  heroType: 'heroType',
   isReleased: 'isReleased',
   isDisabled: 'isDisabled',
   isInDevelopment: 'isInDevelopment',
