@@ -11,7 +11,12 @@ import { themeStyle } from "@/lib/theme";
  * that every clickable thing is a real link or button, and a link is also
  * crawlable.
  *
- * Each card sets its own --accent and its own swatches, so a grid of cards
+ * Artwork. The API's `icon_hero_card` is a 280x380 portrait crop and the mock
+ * crops its image to a 200px landscape band, which cuts most of the character
+ * off. So the card uses the wide `background_image` motif as the backdrop and
+ * layers the portrait over it, sized to fit the band and fully visible.
+ *
+ * Each card sets its own --accent, --p1..--p5 and --glow, so a grid of cards
  * keeps every hero's colours (design.md 3.6). The page around them keeps the
  * site theme.
  */
@@ -22,8 +27,10 @@ export type HeroCardProps = {
   label: string;
   /** One line under the name. */
   tagline: string;
-  /** The card artwork. A 280x380 portrait crop in the API. */
-  image: string | null;
+  /** The wide motif, 4096x2312 with an alpha channel. */
+  background: string | null;
+  /** The 280x380 character portrait. */
+  portrait: string | null;
   /** The hero's accent. */
   accent: string;
   /** Five colours, darkest to lightest. */
@@ -37,11 +44,14 @@ export function HeroCard({
   name,
   label,
   tagline,
-  image,
+  background,
+  portrait,
   accent,
   palette,
   missingArtwork = false,
 }: HeroCardProps) {
+  const p1 = palette[0];
+
   return (
     <Link
       href={`/heroes/${slug}`}
@@ -51,43 +61,104 @@ export function HeroCard({
         display: "block",
         textDecoration: "none",
         color: "inherit",
+        // The card body carries the hero's darkest palette colour, so the
+        // whole card is themed rather than just its accent.
+        background: p1
+          ? `linear-gradient(160deg, ${p1} 0%, #171b27 62%)`
+          : "#171b27",
       }}
     >
-      {image ? (
-        <Image
-          src={image}
-          alt={`${name} artwork`}
-          width={280}
-          height={380}
-          unoptimized
-          style={{
-            display: "block",
-            width: "100%",
-            height: 200,
-            objectFit: "cover",
-            // The API's card art is a portrait crop; show the upper third.
-            objectPosition: "center 25%",
-            background: "#202431",
-          }}
-        />
-      ) : (
+      <div
+        style={{
+          position: "relative",
+          height: 200,
+          overflow: "hidden",
+          background: "#202431",
+        }}
+      >
+        {/* The hero's own wide motif, filling the band. Dimmed so a busy
+            motif never competes with the portrait in front of it. */}
+        {background ? (
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url(${background})`,
+              backgroundSize: "cover",
+              backgroundPosition: "right center",
+              opacity: 0.8,
+            }}
+          />
+        ) : null}
+
+        {/* A tint from the hero's palette, so the band reads as themed even
+            where the motif is empty. */}
         <div
           aria-hidden="true"
           style={{
-            height: 200,
-            background:
-              "linear-gradient(140deg, #202638, #10131c)",
-            display: "grid",
-            placeItems: "center",
-            color: "var(--muted)",
-            fontSize: 11,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(to right, ${p1 ?? "#141824"} 0%, transparent 58%)`,
+            opacity: 0.9,
           }}
-        >
-          No artwork
-        </div>
-      )}
+        />
+
+        {/* A soft accent glow along the bottom, tying the portrait to the band. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: "55%",
+            background:
+              "radial-gradient(ellipse at 78% 100%, var(--glow), transparent 70%)",
+            opacity: 0.7,
+          }}
+        />
+
+        {/* The character portrait, fully visible and sized to the band. */}
+        {portrait ? (
+          <Image
+            src={portrait}
+            alt={`${name} artwork`}
+            width={280}
+            height={380}
+            unoptimized
+            style={{
+              position: "absolute",
+              right: 6,
+              bottom: 0,
+              height: 190,
+              width: "auto",
+              maxWidth: "62%",
+              objectFit: "contain",
+              objectPosition: "center bottom",
+              filter: "drop-shadow(0 12px 26px #000b)",
+            }}
+          />
+        ) : null}
+
+        {!background && !portrait ? (
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "grid",
+              placeItems: "center",
+              color: "var(--muted)",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+            }}
+          >
+            No artwork
+          </div>
+        ) : null}
+      </div>
 
       <div style={{ padding: 14 }}>
         <div
@@ -102,8 +173,9 @@ export function HeroCard({
           <span
             style={{
               fontSize: 10,
-              color: "#d5c7e2",
-              border: "1px solid #ffffff22",
+              color: "var(--accent)",
+              border: "1px solid color-mix(in srgb, var(--accent) 45%, transparent)",
+              background: "color-mix(in srgb, var(--accent) 12%, transparent)",
               borderRadius: 999,
               padding: "4px 7px",
               whiteSpace: "nowrap",
@@ -119,6 +191,7 @@ export function HeroCard({
               fontSize: 12,
               color: "var(--muted)",
               margin: "5px 0 12px",
+              minHeight: 36,
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
@@ -128,7 +201,7 @@ export function HeroCard({
             {tagline}
           </p>
         ) : (
-          <div style={{ height: 12 + 12 + 5 }} />
+          <div style={{ height: 53 }} />
         )}
 
         {/* The hero's palette, darkest to lightest. */}
