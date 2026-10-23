@@ -8,7 +8,12 @@ import {
   type ApiItem,
   isSelectable,
 } from "@/lib/schemas";
-import { DEFAULT_ACCENT, normalizeHex, readableTextOn } from "@/lib/theme";
+import {
+  DEFAULT_ACCENT,
+  normalizeHex,
+  readableAccentText,
+  readableTextOn,
+} from "@/lib/theme";
 
 /** Below this Lab chroma an accent reads as grey, so we refuse it. */
 export const MIN_CHROMA = 12;
@@ -50,44 +55,12 @@ export function panelContrast(hex: string, panel = "#141824"): number {
 }
 
 /**
- * accentText: lighten until 4.5:1 on the panel (design.md 3.4 step 7).
+ * accentText: a readable variant of the accent for text on a panel.
  *
- * Implemented as a blend toward white rather than a pure Lab lightness ramp,
- * because a Lab ramp clips: Mina's accent #A9171E lightens to #ff0029, which
- * already has red at 255, so raising L further cannot change the colour and the
- * ratio stays stuck at 4.46:1. Blending is monotonic in contrast and cannot
- * clip, so the binary search always terminates on a passing value.
+ * The implementation lives in src/lib/theme.ts so the site and the ingest
+ * cannot disagree about what "readable" means.
  */
-export function accentTextFor(accent: string, panel = "#141824"): string {
-  if (panelContrast(accent, panel) >= 4.5) return accent;
-
-  const from = hexToRgb(accent);
-  const to: [number, number, number] = [255, 255, 255];
-  const mix = (t: number): string => {
-    const c = from.map((v, i) =>
-      Math.round(v + (to[i] - v) * t),
-    ) as [number, number, number];
-    return `#${c.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-  };
-
-  let lo = 0;
-  let hi = 1;
-  for (let i = 0; i < 24; i += 1) {
-    const mid = (lo + hi) / 2;
-    if (panelContrast(mix(mid), panel) >= 4.5) hi = mid;
-    else lo = mid;
-  }
-
-  // hi passed inside the loop, but rounding to 8 bits can drop it just under.
-  let candidate = mix(hi);
-  for (let i = 0; i < 20 && panelContrast(candidate, panel) < 4.5; i += 1) {
-    const t = Math.min(1, hi + (i + 1) * 0.01);
-    const next = mix(t);
-    if (next === candidate) break;
-    candidate = next;
-  }
-  return candidate;
-}
+export const accentTextFor = readableAccentText;
 
 // ── slugs ───────────────────────────────────────────────────────────────────
 

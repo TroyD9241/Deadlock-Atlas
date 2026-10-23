@@ -113,6 +113,49 @@ export function glowFrom(accent: string, alpha = 0x55): string {
     .join("")}${alpha.toString(16).padStart(2, "0")}`;
 }
 
+/** The design.md 2.1 panel colour, the surface accent text sits on. */
+export const PANEL_COLOR = "#141824";
+
+/**
+ * A readable variant of the accent, for accent-coloured text on a panel.
+ *
+ * The accent itself is often too dark to read: 20 of the 42 released heroes
+ * have an accent below 4.5:1 against `--panel`. This blends the accent toward
+ * white until it clears the target, which is monotonic and cannot clip the way
+ * a Lab lightness ramp does.
+ */
+export function readableAccentText(
+  accent: string,
+  panel: string = PANEL_COLOR,
+): string {
+  const from = hexToRgbObject(accent);
+  const mix = (t: number) => {
+    const c = [from.r, from.g, from.b].map((v) =>
+      Math.round(v + (255 - v) * t),
+    );
+    return `#${c.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+  };
+
+  if (contrastRatio(accent, panel) >= 4.5) return accent;
+
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 24; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (contrastRatio(mix(mid), panel) >= 4.5) hi = mid;
+    else lo = mid;
+  }
+
+  // Rounding to 8 bits can drop the ratio back under the target.
+  let candidate = mix(hi);
+  for (let i = 0; i < 20 && contrastRatio(candidate, panel) < 4.5; i += 1) {
+    const next = mix(Math.min(1, hi + (i + 1) * 0.01));
+    if (next === candidate) break;
+    candidate = next;
+  }
+  return candidate;
+}
+
 /**
  * Apply a hero or item palette to a scope element.
  *
@@ -136,7 +179,7 @@ export function applyTheme(el: HTMLElement, theme: Theme): void {
   );
   el.style.setProperty(
     "--accent-text",
-    normalizeHex(theme.accentText) ?? accent,
+    normalizeHex(theme.accentText) ?? readableAccentText(accent),
   );
   el.style.setProperty("--glow", glowFrom(accent));
 
@@ -171,7 +214,7 @@ export function themeStyle(theme: Theme): Record<string, string> {
     "--accent": accent,
     "--accent-rgb": hexToRgb(accent),
     "--on-accent": normalizeHex(theme.onAccent) ?? readableTextOn(accent),
-    "--accent-text": normalizeHex(theme.accentText) ?? accent,
+    "--accent-text": normalizeHex(theme.accentText) ?? readableAccentText(accent),
     "--glow": glowFrom(accent),
   };
 

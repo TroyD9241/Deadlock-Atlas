@@ -69,7 +69,12 @@ applyTheme(el as unknown as HTMLElement, {
 check("--accent", el.set.get("--accent"), "#be7052");
 check("--accent-rgb", el.set.get("--accent-rgb"), "190, 112, 82");
 check("--on-accent", el.set.get("--on-accent"), "#17131b");
-check("--accent-text", el.set.get("--accent-text"), "#17131b");
+const accentText = el.set.get("--accent-text") ?? "";
+check(
+  "--accent-text clears 4.5:1 on --panel",
+  contrastRatio(accentText, "#141824") >= 4.5,
+  true,
+);
 check("--glow has alpha", /^#[0-9a-f]{8}$/.test(el.set.get("--glow") ?? ""), true);
 check("--p1", el.set.get("--p1"), "#2b1d18");
 check("--p5", el.set.get("--p5"), "#f2d5c4");
