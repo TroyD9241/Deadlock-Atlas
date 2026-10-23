@@ -123,16 +123,37 @@ Steps (deterministic, so the same image always gives the same result):
 7. **`accentText`:** the accent lightened in Lab until it reaches 4.5:1 contrast on `--panel`. The original accent is kept for fills and glows.
 8. **`onAccent`:** dark or white, whichever contrasts better with the accent.
 
-Reference prototype: `extract_palette.py` (port to TypeScript for the site). Results against the colors curated by hand in the mock:
+**Scope.** This function themes **items only**. The Deadlock API returns an
+official accent per hero in `colors.style_hex`, and all 42 selectable heroes
+have one, so heroes use that and never run extraction. Items carry **no**
+colour field of any kind across all 781 records, so their icon is the only
+available source. The same `applyTheme()` still themes both.
 
-| Hero | Curated accent | Function output |
-|---|---|---|
-| Abrams | `#BE7052` | `#BB7352` |
-| Mina | `#C83A31` | `#D43B31` |
-| Celeste | `#C09FC8` | `#BB8BCC` |
-| Deadman Danny | none yet | `#EB662C` |
+> **Known instability.** k-means runs from a single initialisation, so the
+> result depends on the random draw and can land in a different local optimum.
+> A TypeScript port and the Python prototype below agree on only 3 of 44 hero
+> accents. This matters little for items because a manual override always wins
+> and there are only a few hundred of them, but it is a real property of the
+> function, not a defect in either implementation. Stabilising it with
+> k-means++ and multiple restarts would remove the dependence on the seed.
 
-The accents land very close to the curated ones, so the function can replace hand curation. Mid-tones in the full palette can differ from hand-picked ones.
+Reference prototype: `extract_palette.py` (ported to TypeScript as
+`scripts/extract-palette.ts`, which the ingest uses). Both were run over all 44
+character folders and compared:
+
+| Hero | Curated accent | Python prototype | TypeScript port |
+|---|---|---|---|
+| Abrams | `#BE7052` | `#C0774F` | `#D07643` |
+| Mina | `#C83A31` | `#D53B32` | `#D23B31` |
+| Celeste | `#C09FC8` | `#A875BB` | `#A26AB4` |
+| Deadman Danny | none yet | `#E77C2D` | `#EC682C` |
+
+The two implementations agree on only 3 of 44 accents, for the reason given
+above. Their results also no longer track the hand-curated column closely for
+Celeste, because that folder's artwork has since been replaced with a newer
+2026 splash. **None of these numbers are used for heroes**, which take
+`style_hex` from the API. They are recorded only so nobody mistakes the
+prototype for a specification.
 
 Rules:
 - Run at ingest, never in the browser.
@@ -140,7 +161,7 @@ Rules:
 - Low-chroma art (gray items) falls back to the site default accent and is flagged for review.
 - Banner art should be a cutout or a wallpaper with calm negative space; splash art with baked-in logos can bias the result.
 - Validate every output: `accentText` must reach 4.5:1 on `--panel`, and `onAccent` must have the best available contrast on the accent.
-- The Deadlock API also returns an official accent per hero in `colors.style_hex`. **Extraction wins.** Store it anyway as `apiAccent` and use it as the fallback when a hero has no artwork, plus as a drift check: if the two disagree badly, that hero is worth a look.
+- The Deadlock API returns an official accent per hero in `colors.style_hex`, and **heroes use that.** Extraction is reserved for items, which carry no colour field at all. Store `style_hex` as `apiAccent` on heroes anyway, as the drift check.
 
 ### 3.5 Site theme: Hero of the Patch
 
@@ -413,6 +434,6 @@ Graph of heroes and factions (React Flow or Cytoscape). Home shows a preview; th
 - The Hero of the Patch formula is explicitly unfinished; its definitions are deferred to the API data milestone.
 - Wiki text is CC BY-SA 4.0 (game content excluded). Credit and link the wiki wherever its text or structure is used.
 - Wiki lore is referenced and credited, not copied (section 4.2).
-- Accent precedence: `extractPalette` wins; the API's `colors.style_hex` is a fallback and a drift check (section 3.4).
+- Accent precedence for **heroes**: manual override, then the API's `colors.style_hex`, then extraction, then the site default. A hero whose accent has effectively no chroma falls back to the site default and is flagged for review (Sinclair's `#6B6B6B` has chroma 0.0). Items have no API colour, so they go straight to extraction.
 - Hero pages show our own words first, then Valve's official in-game description from the API, clearly labelled (section 9).
 - Patch data is deferred for now: no patch diffing, no `/patches` pages, no Hero of the Patch. Hero, ability and item data is still stamped with the game build it came from, so nothing needs backfilling when this resumes. The site theme falls back to the default accent until a featured hero exists.

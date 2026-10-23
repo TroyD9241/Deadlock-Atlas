@@ -85,8 +85,16 @@ re-litigate these without asking.
 
 **Data rules**
 
-- `extractPalette` is the accent source. The API's `colors.style_hex` is stored
-  as `apiAccent`, used as a fallback and as a drift check, never as the primary.
+- **The API's `colors.style_hex` is the hero accent.** It is Valve's own UI
+  colour, so it is authoritative, and all 42 selectable heroes have one.
+  Precedence for a hero is: manual override, then `style_hex`, then
+  `extractPalette`, then the site default. A hero with essentially zero chroma
+  (Sinclair is `#6B6B6B`, chroma 0.0) falls back to the site default accent and
+  is flagged `needsReview`, per design.md 3.4.
+- **Items have no colour in the API at all.** Zero colour fields across all 781
+  item records, so `extractPalette` on the item icon remains the only source for
+  item themes. That is why the function is kept despite heroes no longer
+  depending on it.
 - On hero pages, our own words come first and Valve's official
   `description.lore`/`playstyle`/`role` from the API is shown below it, clearly
   labelled. This is official game content, so the "never copy wiki prose" rule
