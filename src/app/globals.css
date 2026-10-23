@@ -136,4 +136,30 @@
     min-height: 44px;
     min-width: 44px;
   }
+
+  /* Hero card, from the mock's .card rules. */
+  .hero-card {
+    min-width: 0;
+    text-align: left;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: #171b27;
+    color: #fff;
+    padding: 0;
+    transition:
+      transform 0.18s,
+      border-color 0.18s;
+  }
+
+  .hero-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-card:hover {
+      transform: none;
+    }
+  }
 }
