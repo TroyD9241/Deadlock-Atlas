@@ -1,0 +1,36 @@
+# Postgres for the switch away from SQLite.
+#
+# SQLite is the current development database (see DEADLOCK_SITE_PLAN.md
+# section 2). This file is staged so that move is small:
+#
+#   1. docker compose up -d
+#   2. change `provider = "sqlite"` to "postgresql" in prisma/schema.prisma
+#   3. point DATABASE_URL in .env at the URL below
+#   4. npx prisma migrate diff --from-url "file:./prisma/dev.db" \
+#        --to-url "$DATABASE_URL" --script > prisma/migrations/postgres/migration.sql
+#   5. npx prisma migrate deploy
+#
+# Note: Prisma Studio cannot open a SQLite `file:` URL (Prisma 7 rejects the
+# protocol), so Studio becomes available at this point.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: deadlock-atlas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas
+      POSTGRES_DB: deadlock_atlas
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlas-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d deadlock_atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  atlas-pgdata:

@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+/*
+ * Tailwind v4 is CSS-first: there is no tailwind.config.js. Utilities are
+ * generated from the theme block below, which maps Tailwind's colour scale
+ * onto the design tokens in styles/tokens.css so components can use
+ * `bg-panel` / `text-muted` while the real values stay in one place.
+ *
+ * `inline` makes the generated utilities reference the variable rather than
+ * copying its value, which is what keeps applyTheme able to retheme the page
+ * at runtime.
+ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-buff: var(--buff);
+  --color-nerf: var(--nerf);
+
+  --color-p1: var(--p1);
+  --color-p2: var(--p2);
+  --color-p3: var(--p3);
+  --color-p4: var(--p4);
+  --color-p5: var(--p5);
+
+  --radius-card: var(--radius-card);
+  --radius-hero: var(--radius-hero);
+
+  --font-sans: var(--font-body);
+}
+
+/*
+ * Themeable properties transition so switching hero animates (design.md 3.3).
+ * Scoped to the registered custom properties only — never a blanket
+ * transition on everything.
+ */
+@layer base {
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+
+    /* design.md 2.1: two radial glows over --bg */
+    background-image: radial-gradient(
+        ellipse at 78% 10%,
+        var(--glow-a) 0,
+        transparent 34%
+      ),
+      radial-gradient(ellipse at 8% 78%, var(--glow-b) 0, transparent 32%);
+    background-attachment: fixed;
+  }
+
+  :root {
+    transition:
+      --accent 360ms ease,
+      --glow 360ms ease,
+      --on-accent 360ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      transition: none;
+    }
+  }
+
+  /*
+   * Visible focus on every control, using the accent (design.md 8).
+   * 44px minimum target size is handled per component.
+   */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Decorative glows are hidden from assistive tech (design.md 8). */
+  [aria-hidden="true"] {
+    pointer-events: none;
+  }
+}
+
+@layer components {
+  /* Max content width 1240px, centered (design.md 2.2). */
+  .shell {
+    width: 100%;
+    max-width: var(--shell);
+    margin-inline: auto;
+    padding-inline: 22px;
+  }
+
+  /* Panels: 1px --line border, --radius-card, subtle diagonal gradient. */
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: linear-gradient(145deg, #171b28e8, #111520e8);
+    padding: 20px;
+    min-width: 0;
+  }
+
+  /* Eyebrows: 10px, uppercase, wide tracking, weight 850, accent. */
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    font-weight: 850;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* Navigation and filters are pills (design.md 2.2). */
+  .pill {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #ffffff08;
+    color: #c8c7d4;
+    padding: 9px 13px;
+  }
+
+  .pill:hover {
+    border-color: #ffffff50;
+  }
+
+  .pill-active {
+    background: #ffffff1c;
+    color: #fff;
+  }
+
+  /* Minimum 44px interactive target (design.md 8). */
+  .tap {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

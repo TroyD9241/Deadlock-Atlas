@@ -1,0 +1,87 @@
+/*
+ * Design tokens — ported from design.md section 2.1.
+ *
+ * This file is the single source of truth for colour, shape and width values.
+ * Components must read from these variables and never hard-code a hex value
+ * (AGENTS.md). A hero or item's palette is applied by `applyTheme` in
+ * src/lib/theme.ts, which sets --accent, --accent-rgb, --on-accent and
+ * --p1..--p5 on a scope element.
+ */
+
+/*
+ * Register the themeable colours so switching hero can animate (design.md 3.2).
+ * Without @property these are unregistered custom properties and cannot
+ * transition.
+ */
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #c09fc8;
+}
+
+@property --glow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #c09fc855;
+}
+
+@property --on-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #17131b;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* --- surfaces (design.md 2.1) --- */
+  --bg: #090b12; /* page background */
+  --panel: #141824; /* panel base */
+  --line: #ffffff19; /* borders and dividers */
+
+  /* --- text --- */
+  --text: #f4f2f8;
+  --muted: #a6a9ba;
+
+  /* --- theme (site default; applyTheme overrides per hero) --- */
+  --accent: #c09fc8;
+  --accent-rgb: 192, 159, 200;
+  --on-accent: #17131b; /* text on accent fills, computed by readableTextOn */
+  --glow: #c09fc855; /* derived: accent mixed with transparent */
+
+  /* --- semantic, never themed (design.md 3.7) --- */
+  --buff: #6fcf97;
+  --nerf: #ff8a80;
+
+  /* --- shape --- */
+  --radius-card: 18px;
+  --radius-hero: 28px;
+
+  /* --- page glows (design.md 2.1: purple top right, teal bottom left) --- */
+  --glow-a: #3b204c;
+  --glow-b: #153e4b;
+
+  /* --- character palette slots, filled by applyTheme --- */
+  --p1: #1b1d2a;
+  --p2: #2f3348;
+  --p3: #6a6d85;
+  --p4: #a6a9ba;
+  --p5: #f4f2f8;
+
+  /* --- layout --- */
+  --shell: 1240px;
+
+  /* --- typography (design.md 2.3) --- */
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+}
+
+/*
+ * Under prefers-reduced-motion the theme still switches, it just does not
+ * animate (design.md 3.3).
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-transition: none;
+  }
+}

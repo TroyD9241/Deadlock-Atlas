@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"   // -> "postgresql" later; no @db.* types, no scalar lists
+}
+
+/// One ingested game build. Patch notes, per-patch diffs and /patches pages are
+/// deliberately deferred (section 7); this is a version stamp and nothing more.
+model Patch {
+  id            Int      @id @default(autoincrement())
+  clientVersion Int      @unique          // e.g. 5695, from /v1/assets/client-versions
+  isCurrent     Boolean  @default(false)
+  ingestedAt    DateTime @default(now())
+
+  heroSnapshots    HeroSnapshot[]
+  abilitySnapshots AbilitySnapshot[]
+  itemSnapshots    ItemSnapshot[]
+}
+
+model Hero {
+  id         Int    @id @default(autoincrement())
+  slug       String @unique
+  apiId      Int?   @unique
+  name       String
+  complexity Int?
+
+  // Our own words (design.md section 9). Never wiki prose.
+  tagline String?
+  summary String?
+
+  // Valve's official in-game text, /v1/assets/heroes -> description.*
+  officialRole      String?
+  officialPlaystyle String?
+  officialLore      String?
+
+  // Theming (design.md section 3).
+  accent          String?
+  accentText      String?
+  onAccent        String?
+  apiAccent       String?               // colors.style_hex -- fallback + drift check
+  accentSource    String  @default("default")  // extracted | override | api | default
+  palette         Json?                 // string[5], dark -> light
+  paletteOverride Json?
+  needsReview     Boolean @default(false)
+
+  artwork         Json?                 // { type: cutout|wallpaper|splash, banner, card }
+  sourceLinks     Json?                 // { lore, movement, voiceLines } wiki URLs
+  startingStats   Json?
+  heroStatsUi     Json?
+  statsDisplay    Json?
+  shopStatDisplay Json?
+  itemSlots       Json?                 // the Hero.items class-name map
+  itemSlotInfo    Json?
+  physics         Json?
+  tags            Json?                 // string[] -- SQLite has no scalar lists
+  removedContent  Json?
+
+  abilities     HeroAbility[]
+  snapshots     HeroSnapshot[]
+  relationsFrom Relationship[] @relation("From")
+  relationsTo   Relationship[] @relation("To")
+  playStats     HeroPlayStat[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model HeroSnapshot {         // one row per hero per ingested build
+  id      Int   @id @default(autoincrement())
+  heroId  Int
+  patchId Int
+  stats   Json
+  hero    Hero  @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  patch   Patch @relation(fields: [patchId], references: [id], onDelete: Cascade)
+  @@unique([heroId, patchId])
+}
+
+/// A distinct ability from /v1/assets/items (type = "ability"), keyed by game
+/// class name. 282 exist; 80 are universal (hero = null) and shared by many
+/// heroes, so this is NOT owned by a single hero.
+model Ability {
+  id        Int     @id @default(autoincrement())
+  className String  @unique
+  apiId     String? @unique           // ids reach 4,284,855,775 -- exceeds Int32
+  name      String
+  kind      String?                  // innate | signature | universal
+  image     String?
+  imageWebp String?
+
+  videos             Json?
+  behaviours         Json?
+  dependantAbilities Json?
+  description        Json?
+  properties         Json?           // ItemProperty map (cooldown, range, )
+  upgrades           Json?           // RawAbilityUpgrade[] -- tiers of property_upgrades
+  removedContent     Json?
+
+  heroes    HeroAbility[]
+  snapshots AbilitySnapshot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+/// Which hero has which ability, and in what slot (Hero.items keys).
+model HeroAbility {
+  id           Int     @id @default(autoincrement())
+  heroId       Int
+  abilityId    Int
+  slot         String                 // signature1..4, ability_innate1..3, 
+  displayOrder Int     @default(0)
+  isInnate     Boolean @default(false)
+
+  hero    Hero    @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  ability Ability @relation(fields: [abilityId], references: [id], onDelete: Cascade)
+
+  @@unique([heroId, slot])
+  @@index([abilityId])
+}
+
+model AbilitySnapshot {
+  id        Int   @id @default(autoincrement())
+  abilityId Int
+  patchId   Int
+  values    Json
+  ability   Ability @relation(fields: [abilityId], references: [id], onDelete: Cascade)
+  patch     Patch   @relation(fields: [patchId], references: [id], onDelete: Cascade)
+  @@unique([abilityId, patchId])
+}
+
+/// Shop items from /v1/assets/items (type = "upgrade" | "weapon").
+model Item {
+  id         Int     @id @default(autoincrement())
+  slug       String  @unique
+  className  String? @unique
+  apiId      String? @unique
+  name       String
+  nameSource String  @default("api")  // api | class | manual
+
+  itemType     String?                 // "upgrade" | "weapon"
+  slotType     String?                 // weapon | vitality | spirit
+  tier         Int?
+  cost         Int?
+  shopable     Boolean?
+  shopVersion  Int?
+  startTrained Boolean?
+
+  image     String?
+  imageWebp String?
+  shopImage String?
+
+  accent          String?
+  accentText      String?
+  onAccent        String?
+  apiAccent       String?
+  accentSource    String  @default("default")
+  palette         Json?
+  paletteOverride Json?
+  needsReview     Boolean @default(false)
+
+  description     Json?
+  properties      Json?
+  upgrades        Json?
+  tooltipSections Json?
+  activation      Json?
+  imbue           Json?
+  disabled        Boolean?
+  removedContent  Json?
+
+  snapshots ItemSnapshot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slotType])
+  @@index([tier])
+  @@index([itemType])
+}
+
+model ItemSnapshot {
+  id      Int   @id @default(autoincrement())
+  itemId  Int
+  patchId Int
+  data    Json                  // cost, stats, effect values
+  item    Item  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  patch   Patch @relation(fields: [patchId], references: [id], onDelete: Cascade)
+  @@unique([itemId, patchId])
+}
+
+//  Deferred: modelled now, populated later 
+// M7. Our own curated edges, each with a required source link.
+model Relationship {
+  id        Int    @id @default(autoincrement())
+  fromId    Int
+  toId      Int
+  type      String
+  note      String?             // our own words
+  sourceUrl String              // required: where the fact comes from
+  from      Hero   @relation("From", fields: [fromId], references: [id], onDelete: Cascade)
+  to        Hero   @relation("To",   fields: [toId],   references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId, type])
+}
+
+model Faction {
+  id        Int     @id @default(autoincrement())
+  slug      String  @unique
+  name      String
+  summary   String?
+  sourceUrl String?
+}
+
+model Location {
+  id        Int     @id @default(autoincrement())
+  slug      String  @unique
+  name      String
+  region    String?
+  summary   String?
+  sourceUrl String?
+}
+
+/// M8. Popularity input for Hero of the Patch (design.md section 3.5), from
+/// /v1/analytics/hero-stats. Blocked on the same deferral as the formula.
+model HeroPlayStat {
+  id          Int      @id @default(autoincrement())
+  heroId      Int
+  windowStart DateTime
+  windowEnd   DateTime
+  matches     Int
+  hero        Hero     @relation(fields: [heroId], references: [id], onDelete: Cascade)
+
+  @@unique([heroId, windowStart, windowEnd])
+}
