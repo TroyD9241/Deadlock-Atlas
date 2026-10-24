@@ -89,6 +89,19 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
         }
 
         const root = gltf.scene;
+
+        // Hide weapon and prop meshes — show only the character body.
+        const PROP_KEYWORDS = ["gun", "book", "flask", "cards", "baton", "weapon", "reliquary", "muzzle"];
+        root.traverse((obj: Object3D) => {
+          const mesh = obj as Object3D & { isMesh?: boolean; name?: string };
+          if (mesh.isMesh && mesh.name) {
+            const lower = mesh.name.toLowerCase();
+            if (PROP_KEYWORDS.some((kw) => lower.includes(kw))) {
+              mesh.visible = false;
+            }
+          }
+        });
+
         scene.add(root);
 
         // Frame the camera on the model.
@@ -264,6 +277,8 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
                     onClick={() => setActivePoi((cur) => (cur === m.anchor ? null : m.anchor))}
                     aria-label={poi.label}
                     aria-expanded={activePoi === m.anchor}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
+                    onMouseLeave={(e) => { if (activePoi !== m.anchor) (e.currentTarget as HTMLButtonElement).style.opacity = "0.25"; }}
                     style={{
                       position: "absolute",
                       left: m.x,
@@ -277,6 +292,7 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
                       cursor: "pointer",
                       boxShadow: "0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent)",
                       zIndex: 5,
+                      opacity: 0.25,
                     }}
                   />
                 );
