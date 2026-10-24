@@ -37,8 +37,8 @@ model Hero {
   isInDevelopment Boolean @default(false)
 
   // Our own words (design.md section 9). Never wiki prose.
-  tagline String?
-  summary String?
+  tagline String?   // one-liner for /heroes directory card
+  summary String?   // two-line summary for /heroes/[slug] banner
 
   // Valve's official in-game text, /v1/assets/heroes -> description.*
   officialRole      String?

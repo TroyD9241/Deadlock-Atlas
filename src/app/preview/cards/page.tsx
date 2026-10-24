@@ -35,7 +35,7 @@ export default async function CardPreviewPage() {
             slug={h.slug}
             name={h.name}
             label={(h.heroType ?? "hero").toUpperCase()}
-            tagline={cardTagline(h)}
+            tagline={h.tagline ?? cardTagline(h)}
             background={h.artwork?.images?.background ?? null}
             portrait={h.artwork?.images?.card ?? null}
             wordmark={h.artwork?.images?.nameImage ?? null}

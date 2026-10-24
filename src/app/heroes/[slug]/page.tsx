@@ -114,6 +114,7 @@ export default async function HeroProfilePage({
         name={hero.name}
         eyebrow={(hero.heroType ?? "hero").toUpperCase()}
         tagline={taglineFor(hero)}
+        summary={hero.summary}
         description={descriptionFor(hero)}
         accent={hero.accent ?? "#c09fc8"}
         palette={palette}

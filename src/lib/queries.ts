@@ -43,6 +43,8 @@ export type HeroSummary = {
   officialPlaystyle: string | null;
   officialLore: string | null;
   officialRole: string | null;
+  tagline: string | null;
+  summary: string | null;
   model: { modelUrl: string; modelKey: string; group: string; byteSize: number | null } | null;
   pois: { anchor: string; label: string; body: string; order: number }[];
 };
@@ -98,6 +100,8 @@ const HERO_SELECT = {
   accentSource: true,
   palette: true,
   artwork: true,
+  tagline: true,
+  summary: true,
   officialPlaystyle: true,
   officialLore: true,
   officialRole: true,
@@ -118,6 +122,8 @@ function toSummary(row: {
   officialPlaystyle: string | null;
   officialLore: string | null;
   officialRole: string | null;
+  tagline: string | null;
+  summary: string | null;
   model?: unknown;
   pois?: unknown;
 }): HeroSummary {

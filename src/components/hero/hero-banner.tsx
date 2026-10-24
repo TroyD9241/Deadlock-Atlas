@@ -28,6 +28,8 @@ export type HeroBannerProps = {
   eyebrow: string;
   /** Our own one-liner. */
   tagline: string;
+  /** Our own two-line summary. Shown under the name, above official text. */
+  summary?: string | null;
   /** The body copy. */
   description: string;
   /** The hero's accent, from colors.style_hex in the API. */
@@ -52,6 +54,7 @@ export function HeroBanner({
   name,
   eyebrow,
   tagline,
+  summary,
   description,
   accent,
   palette,
@@ -158,6 +161,20 @@ export function HeroBanner({
         >
           {tagline}
         </div>
+        {summary ? (
+          <p
+            style={{
+              color: "#b5b7c7",
+              maxWidth: 470,
+              lineHeight: 1.7,
+              margin: "0 0 14px",
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+            }}
+          >
+            {summary}
+          </p>
+        ) : null}
         <p
           style={{
             color: "#b5b7c7",
