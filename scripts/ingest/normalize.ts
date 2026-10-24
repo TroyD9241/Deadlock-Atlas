@@ -228,6 +228,8 @@ export type NormalisedHero = {
   startingStats: unknown;
   itemSlots: unknown;
   itemSlotInfo: unknown;
+  popularItems: unknown;
+  draftBucketing: unknown;
   heroStatsUi: unknown;
   statsDisplay: unknown;
   shopStatDisplay: unknown;
@@ -322,6 +324,8 @@ export function normaliseHero(
     startingStats: h.starting_stats ?? null,
     itemSlots: h.items ?? null,
     itemSlotInfo: h.item_slot_info ?? null,
+    popularItems: h.popular_items ?? null,
+    draftBucketing: h.item_draft_bucketing ?? null,
     heroStatsUi: h.hero_stats_ui ?? null,
     statsDisplay: h.stats_display ?? null,
     shopStatDisplay: h.shop_stat_display ?? null,
@@ -348,6 +352,9 @@ export type NormalisedItem = {
   cost: number | null;
   shopable: boolean | null;
   startTrained: boolean | null;
+  isActive: boolean | null;
+  shopFilters: string[];
+  weaponInfo: unknown;
   image: string | null;
   imageWebp: string | null;
   shopImage: string | null;
@@ -377,6 +384,10 @@ export function normaliseItem(i: ApiItem): NormalisedItem {
     cost: i.cost ?? null,
     shopable: i.shopable ?? null,
     startTrained: i.start_trained ?? null,
+    isActive: i.is_active_item ?? null,
+    // The game's own shop taxonomy, used for filtering.
+    shopFilters: Array.isArray(i.shop_filters) ? i.shop_filters : [],
+    weaponInfo: i.weapon_info ?? null,
     image: i.image ?? null,
     imageWebp: i.image_webp ?? null,
     shopImage: i.shop_image ?? null,

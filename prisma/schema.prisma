@@ -63,6 +63,8 @@ model Hero {
   shopStatDisplay Json?
   itemSlots       Json?                 // the Hero.items class-name map
   itemSlotInfo    Json?
+  popularItems    Json?                 // per-item pick % and win rate, early/mid/late
+  draftBucketing  Json?                 // the game's balance buckets and weights
   physics         Json?
   tags            Json?                 // string[] kept as Json so the shape is explicit
   removedContent  Json?
@@ -190,6 +192,9 @@ model Item {
   shopable     Boolean?
   shopVersion  Int?
   startTrained Boolean?
+  isActive     Boolean?                // in the current shop rotation
+  shopFilters  String[]                // the game's own shop taxonomy
+  weaponInfo   Json?                   // the weapon's own stats, for weapon items
 
   image     String?
   imageWebp String?

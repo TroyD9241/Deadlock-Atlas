@@ -54,6 +54,7 @@ export type ItemMinAggregateOutputType = {
   shopable: boolean | null
   shopVersion: number | null
   startTrained: boolean | null
+  isActive: boolean | null
   image: string | null
   imageWebp: string | null
   shopImage: string | null
@@ -82,6 +83,7 @@ export type ItemMaxAggregateOutputType = {
   shopable: boolean | null
   shopVersion: number | null
   startTrained: boolean | null
+  isActive: boolean | null
   image: string | null
   imageWebp: string | null
   shopImage: string | null
@@ -110,6 +112,9 @@ export type ItemCountAggregateOutputType = {
   shopable: number
   shopVersion: number
   startTrained: number
+  isActive: number
+  shopFilters: number
+  weaponInfo: number
   image: number
   imageWebp: number
   shopImage: number
@@ -163,6 +168,7 @@ export type ItemMinAggregateInputType = {
   shopable?: true
   shopVersion?: true
   startTrained?: true
+  isActive?: true
   image?: true
   imageWebp?: true
   shopImage?: true
@@ -191,6 +197,7 @@ export type ItemMaxAggregateInputType = {
   shopable?: true
   shopVersion?: true
   startTrained?: true
+  isActive?: true
   image?: true
   imageWebp?: true
   shopImage?: true
@@ -219,6 +226,9 @@ export type ItemCountAggregateInputType = {
   shopable?: true
   shopVersion?: true
   startTrained?: true
+  isActive?: true
+  shopFilters?: true
+  weaponInfo?: true
   image?: true
   imageWebp?: true
   shopImage?: true
@@ -343,6 +353,9 @@ export type ItemGroupByOutputType = {
   shopable: boolean | null
   shopVersion: number | null
   startTrained: boolean | null
+  isActive: boolean | null
+  shopFilters: string[]
+  weaponInfo: runtime.JsonValue | null
   image: string | null
   imageWebp: string | null
   shopImage: string | null
@@ -403,6 +416,9 @@ export type ItemWhereInput = {
   shopable?: Prisma.BoolNullableFilter<"Item"> | boolean | null
   shopVersion?: Prisma.IntNullableFilter<"Item"> | number | null
   startTrained?: Prisma.BoolNullableFilter<"Item"> | boolean | null
+  isActive?: Prisma.BoolNullableFilter<"Item"> | boolean | null
+  shopFilters?: Prisma.StringNullableListFilter<"Item">
+  weaponInfo?: Prisma.JsonNullableFilter<"Item">
   image?: Prisma.StringNullableFilter<"Item"> | string | null
   imageWebp?: Prisma.StringNullableFilter<"Item"> | string | null
   shopImage?: Prisma.StringNullableFilter<"Item"> | string | null
@@ -441,6 +457,9 @@ export type ItemOrderByWithRelationInput = {
   shopable?: Prisma.SortOrderInput | Prisma.SortOrder
   shopVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   startTrained?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrderInput | Prisma.SortOrder
+  shopFilters?: Prisma.SortOrder
+  weaponInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   imageWebp?: Prisma.SortOrderInput | Prisma.SortOrder
   shopImage?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -482,6 +501,9 @@ export type ItemWhereUniqueInput = Prisma.AtLeast<{
   shopable?: Prisma.BoolNullableFilter<"Item"> | boolean | null
   shopVersion?: Prisma.IntNullableFilter<"Item"> | number | null
   startTrained?: Prisma.BoolNullableFilter<"Item"> | boolean | null
+  isActive?: Prisma.BoolNullableFilter<"Item"> | boolean | null
+  shopFilters?: Prisma.StringNullableListFilter<"Item">
+  weaponInfo?: Prisma.JsonNullableFilter<"Item">
   image?: Prisma.StringNullableFilter<"Item"> | string | null
   imageWebp?: Prisma.StringNullableFilter<"Item"> | string | null
   shopImage?: Prisma.StringNullableFilter<"Item"> | string | null
@@ -520,6 +542,9 @@ export type ItemOrderByWithAggregationInput = {
   shopable?: Prisma.SortOrderInput | Prisma.SortOrder
   shopVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   startTrained?: Prisma.SortOrderInput | Prisma.SortOrder
+  isActive?: Prisma.SortOrderInput | Prisma.SortOrder
+  shopFilters?: Prisma.SortOrder
+  weaponInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   imageWebp?: Prisma.SortOrderInput | Prisma.SortOrder
   shopImage?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -565,6 +590,9 @@ export type ItemScalarWhereWithAggregatesInput = {
   shopable?: Prisma.BoolNullableWithAggregatesFilter<"Item"> | boolean | null
   shopVersion?: Prisma.IntNullableWithAggregatesFilter<"Item"> | number | null
   startTrained?: Prisma.BoolNullableWithAggregatesFilter<"Item"> | boolean | null
+  isActive?: Prisma.BoolNullableWithAggregatesFilter<"Item"> | boolean | null
+  shopFilters?: Prisma.StringNullableListFilter<"Item">
+  weaponInfo?: Prisma.JsonNullableWithAggregatesFilter<"Item">
   image?: Prisma.StringNullableWithAggregatesFilter<"Item"> | string | null
   imageWebp?: Prisma.StringNullableWithAggregatesFilter<"Item"> | string | null
   shopImage?: Prisma.StringNullableWithAggregatesFilter<"Item"> | string | null
@@ -601,6 +629,9 @@ export type ItemCreateInput = {
   shopable?: boolean | null
   shopVersion?: number | null
   startTrained?: boolean | null
+  isActive?: boolean | null
+  shopFilters?: Prisma.ItemCreateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: string | null
   imageWebp?: string | null
   shopImage?: string | null
@@ -639,6 +670,9 @@ export type ItemUncheckedCreateInput = {
   shopable?: boolean | null
   shopVersion?: number | null
   startTrained?: boolean | null
+  isActive?: boolean | null
+  shopFilters?: Prisma.ItemCreateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: string | null
   imageWebp?: string | null
   shopImage?: string | null
@@ -676,6 +710,9 @@ export type ItemUpdateInput = {
   shopable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   shopVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startTrained?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  shopFilters?: Prisma.ItemUpdateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageWebp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shopImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -714,6 +751,9 @@ export type ItemUncheckedUpdateInput = {
   shopable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   shopVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startTrained?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  shopFilters?: Prisma.ItemUpdateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageWebp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shopImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -752,6 +792,9 @@ export type ItemCreateManyInput = {
   shopable?: boolean | null
   shopVersion?: number | null
   startTrained?: boolean | null
+  isActive?: boolean | null
+  shopFilters?: Prisma.ItemCreateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: string | null
   imageWebp?: string | null
   shopImage?: string | null
@@ -788,6 +831,9 @@ export type ItemUpdateManyMutationInput = {
   shopable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   shopVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startTrained?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  shopFilters?: Prisma.ItemUpdateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageWebp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shopImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -825,6 +871,9 @@ export type ItemUncheckedUpdateManyInput = {
   shopable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   shopVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startTrained?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  shopFilters?: Prisma.ItemUpdateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageWebp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shopImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -848,6 +897,14 @@ export type ItemUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
 export type ItemCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   slug?: Prisma.SortOrder
@@ -862,6 +919,9 @@ export type ItemCountOrderByAggregateInput = {
   shopable?: Prisma.SortOrder
   shopVersion?: Prisma.SortOrder
   startTrained?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  shopFilters?: Prisma.SortOrder
+  weaponInfo?: Prisma.SortOrder
   image?: Prisma.SortOrder
   imageWebp?: Prisma.SortOrder
   shopImage?: Prisma.SortOrder
@@ -906,6 +966,7 @@ export type ItemMaxOrderByAggregateInput = {
   shopable?: Prisma.SortOrder
   shopVersion?: Prisma.SortOrder
   startTrained?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   image?: Prisma.SortOrder
   imageWebp?: Prisma.SortOrder
   shopImage?: Prisma.SortOrder
@@ -934,6 +995,7 @@ export type ItemMinOrderByAggregateInput = {
   shopable?: Prisma.SortOrder
   shopVersion?: Prisma.SortOrder
   startTrained?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   image?: Prisma.SortOrder
   imageWebp?: Prisma.SortOrder
   shopImage?: Prisma.SortOrder
@@ -960,8 +1022,17 @@ export type ItemScalarRelationFilter = {
   isNot?: Prisma.ItemWhereInput
 }
 
+export type ItemCreateshopFiltersInput = {
+  set: string[]
+}
+
 export type NullableBoolFieldUpdateOperationsInput = {
   set?: boolean | null
+}
+
+export type ItemUpdateshopFiltersInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type ItemCreateNestedOneWithoutSnapshotsInput = {
@@ -991,6 +1062,9 @@ export type ItemCreateWithoutSnapshotsInput = {
   shopable?: boolean | null
   shopVersion?: number | null
   startTrained?: boolean | null
+  isActive?: boolean | null
+  shopFilters?: Prisma.ItemCreateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: string | null
   imageWebp?: string | null
   shopImage?: string | null
@@ -1028,6 +1102,9 @@ export type ItemUncheckedCreateWithoutSnapshotsInput = {
   shopable?: boolean | null
   shopVersion?: number | null
   startTrained?: boolean | null
+  isActive?: boolean | null
+  shopFilters?: Prisma.ItemCreateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: string | null
   imageWebp?: string | null
   shopImage?: string | null
@@ -1080,6 +1157,9 @@ export type ItemUpdateWithoutSnapshotsInput = {
   shopable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   shopVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startTrained?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  shopFilters?: Prisma.ItemUpdateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageWebp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shopImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1117,6 +1197,9 @@ export type ItemUncheckedUpdateWithoutSnapshotsInput = {
   shopable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   shopVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startTrained?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  shopFilters?: Prisma.ItemUpdateshopFiltersInput | string[]
+  weaponInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageWebp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shopImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1185,6 +1268,9 @@ export type ItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   shopable?: boolean
   shopVersion?: boolean
   startTrained?: boolean
+  isActive?: boolean
+  shopFilters?: boolean
+  weaponInfo?: boolean
   image?: boolean
   imageWebp?: boolean
   shopImage?: boolean
@@ -1224,6 +1310,9 @@ export type ItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   shopable?: boolean
   shopVersion?: boolean
   startTrained?: boolean
+  isActive?: boolean
+  shopFilters?: boolean
+  weaponInfo?: boolean
   image?: boolean
   imageWebp?: boolean
   shopImage?: boolean
@@ -1261,6 +1350,9 @@ export type ItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   shopable?: boolean
   shopVersion?: boolean
   startTrained?: boolean
+  isActive?: boolean
+  shopFilters?: boolean
+  weaponInfo?: boolean
   image?: boolean
   imageWebp?: boolean
   shopImage?: boolean
@@ -1298,6 +1390,9 @@ export type ItemSelectScalar = {
   shopable?: boolean
   shopVersion?: boolean
   startTrained?: boolean
+  isActive?: boolean
+  shopFilters?: boolean
+  weaponInfo?: boolean
   image?: boolean
   imageWebp?: boolean
   shopImage?: boolean
@@ -1321,7 +1416,7 @@ export type ItemSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "className" | "apiId" | "name" | "nameSource" | "itemType" | "slotType" | "tier" | "cost" | "shopable" | "shopVersion" | "startTrained" | "image" | "imageWebp" | "shopImage" | "accent" | "accentText" | "onAccent" | "apiAccent" | "accentSource" | "palette" | "paletteOverride" | "needsReview" | "description" | "properties" | "upgrades" | "tooltipSections" | "activation" | "imbue" | "disabled" | "removedContent" | "createdAt" | "updatedAt", ExtArgs["result"]["item"]>
+export type ItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "className" | "apiId" | "name" | "nameSource" | "itemType" | "slotType" | "tier" | "cost" | "shopable" | "shopVersion" | "startTrained" | "isActive" | "shopFilters" | "weaponInfo" | "image" | "imageWebp" | "shopImage" | "accent" | "accentText" | "onAccent" | "apiAccent" | "accentSource" | "palette" | "paletteOverride" | "needsReview" | "description" | "properties" | "upgrades" | "tooltipSections" | "activation" | "imbue" | "disabled" | "removedContent" | "createdAt" | "updatedAt", ExtArgs["result"]["item"]>
 export type ItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   snapshots?: boolean | Prisma.Item$snapshotsArgs<ExtArgs>
   _count?: boolean | Prisma.ItemCountOutputTypeDefaultArgs<ExtArgs>
@@ -1348,6 +1443,9 @@ export type $ItemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     shopable: boolean | null
     shopVersion: number | null
     startTrained: boolean | null
+    isActive: boolean | null
+    shopFilters: string[]
+    weaponInfo: runtime.JsonValue | null
     image: string | null
     imageWebp: string | null
     shopImage: string | null
@@ -1806,6 +1904,9 @@ export interface ItemFieldRefs {
   readonly shopable: Prisma.FieldRef<"Item", 'Boolean'>
   readonly shopVersion: Prisma.FieldRef<"Item", 'Int'>
   readonly startTrained: Prisma.FieldRef<"Item", 'Boolean'>
+  readonly isActive: Prisma.FieldRef<"Item", 'Boolean'>
+  readonly shopFilters: Prisma.FieldRef<"Item", 'String[]'>
+  readonly weaponInfo: Prisma.FieldRef<"Item", 'Json'>
   readonly image: Prisma.FieldRef<"Item", 'String'>
   readonly imageWebp: Prisma.FieldRef<"Item", 'String'>
   readonly shopImage: Prisma.FieldRef<"Item", 'String'>

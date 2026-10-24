@@ -1,0 +1,75 @@
+{
+  "$comment": "Curated item facets. The API's 441 raw property keys are engine vocabulary; these groups are the player-facing names for them. A facet matches an item when the item has one of the listed property keys with a non-zero value, or one of the listed shop_filters.",
+  "facets": [
+    {
+      "id": "health",
+      "label": "Health",
+      "description": "Adds max health or health regeneration.",
+      "properties": ["BonusHealth", "BonusHealthRegen", "OutOfCombatHealthRegen", "MaxHealth"],
+      "shopFilters": ["hp", "regen", "out_of_combat_regen"]
+    },
+    {
+      "id": "spirit-damage",
+      "label": "Spirit damage",
+      "description": "Raises spirit or ability damage.",
+      "properties": ["TechPower", "TechPowerPercent", "SpiritDamage", "Damage", "BaseAttackDamagePercent", "TechDamageMultiplier", "ImbuedBonusDamage"],
+      "shopFilters": ["spirit_additional_damage_pct"]
+    },
+    {
+      "id": "weapon-damage",
+      "label": "Weapon damage",
+      "description": "Raises weapon damage, fire rate or ammo.",
+      "properties": ["WeaponPower", "WeaponPowerPercent", "BonusFireRate", "BonusClipSizePercent", "BulletDamage", "BonusBulletSpeedPercent", "DamageToNPCIncrease"],
+      "shopFilters": ["weapon_ammo"]
+    },
+    {
+      "id": "resist",
+      "label": "Resistance",
+      "description": "Reduces incoming bullet or spirit damage.",
+      "properties": ["TechResist", "BulletResist", "TechArmorDamageReduction", "BulletArmorDamageReduction", "SpiritDamageReduction", "PhysicalResist", "TechDamageTakenHealsAttacker"],
+      "shopFilters": ["physical_resist", "spirit_damage_reduction"]
+    },
+    {
+      "id": "cooldown",
+      "label": "Cooldown & charges",
+      "description": "Changes ability cooldowns, charges or durations.",
+      "properties": ["AbilityCooldown", "AbilityCharges", "AbilityCooldownBetweenCharge", "AbilityChannelTime", "AbilityDuration", "BonusAbilityDurationPercent", "CooldownReduction", "StaminaCooldownReduction", "ProcCooldown", "UltimateCooldownReductionPercentage", "ItemCooldownReductionPercentage", "PARRYCooldownReductionFixed"],
+      "shopFilters": ["spirit_cooldown_and_charges"]
+    },
+    {
+      "id": "movement",
+      "label": "Movement",
+      "description": "Moves faster, further or with more stamina.",
+      "properties": ["BonusMoveSpeed", "BonusSprintSpeed", "ChannelMoveSpeed", "BonusStamina", "Stamina", "BonusAirMoveDistancePercent", "MoveSpeedLimit", "GroundDashDistanceIncreasePercent"],
+      "shopFilters": ["jump_and_dash", "teleport", "mobility_reduction"]
+    },
+    {
+      "id": "range",
+      "label": "Range",
+      "description": "Extends ability or weapon reach.",
+      "properties": ["AbilityCastRange", "TechRangeMultiplier", "TechRadiusMultiplier", "BonusAttackRangePercent", "BonusWeaponDamageCloseRangeMaxRange", "BonusBulletDamageLongRangeMinRange"],
+      "shopFilters": ["spirit_range", "weapon_range", "melee"]
+    },
+    {
+      "id": "status",
+      "label": "Status effects",
+      "description": "Applies slows, buffs, debuffs or procs.",
+      "properties": ["SlowPercent", "SlowDuration", "BuffDuration", "DebuffDuration", "ProcChance", "MaxStacks", "Radius", "TickRate", "Damage", "BuildUpPerShot", "BuildUpDuration", "CombatBarrier", "ReduceDebuffDuration"],
+      "shopFilters": ["status_stun", "status_curse", "status_grounded", "status_immobilize"]
+    },
+    {
+      "id": "healing",
+      "label": "Healing",
+      "description": "Heals you or your allies, and steals health.",
+      "properties": ["BonusHealthRegen", "OutOfCombatHealthRegen", "HealAmpRegenPenaltyPercent", "HealAmpReceivePenaltyPercent", "BulletLifestealPercent", "AbilityLifestealPercentHero", "HealAmpCastPercent"],
+      "shopFilters": ["regen", "out_of_combat_regen"]
+    },
+    {
+      "id": "defence",
+      "label": "Defence & escapes",
+      "description": "Blocks, cleanses, hides or makes you untouchable.",
+      "properties": ["CombatBarrier", "DebuffDuration", "ReduceDebuffDuration", "RespawnTimeAdditive", "RespawnTimePercentage"],
+      "shopFilters": ["anti_cc", "debuff_resist", "invulnerability", "stealth", "status_immobilize"]
+    }
+  ]
+}

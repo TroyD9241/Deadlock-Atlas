@@ -255,6 +255,10 @@ export type ItemSummary = {
   cost: number | null;
   itemType: string | null;
   shopable: boolean | null;
+  startTrained: boolean | null;
+  isActive: boolean | null;
+  /** The game's own shop taxonomy: anti_cc, regen, stealth, ... */
+  shopFilters: string[];
   image: string | null;
   imageWebp: string | null;
   shopImage: string | null;
@@ -282,6 +286,9 @@ const ITEM_SELECT = {
   cost: true,
   itemType: true,
   shopable: true,
+  startTrained: true,
+  isActive: true,
+  shopFilters: true,
   image: true,
   imageWebp: true,
   shopImage: true,

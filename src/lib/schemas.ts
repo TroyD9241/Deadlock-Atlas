@@ -68,6 +68,10 @@ export const ApiHeroSchema = z
     // Slot key -> ability class name, e.g. signature1 -> ability_fire_bomb.
     items: z.record(z.string(), z.string()).nullish(),
     item_slot_info: z.record(z.string(), z.unknown()).nullish(),
+    // Per-item pick % and win rate for early/mid/late game.
+    popular_items: z.unknown().nullish(),
+    // The game's balance buckets ("Good" | "Normal") and draft weights.
+    item_draft_bucketing: z.record(z.string(), z.unknown()).nullish(),
     images: HeroImagesSchema.nullish(),
     hero_stats_ui: z.unknown().nullish(),
     stats_display: z.unknown().nullish(),
@@ -101,6 +105,12 @@ export const ApiItemSchema = z
     shopable: z.boolean().nullish(),
     shop_version: nullableish(z.number()),
     start_trained: z.boolean().nullish(),
+    // In the current shop rotation.
+    is_active_item: z.boolean().nullish(),
+    // The game's own shop taxonomy: anti_cc, regen, stealth, teleport, ...
+    shop_filters: z.array(z.string()).nullish(),
+    // A weapon item's own stats.
+    weapon_info: z.unknown().nullish(),
     // Universal abilities have hero: null and are shared across heroes.
     hero: nullableish(z.number()),
     heroes: z.array(z.number()).nullish(),

@@ -119,6 +119,8 @@ export type HeroCountAggregateOutputType = {
   shopStatDisplay: number
   itemSlots: number
   itemSlotInfo: number
+  popularItems: number
+  draftBucketing: number
   physics: number
   tags: number
   removedContent: number
@@ -221,6 +223,8 @@ export type HeroCountAggregateInputType = {
   shopStatDisplay?: true
   itemSlots?: true
   itemSlotInfo?: true
+  popularItems?: true
+  draftBucketing?: true
   physics?: true
   tags?: true
   removedContent?: true
@@ -346,6 +350,8 @@ export type HeroGroupByOutputType = {
   shopStatDisplay: runtime.JsonValue | null
   itemSlots: runtime.JsonValue | null
   itemSlotInfo: runtime.JsonValue | null
+  popularItems: runtime.JsonValue | null
+  draftBucketing: runtime.JsonValue | null
   physics: runtime.JsonValue | null
   tags: runtime.JsonValue | null
   removedContent: runtime.JsonValue | null
@@ -407,6 +413,8 @@ export type HeroWhereInput = {
   shopStatDisplay?: Prisma.JsonNullableFilter<"Hero">
   itemSlots?: Prisma.JsonNullableFilter<"Hero">
   itemSlotInfo?: Prisma.JsonNullableFilter<"Hero">
+  popularItems?: Prisma.JsonNullableFilter<"Hero">
+  draftBucketing?: Prisma.JsonNullableFilter<"Hero">
   physics?: Prisma.JsonNullableFilter<"Hero">
   tags?: Prisma.JsonNullableFilter<"Hero">
   removedContent?: Prisma.JsonNullableFilter<"Hero">
@@ -452,6 +460,8 @@ export type HeroOrderByWithRelationInput = {
   shopStatDisplay?: Prisma.SortOrderInput | Prisma.SortOrder
   itemSlots?: Prisma.SortOrderInput | Prisma.SortOrder
   itemSlotInfo?: Prisma.SortOrderInput | Prisma.SortOrder
+  popularItems?: Prisma.SortOrderInput | Prisma.SortOrder
+  draftBucketing?: Prisma.SortOrderInput | Prisma.SortOrder
   physics?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   removedContent?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -500,6 +510,8 @@ export type HeroWhereUniqueInput = Prisma.AtLeast<{
   shopStatDisplay?: Prisma.JsonNullableFilter<"Hero">
   itemSlots?: Prisma.JsonNullableFilter<"Hero">
   itemSlotInfo?: Prisma.JsonNullableFilter<"Hero">
+  popularItems?: Prisma.JsonNullableFilter<"Hero">
+  draftBucketing?: Prisma.JsonNullableFilter<"Hero">
   physics?: Prisma.JsonNullableFilter<"Hero">
   tags?: Prisma.JsonNullableFilter<"Hero">
   removedContent?: Prisma.JsonNullableFilter<"Hero">
@@ -545,6 +557,8 @@ export type HeroOrderByWithAggregationInput = {
   shopStatDisplay?: Prisma.SortOrderInput | Prisma.SortOrder
   itemSlots?: Prisma.SortOrderInput | Prisma.SortOrder
   itemSlotInfo?: Prisma.SortOrderInput | Prisma.SortOrder
+  popularItems?: Prisma.SortOrderInput | Prisma.SortOrder
+  draftBucketing?: Prisma.SortOrderInput | Prisma.SortOrder
   physics?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   removedContent?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -591,6 +605,8 @@ export type HeroScalarWhereWithAggregatesInput = {
   shopStatDisplay?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
   itemSlots?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
   itemSlotInfo?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
+  popularItems?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
+  draftBucketing?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
   physics?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
   tags?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
   removedContent?: Prisma.JsonNullableWithAggregatesFilter<"Hero">
@@ -628,6 +644,8 @@ export type HeroCreateInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -673,6 +691,8 @@ export type HeroUncheckedCreateInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -717,6 +737,8 @@ export type HeroUpdateInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -762,6 +784,8 @@ export type HeroUncheckedUpdateInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -807,6 +831,8 @@ export type HeroCreateManyInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -844,6 +870,8 @@ export type HeroUpdateManyMutationInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -882,6 +910,8 @@ export type HeroUncheckedUpdateManyInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -920,6 +950,8 @@ export type HeroCountOrderByAggregateInput = {
   shopStatDisplay?: Prisma.SortOrder
   itemSlots?: Prisma.SortOrder
   itemSlotInfo?: Prisma.SortOrder
+  popularItems?: Prisma.SortOrder
+  draftBucketing?: Prisma.SortOrder
   physics?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   removedContent?: Prisma.SortOrder
@@ -1138,6 +1170,8 @@ export type HeroCreateWithoutModelInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1182,6 +1216,8 @@ export type HeroUncheckedCreateWithoutModelInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1241,6 +1277,8 @@ export type HeroUpdateWithoutModelInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1285,6 +1323,8 @@ export type HeroUncheckedUpdateWithoutModelInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1328,6 +1368,8 @@ export type HeroCreateWithoutPoisInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1372,6 +1414,8 @@ export type HeroUncheckedCreateWithoutPoisInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1431,6 +1475,8 @@ export type HeroUpdateWithoutPoisInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1475,6 +1521,8 @@ export type HeroUncheckedUpdateWithoutPoisInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1518,6 +1566,8 @@ export type HeroCreateWithoutSnapshotsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1562,6 +1612,8 @@ export type HeroUncheckedCreateWithoutSnapshotsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1621,6 +1673,8 @@ export type HeroUpdateWithoutSnapshotsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1665,6 +1719,8 @@ export type HeroUncheckedUpdateWithoutSnapshotsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1708,6 +1764,8 @@ export type HeroCreateWithoutAbilitiesInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1752,6 +1810,8 @@ export type HeroUncheckedCreateWithoutAbilitiesInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1811,6 +1871,8 @@ export type HeroUpdateWithoutAbilitiesInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1855,6 +1917,8 @@ export type HeroUncheckedUpdateWithoutAbilitiesInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1898,6 +1962,8 @@ export type HeroCreateWithoutRelationsFromInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1942,6 +2008,8 @@ export type HeroUncheckedCreateWithoutRelationsFromInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1990,6 +2058,8 @@ export type HeroCreateWithoutRelationsToInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2034,6 +2104,8 @@ export type HeroUncheckedCreateWithoutRelationsToInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2093,6 +2165,8 @@ export type HeroUpdateWithoutRelationsFromInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2137,6 +2211,8 @@ export type HeroUncheckedUpdateWithoutRelationsFromInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2191,6 +2267,8 @@ export type HeroUpdateWithoutRelationsToInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2235,6 +2313,8 @@ export type HeroUncheckedUpdateWithoutRelationsToInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2278,6 +2358,8 @@ export type HeroCreateWithoutPlayStatsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2322,6 +2404,8 @@ export type HeroUncheckedCreateWithoutPlayStatsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2381,6 +2465,8 @@ export type HeroUpdateWithoutPlayStatsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2425,6 +2511,8 @@ export type HeroUncheckedUpdateWithoutPlayStatsInput = {
   shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  popularItems?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftBucketing?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -2545,6 +2633,8 @@ export type HeroSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   shopStatDisplay?: boolean
   itemSlots?: boolean
   itemSlotInfo?: boolean
+  popularItems?: boolean
+  draftBucketing?: boolean
   physics?: boolean
   tags?: boolean
   removedContent?: boolean
@@ -2591,6 +2681,8 @@ export type HeroSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   shopStatDisplay?: boolean
   itemSlots?: boolean
   itemSlotInfo?: boolean
+  popularItems?: boolean
+  draftBucketing?: boolean
   physics?: boolean
   tags?: boolean
   removedContent?: boolean
@@ -2629,6 +2721,8 @@ export type HeroSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   shopStatDisplay?: boolean
   itemSlots?: boolean
   itemSlotInfo?: boolean
+  popularItems?: boolean
+  draftBucketing?: boolean
   physics?: boolean
   tags?: boolean
   removedContent?: boolean
@@ -2667,6 +2761,8 @@ export type HeroSelectScalar = {
   shopStatDisplay?: boolean
   itemSlots?: boolean
   itemSlotInfo?: boolean
+  popularItems?: boolean
+  draftBucketing?: boolean
   physics?: boolean
   tags?: boolean
   removedContent?: boolean
@@ -2674,7 +2770,7 @@ export type HeroSelectScalar = {
   updatedAt?: boolean
 }
 
-export type HeroOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "apiId" | "name" | "complexity" | "heroType" | "isReleased" | "isDisabled" | "isInDevelopment" | "tagline" | "summary" | "officialRole" | "officialPlaystyle" | "officialLore" | "accent" | "accentText" | "onAccent" | "apiAccent" | "accentSource" | "palette" | "paletteOverride" | "needsReview" | "artwork" | "sourceLinks" | "startingStats" | "heroStatsUi" | "statsDisplay" | "shopStatDisplay" | "itemSlots" | "itemSlotInfo" | "physics" | "tags" | "removedContent" | "createdAt" | "updatedAt", ExtArgs["result"]["hero"]>
+export type HeroOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "apiId" | "name" | "complexity" | "heroType" | "isReleased" | "isDisabled" | "isInDevelopment" | "tagline" | "summary" | "officialRole" | "officialPlaystyle" | "officialLore" | "accent" | "accentText" | "onAccent" | "apiAccent" | "accentSource" | "palette" | "paletteOverride" | "needsReview" | "artwork" | "sourceLinks" | "startingStats" | "heroStatsUi" | "statsDisplay" | "shopStatDisplay" | "itemSlots" | "itemSlotInfo" | "popularItems" | "draftBucketing" | "physics" | "tags" | "removedContent" | "createdAt" | "updatedAt", ExtArgs["result"]["hero"]>
 export type HeroInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   abilities?: boolean | Prisma.Hero$abilitiesArgs<ExtArgs>
   snapshots?: boolean | Prisma.Hero$snapshotsArgs<ExtArgs>
@@ -2733,6 +2829,8 @@ export type $HeroPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     shopStatDisplay: runtime.JsonValue | null
     itemSlots: runtime.JsonValue | null
     itemSlotInfo: runtime.JsonValue | null
+    popularItems: runtime.JsonValue | null
+    draftBucketing: runtime.JsonValue | null
     physics: runtime.JsonValue | null
     tags: runtime.JsonValue | null
     removedContent: runtime.JsonValue | null
@@ -3198,6 +3296,8 @@ export interface HeroFieldRefs {
   readonly shopStatDisplay: Prisma.FieldRef<"Hero", 'Json'>
   readonly itemSlots: Prisma.FieldRef<"Hero", 'Json'>
   readonly itemSlotInfo: Prisma.FieldRef<"Hero", 'Json'>
+  readonly popularItems: Prisma.FieldRef<"Hero", 'Json'>
+  readonly draftBucketing: Prisma.FieldRef<"Hero", 'Json'>
   readonly physics: Prisma.FieldRef<"Hero", 'Json'>
   readonly tags: Prisma.FieldRef<"Hero", 'Json'>
   readonly removedContent: Prisma.FieldRef<"Hero", 'Json'>
