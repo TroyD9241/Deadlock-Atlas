@@ -55,10 +55,8 @@ function taglineFor(hero: { officialRole: string | null; officialPlaystyle: stri
   return "[not available]";
 }
 
-function descriptionFor(hero: { officialPlaystyle: string | null; officialLore: string | null }): string {
-  if (hero.officialPlaystyle) return hero.officialPlaystyle;
-  if (hero.officialLore) return hero.officialLore;
-  return "[no official description]";
+function descriptionFor(hero: { officialPlaystyle: string | null }): string | null {
+  return hero.officialPlaystyle ?? null;
 }
 
 export async function generateMetadata({

@@ -31,7 +31,7 @@ export type HeroBannerProps = {
   /** Our own two-line summary. Shown under the name, above official text. */
   summary?: string | null;
   /** The body copy. */
-  description: string;
+  description?: string | null;
   /** The hero's accent, from colors.style_hex in the API. */
   accent: string;
   /** The hero's five-colour palette, darkest to lightest. */
@@ -175,18 +175,20 @@ export function HeroBanner({
             {summary}
           </p>
         ) : null}
-        <p
-          style={{
-            color: "#b5b7c7",
-            maxWidth: 470,
-            lineHeight: 1.8,
-            margin: 0,
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-          }}
-        >
-          {description}
-        </p>
+        {description ? (
+          <p
+            style={{
+              color: "#b5b7c7",
+              maxWidth: 470,
+              lineHeight: 1.8,
+              margin: 0,
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+            }}
+          >
+            {description}
+          </p>
+        ) : null}
         <div className="hero-buttons">
           <a className="primary" href="#abilities">
             EXPLORE ABILITIES ↓
