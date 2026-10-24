@@ -163,6 +163,16 @@ export async function getAllAbilities() {
   return rows;
 }
 
+/** Released heroes of a given class, for the profile switcher. */
+export async function getHeroesByClass(heroType: string): Promise<HeroSummary[]> {
+  const rows = await db.hero.findMany({
+    where: { isReleased: true, heroType },
+    orderBy: { name: "asc" },
+    select: HERO_SELECT,
+  });
+  return rows.map(toSummary);
+}
+
 /** One hero by slug, with its abilities. */
 export async function getHero(slug: string) {
   const row = await db.hero.findUnique({

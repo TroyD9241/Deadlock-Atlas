@@ -137,6 +137,18 @@ export function HeroBanner({
         </h1>
         <div
           style={{
+            fontSize: 8,
+            letterSpacing: "0.16em",
+            color: "var(--accent-text)",
+            fontWeight: 800,
+            opacity: 0.7,
+            marginBottom: 6,
+          }}
+        >
+          OFFICIAL IN-GAME TEXT
+        </div>
+        <div
+          style={{
             fontSize: "clamp(18px,2vw,24px)",
             color: "#e7dfee",
             marginBottom: 14,
@@ -154,6 +166,14 @@ export function HeroBanner({
         >
           {description}
         </p>
+        <div className="hero-buttons">
+          <a className="primary" href="#abilities">
+            EXPLORE ABILITIES ↓
+          </a>
+          <a className="secondary" href="#palette">
+            VIEW COLOR STUDY
+          </a>
+        </div>
       </div>
 
       {/* The character cutout, contained on the right as in the mock. */}
