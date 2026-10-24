@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { themeStyle } from "@/lib/theme";
 
+import { AbilityIconField, type FieldIcon } from "./ability-icon-field";
 import { NameWordmark } from "./name-wordmark";
 
 /**
@@ -37,6 +38,12 @@ export type HeroBannerProps = {
   /** The hero's five-colour palette, darkest to lightest. */
   palette: string[];
   art: HeroArt | null;
+  /**
+   * The hero's own ability icons, scattered through the background gradient
+   * as texture. Optional: heroes without ability art simply get a plain
+   * gradient.
+   */
+  abilityIcons?: FieldIcon[];
   /** Render the character cutout. Off for narrow viewports. */
   showCharacter?: boolean;
 };
@@ -59,6 +66,7 @@ export function HeroBanner({
   accent,
   palette,
   art,
+  abilityIcons,
   showCharacter = true,
 }: HeroBannerProps) {
   return (
@@ -106,6 +114,19 @@ export function HeroBanner({
             "radial-gradient(ellipse at 75% 38%, var(--glow), transparent 54%)",
         }}
       />
+
+      {/*
+        The hero's own ability icons, scattered through the gradient as
+        texture. Sits above the glow so it stays readable, below the text and
+        the character cutout.
+      */}
+      {abilityIcons && abilityIcons.length > 0 ? (
+        <AbilityIconField
+          icons={abilityIcons}
+          seed={name}
+          style={{ zIndex: 1 }}
+        />
+      ) : null}
 
       <div
         style={{

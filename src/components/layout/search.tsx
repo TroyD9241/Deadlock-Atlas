@@ -1,8 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+
+/** Subscribe to nothing: this store only reports "we are on the client". */
+const subscribeNothing = () => () => {};
+const isClient = () => true;
+const isServer = () => false;
 
 type SearchResult = {
   type: "hero" | "ability" | "item";
@@ -20,16 +25,14 @@ export function Search() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [pos, setPos] = useState<Pos>({ top: 0, left: 0, width: 320 });
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Portals need document.body, which only exists in the browser.
+  const mounted = useSyncExternalStore(subscribeNothing, isClient, isServer);
 
   const updatePos = () => {
     const el = inputRef.current;

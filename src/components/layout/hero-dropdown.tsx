@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 import type { HeroSummary } from "@/lib/queries";
+
+/** Subscribe to nothing: this store only reports "we are on the client". */
+const subscribeNothing = () => () => {};
+const isClient = () => true;
+const isServer = () => false;
 
 type PortraitVariant = "card" | "cardCritical" | "cardGloat";
 
@@ -26,40 +31,38 @@ type Pos = { top: number; left: number; width: number };
 
 export function HeroDropdown({ heroes }: HeroDropdownProps) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [pos, setPos] = useState<Pos>({ top: 0, left: 0, width: 1240 });
   const [portraits, setPortraits] = useState<Array<HeroSummary & { portrait: string | null }>>([]);
   const triggerRef = useRef<HTMLAnchorElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
+  // Portals need document.body, which only exists in the browser.
+  const mounted = useSyncExternalStore(subscribeNothing, isClient, isServer);
+
+  const updatePos = () => {
+    const el = triggerRef.current;
+    if (!el) return;
+    // Anchor to the header row, not the nav's content width, so the strip
+    // spans the full shell width (1240px) and sits under the whole bar.
+    const frame = el.closest(".site-header-inner") ?? el.closest("nav");
+    if (!frame) return;
+    const rect = frame.getBoundingClientRect();
+    const width = Math.min(rect.width, 1240);
+    setPos({ top: rect.bottom + 4, left: rect.left + (rect.width - width) / 2, width });
+  };
+
+  const openDropdown = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    updatePos();
+    // The variant is picked here rather than during render, so the random
+    // choice stays out of the render path and the server markup.
     setPortraits(
       heroes.map((h) => ({
         ...h,
         portrait: pickVariant(h.artwork),
       })),
     );
-  }, [heroes]);
-
-  const updatePos = () => {
-    const el = triggerRef.current;
-    if (!el) return;
-    const nav = el.closest("nav");
-    if (!nav) return;
-    const navRect = nav.getBoundingClientRect();
-    const width = Math.min(navRect.width, 1240);
-    // Center the strip under the nav when the nav is narrower than 1240px.
-    const left = navRect.width > 1240
-      ? navRect.left
-      : navRect.left + (navRect.width - width) / 2;
-    setPos({ top: navRect.bottom + 4, left, width });
-  };
-
-  const openDropdown = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    updatePos();
     setOpen(true);
   };
 

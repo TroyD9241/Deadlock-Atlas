@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { HeroBanner } from "@/components/hero/hero-banner";
 import { ModelSection } from "@/components/hero/model-section";
+import type { FieldIcon } from "@/components/hero/ability-icon-field";
 import { themeStyle } from "@/lib/theme";
 import { getHero, getHeroesByClass } from "@/lib/queries";
 
@@ -105,6 +106,25 @@ export default async function HeroProfilePage({
     ? await getHeroesByClass(hero.heroType)
     : [];
 
+  /*
+   * The hero's own ability icons, for the banner's background texture.
+   * The API gives every hero ability class its own art, so Mina's banner
+   * carries her bat icons. Signature and innate abilities are the hero's
+   * own and read large; the shared universal ones stay small and faint.
+   */
+  const abilityIcons: FieldIcon[] = [];
+  const seenIcons = new Set<string>();
+  for (const ha of hero.abilities ?? []) {
+    const src = ha.ability.imageWebp ?? ha.ability.image;
+    if (!src || seenIcons.has(src)) continue;
+    seenIcons.add(src);
+    abilityIcons.push({
+      src,
+      emphasis: ha.slot.startsWith("signature") || ha.slot.startsWith("ability_innate") ? 1 : 0,
+    });
+  }
+  abilityIcons.sort((a, b) => (b.emphasis ?? 0) - (a.emphasis ?? 0));
+
   return (
     <div className="profile" style={themeStyle({ accent: hero.accent, accentText: hero.accentText, onAccent: hero.onAccent, palette })}>
       {/* Hero banner */}
@@ -117,6 +137,7 @@ export default async function HeroProfilePage({
         accent={hero.accent ?? "#c09fc8"}
         palette={palette}
         art={art}
+        abilityIcons={abilityIcons}
       />
 
       {/* Character model */}

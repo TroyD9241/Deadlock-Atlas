@@ -358,6 +358,8 @@ Home shows the **actual detailed changes of the latest patch**. Older patches li
 
 Use the current mock as is: hero profile (banner, quick stats, abilities and builds, looks and cosmetics, color study), profile switcher, directory with search. Add a patch history section later using the shared `PatchTimeline` component.
 
+**Ability icon field**: the hero banner's background gradient carries the hero's own ability icons as texture (`AbilityIconField`). The API gives every hero ability class its own art, so each hero's banner is themed by its own kit: signature and innate abilities render large and stronger, the shared universal ones small and faint. Placement is deterministic — a PRNG seeded with the hero slug — so a hero always gets the same arrangement and the server and client agree. The field is decorative: aria-hidden, no pointer events, masked away from the headline's column.
+
 ### 5.5 Items
 
 **List page** in the site's style: grouped or filterable by category (Weapon, Vitality, Spirit), searchable, each row showing icon, name, category, cost/tier from data, and a change badge if changed in the latest patch. Style it as a clean list or grid of `ItemRow` components, not a spreadsheet.
