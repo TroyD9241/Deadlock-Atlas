@@ -37,7 +37,7 @@ export default async function HeroesPage({
       <nav className="class-nav" aria-label="Filter heroes by class">
         <Link
           href="/heroes/classes"
-          style={{ textDecoration: "none" }}
+          className={`chip${!classFilter ? " active" : ""}`}
         >
           ALL CLASSES
         </Link>
@@ -45,10 +45,9 @@ export default async function HeroesPage({
           <Link
             key={c}
             href={`/heroes?class=${c}`}
-            className={classFilter === c ? "active" : ""}
-            style={{ textDecoration: "none" }}
+            className={`chip${classFilter === c ? " active" : ""}`}
           >
-            {c.toUpperCase()}
+            {c}
           </Link>
         ))}
       </nav>

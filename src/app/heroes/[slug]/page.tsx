@@ -154,7 +154,7 @@ export default async function HeroProfilePage({
           <Link
             key={h.slug}
             href={`/heroes/${h.slug}`}
-            className={h.slug === slug ? "active" : ""}
+            className={`chip${h.slug === slug ? " active" : ""}`}
             aria-current={h.slug === slug ? "page" : undefined}
           >
             {h.name}
@@ -164,19 +164,19 @@ export default async function HeroProfilePage({
 
       {/* Quick stats */}
       <div className="quick-stats">
-        <div className="stat">
+        <div className="stat plate">
           <div className="stat-label">COMPLEXITY</div>
           <div className="stat-value">
             {hero.complexity != null ? `${hero.complexity} / 3` : "[not available]"}
           </div>
         </div>
-        <div className="stat">
+        <div className="stat plate">
           <div className="stat-label">TYPE</div>
           <div className="stat-value">
             {(hero.heroType ?? "[not available]").toUpperCase()}
           </div>
         </div>
-        <div className="stat">
+        <div className="stat plate">
           <div className="stat-label">MAX HEALTH</div>
           <div className="stat-value">{maxHealth(hero.startingStats)}</div>
         </div>
@@ -202,7 +202,7 @@ export default async function HeroProfilePage({
                 const quip = abilityQuip(desc);
                 const upgrades = abilityUpgrades(desc);
                 return (
-                  <article key={ha.id} className="ability">
+                  <article key={ha.id} className="ability plate">
                     <div className="ability-num">
                       {a.image ? (
                         <Image
@@ -236,7 +236,7 @@ export default async function HeroProfilePage({
                           ))}
                         </div>
                       ) : null}
-                      <span className="tiny-tag">SIGNATURE</span>
+                      <span className="tag">SIGNATURE</span>
                     </div>
                   </article>
                 );
@@ -248,7 +248,7 @@ export default async function HeroProfilePage({
                 const quip = abilityQuip(desc);
                 const upgrades = abilityUpgrades(desc);
                 return (
-                  <article key={ha.id} className="ability">
+                  <article key={ha.id} className="ability plate">
                     <div className="ability-num">
                       {a.image ? (
                         <Image
@@ -282,7 +282,7 @@ export default async function HeroProfilePage({
                           ))}
                         </div>
                       ) : null}
-                      <span className="tiny-tag">INNATE</span>
+                      <span className="tag">INNATE</span>
                     </div>
                   </article>
                 );
@@ -302,7 +302,7 @@ export default async function HeroProfilePage({
                 const desc = a.description;
                 const quip = abilityQuip(desc);
                 return (
-                  <article key={ha.id} className="ability">
+                  <article key={ha.id} className="ability plate">
                     <div className="ability-num">
                       {a.image ? (
                         <Image
@@ -320,7 +320,7 @@ export default async function HeroProfilePage({
                     <div>
                       <h4>{a.name}</h4>
                       <p>{quip || "[no description]"}</p>
-                      <span className="tiny-tag">UNIVERSAL</span>
+                      <span className="tag">UNIVERSAL</span>
                     </div>
                   </article>
                 );
@@ -380,9 +380,11 @@ export default async function HeroProfilePage({
             </div>
           </div>
           <div className="panel">
-            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.7, color: "#b5b7c7", fontFamily: "var(--font-mono)" }}>
-              {hero.officialLore}
-            </p>
+            <div className="lore-text">
+              {hero.officialLore.split(/\n\n+/).map((p, i) => (
+                <p key={i}>{p.trim()}</p>
+              ))}
+            </div>
           </div>
         </section>
       ) : null}
@@ -395,18 +397,18 @@ export default async function HeroProfilePage({
             <p>Credited links to the Deadlock Wiki.</p>
           </div>
         </div>
-        <div style={{ display: "grid", gap: 9 }}>
-          <div className="build">
-            <span style={{ fontSize: 13, fontWeight: 600 }}>Lore on the wiki</span>
-            <p>[wiki link not available]</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 9 }}>
+          <div className="plate" style={{ padding: 12 }}>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Lore on the wiki</div>
+            <span className="tag-muted">wiki link not available</span>
           </div>
-          <div className="build">
-            <span style={{ fontSize: 13, fontWeight: 600 }}>Movement</span>
-            <p>[wiki link not available]</p>
+          <div className="plate" style={{ padding: 12 }}>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Movement</div>
+            <span className="tag-muted">wiki link not available</span>
           </div>
-          <div className="build">
-            <span style={{ fontSize: 13, fontWeight: 600 }}>Voice lines</span>
-            <p>[wiki link not available]</p>
+          <div className="plate" style={{ padding: 12 }}>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Voice lines</div>
+            <span className="tag-muted">wiki link not available</span>
           </div>
         </div>
       </section>
@@ -415,11 +417,7 @@ export default async function HeroProfilePage({
       <div style={{ marginTop: 8 }}>
         <Link
           href="/heroes"
-          style={{
-            fontSize: 12,
-            color: "var(--muted)",
-            textDecoration: "none",
-          }}
+          className="back-link"
         >
           ← Back to hero directory
         </Link>

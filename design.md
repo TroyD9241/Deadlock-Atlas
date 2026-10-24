@@ -56,7 +56,9 @@ Page background: two radial glows over `--bg` (purple at top right, teal at bott
 
 - Panels: 1px `--line` border, `--radius-card`, subtle diagonal gradient (`#171b28e8` to `#111520e8`).
 - Hero banner: `--radius-hero`, gradient base, plus a radial glow `color-mix(in srgb, var(--accent) 34%, transparent)` behind the artwork.
-- Buttons: primary = accent fill with `--on-accent` text; secondary = translucent fill with a `#ffffff2b` border; **filters** = pills (`border-radius: 999px`). The **header nav** uses chamfered plates instead (section 5.2).
+- Buttons: primary = accent fill with `--on-accent` text; secondary = translucent fill with a `#ffffff2b` border.
+- **Plate language** (chamfered surfaces, section 5.2): `.plate` = list/data cards (abilities, stats, sources, builds) with 12px corner cuts; `.chip` = interactive pill replacement (switchers, filters) with 8px cuts, 44px target, accent-gradient active state; `.tag` = non-interactive micro-label (class badges, UNIVERSAL, SIGNATURE) with 6px cuts. The header nav uses `.nav-link` (10px cuts). All chamfered surfaces use `inset 0 0 0 1px` edge instead of border so the clip-path cuts read as open chamfers.
+- **Prose rule**: never render API/official text as a single `<p>` blob. Split on blank lines: first paragraph = lead (Inter 15px, `--text`), rest = mono 12.5px; 3+ paragraphs → two columns with accent column-rule above 780px (same as `.hero-card-lore`). Our own words stay Inter.
 - Max content width 1240px, centered.
 
 ### 2.3 Typography

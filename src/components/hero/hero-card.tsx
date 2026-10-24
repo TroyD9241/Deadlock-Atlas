@@ -221,18 +221,7 @@ export function HeroCard({
               </span>
             )}
           </h3>
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 800,
-              letterSpacing: "0.08em",
-              color: "var(--on-accent)",
-              background: "var(--accent)",
-              borderRadius: 999,
-              padding: "4px 8px",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <span className="tag">
             {label}
           </span>
         </div>

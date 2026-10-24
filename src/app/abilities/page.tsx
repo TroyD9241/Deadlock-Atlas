@@ -49,10 +49,8 @@ export default async function AbilitiesPage() {
             {universal.map((a) => (
               <div
                 key={a.id}
+                className="plate"
                 style={{
-                  border: "1px solid var(--line)",
-                  borderRadius: 14,
-                  background: "#ffffff07",
                   padding: 14,
                   display: "grid",
                   gridTemplateColumns: "40px 1fr",
@@ -64,11 +62,10 @@ export default async function AbilitiesPage() {
                   style={{
                     width: 40,
                     height: 40,
-                    borderRadius: 10,
-                    overflow: "hidden",
                     background: "#ffffff0a",
                     display: "grid",
                     placeItems: "center",
+                    clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)",
                   }}
                 >
                   {a.image ? (
@@ -85,23 +82,13 @@ export default async function AbilitiesPage() {
                   )}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
                     {a.name}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.5 }}>
                     {abilityQuip(a.description) || "[no description]"}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 9,
-                      letterSpacing: "0.12em",
-                      color: "var(--accent)",
-                      fontWeight: 800,
-                      marginTop: 4,
-                    }}
-                  >
-                    UNIVERSAL
-                  </div>
+                  <span className="tag" style={{ marginTop: 4 }}>UNIVERSAL</span>
                 </div>
               </div>
             ))}
@@ -125,10 +112,8 @@ export default async function AbilitiesPage() {
             return (
               <div
                 key={a.id}
+                className="plate"
                 style={{
-                  border: "1px solid var(--line)",
-                  borderRadius: 14,
-                  background: "#ffffff07",
                   padding: 14,
                   display: "grid",
                   gridTemplateColumns: "40px 1fr",
@@ -140,11 +125,10 @@ export default async function AbilitiesPage() {
                   style={{
                     width: 40,
                     height: 40,
-                    borderRadius: 10,
-                    overflow: "hidden",
                     background: "#ffffff0a",
                     display: "grid",
                     placeItems: "center",
+                    clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)",
                   }}
                 >
                   {a.image ? (
@@ -161,7 +145,7 @@ export default async function AbilitiesPage() {
                   )}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
                     {a.name}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.5 }}>
