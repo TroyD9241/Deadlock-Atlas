@@ -282,8 +282,10 @@ export function ModelViewer({
 
         let raf = 0;
         const tmp = new THREE.Vector3();
+        let frameCount = 0;
         const tick = () => {
           if (cancelled) return;
+          frameCount++;
 
           // Smoothly steer toward the active POI (or home) on click.
           const goalPos = activeAnchorPos ? activeAnchorPos : homeTarget;
