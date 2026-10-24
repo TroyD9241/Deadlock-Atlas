@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { themeStyle } from "@/lib/theme";
 
 import { NameWordmark } from "./name-wordmark";
@@ -35,8 +33,6 @@ export type HeroBannerProps = {
   /** The hero's five-colour palette, darkest to lightest. */
   palette: string[];
   art: HeroArt | null;
-  /** Render the character cutout. Off for narrow viewports. */
-  showCharacter?: boolean;
 };
 
 /**
@@ -56,7 +52,6 @@ export function HeroBanner({
   accent,
   palette,
   art,
-  showCharacter = true,
 }: HeroBannerProps) {
   return (
     <section
@@ -67,13 +62,13 @@ export function HeroBanner({
         borderRadius: "var(--radius-hero)",
         minHeight: 460,
         display: "grid",
-        gridTemplateColumns: "1.02fr .98fr",
+        gridTemplateColumns: "1fr",
         background: "linear-gradient(115deg, #121621 0%, #191724 56%, #282039 100%)",
         boxShadow: "0 24px 90px #0008",
         ...themeStyle({ accent, palette }),
       }}
     >
-      {/* The hero's own motif, full bleed on the right. Decorative. */}
+      {/* The hero's own motif, full bleed. This is the main hero image. */}
       {art?.background ? (
         <div
           aria-hidden="true"
@@ -82,13 +77,13 @@ export function HeroBanner({
             inset: 0,
             backgroundImage: `url(${art.background})`,
             backgroundSize: "cover",
-            backgroundPosition: "right center",
-            opacity: 0.9,
+            backgroundPosition: "center right",
+            opacity: 1,
             // Fade the left edge so the text always has a dark field to sit on.
             maskImage:
-              "linear-gradient(to right, transparent 0%, transparent 26%, #000 62%)",
+              "linear-gradient(to right, transparent 0%, transparent 18%, #000 52%)",
             WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, transparent 26%, #000 62%)",
+              "linear-gradient(to right, transparent 0%, transparent 18%, #000 52%)",
           }}
         />
       ) : null}
@@ -104,12 +99,24 @@ export function HeroBanner({
         }}
       />
 
+      {/* Dark gradient on the left for text readability over the background. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to right, #0b0e17 0%, #0b0e17cc 30%, transparent 60%)",
+        }}
+      />
+
       <div
         style={{
           position: "relative",
           zIndex: 2,
           padding: "clamp(28px,5vw,60px)",
           alignSelf: "center",
+          maxWidth: 520,
         }}
       >
         <div className="eyebrow" style={{ marginBottom: 17, fontFamily: "var(--font-display)" }}>
@@ -179,40 +186,7 @@ export function HeroBanner({
         </div>
       </div>
 
-      {/* The character cutout, contained on the right as in the mock. */}
-      {showCharacter && art?.card ? (
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            minHeight: 360,
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-            padding: "0 8px 0 0",
-            // The API's character art is a 280x380 portrait crop, not a
-            // full-body cutout, so it is shown at close to its native size
-            // rather than stretched to fill the column.
-          }}
-        >
-          <Image
-            src={art.card}
-            alt=""
-            width={280}
-            height={380}
-            unoptimized
-            style={{
-              width: "auto",
-              height: "auto",
-              maxHeight: 420,
-              maxWidth: "100%",
-              objectFit: "contain",
-              objectPosition: "center bottom",
-              filter: "drop-shadow(0 22px 55px #0009)",
-            }}
-          />
-        </div>
-      ) : null}
+      {/* Character cutout removed — the background motif is now the main image. */}
     </section>
   );
 }
