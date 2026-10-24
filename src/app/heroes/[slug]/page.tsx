@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { HeroBanner } from "@/components/hero/hero-banner";
 import { ModelSection } from "@/components/hero/model-section";
-import type { FieldIcon } from "@/components/hero/ability-icon-field";
+import { AbilityIconField, type FieldIcon } from "@/components/hero/ability-icon-field";
 import { themeStyle } from "@/lib/theme";
 import { getHero, getHeroesByClass } from "@/lib/queries";
 
@@ -126,7 +126,50 @@ export default async function HeroProfilePage({
   abilityIcons.sort((a, b) => (b.emphasis ?? 0) - (a.emphasis ?? 0));
 
   return (
-    <div className="profile" style={themeStyle({ accent: hero.accent, accentText: hero.accentText, onAccent: hero.onAccent, palette })}>
+    <div
+      className="profile"
+      style={{
+        position: "relative",
+        ...themeStyle({ accent: hero.accent, accentText: hero.accentText, onAccent: hero.onAccent, palette }),
+      }}
+    >
+      {/*
+        The page background: a hero-tinted wash over the site's own gradient,
+        with the hero's ability icons scattered through it. The layer is
+        viewport-sized and sticky, so the icons drift behind the sections as
+        the page scrolls. Decorative only.
+      */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "radial-gradient(ellipse 92% 62% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 72%)",
+            }}
+          />
+          <AbilityIconField
+            icons={abilityIcons}
+            seed={hero.slug}
+            opacity={0.45}
+            style={{
+              maskImage: "linear-gradient(to bottom, #000 0%, #000 72%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 72%, transparent 100%)",
+            }}
+          />
+        </div>
+      </div>
+
+      <div style={{ position: "relative", zIndex: 1 }}>
       {/* Hero banner */}
       <HeroBanner
         name={hero.name}
@@ -442,6 +485,7 @@ export default async function HeroProfilePage({
         >
           ← Back to hero directory
         </Link>
+      </div>
       </div>
     </div>
   );
