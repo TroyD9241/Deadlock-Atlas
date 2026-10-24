@@ -26,8 +26,9 @@ type Marker = { anchor: string; x: number; y: number; visible: boolean };
 // Held or carried items only. Everything else (body parts, clothing, effects)
 // stays on the character. Matched against the mesh name's suffix (after the
 // last dot) so bone names like `weapon_hand_R` never trigger a false positive.
+// Only hero-specific props are included — shared body-part suffixes like "gun"
+// are excluded to avoid false positives on heroes where "gun" is part of the body.
 const PROP_SUFFIXES = new Set([
-  "gun",
   "gun_model",
   "sword_model",
   "chrono_gun_model",
@@ -39,7 +40,6 @@ const PROP_SUFFIXES = new Set([
   "ratking_weapon_model",
   "primary_weapon_only",
   "primary_weapon_drum_only",
-  "weapon",
   "unicorn_baton_a",
   "yamato_weapon_longhilt",
   "yamato_weapon_shortsword",
@@ -58,6 +58,8 @@ const PROP_SUFFIXES = new Set([
 function bakeSkinnedMesh(src: SkinnedMesh, THREE: typeof import("three"), root: Object3D): Object3D {
   root.updateMatrixWorld(true);
   src.skeleton.update();
+  // Ensure inverse bind matrices are current after reparenting
+  src.skeleton.calculateInverses();
 
   const geo = src.geometry;
   const pos = geo.getAttribute("position");
@@ -95,6 +97,8 @@ function bakeSkinnedMesh(src: SkinnedMesh, THREE: typeof import("three"), root: 
   const mat = Array.isArray(src.material) ? src.material[0] : src.material;
   const mesh = new THREE.Mesh(newGeo, mat ? mat.clone() : undefined);
   mesh.name = src.name;
+  // Store the suffix for reliable matching
+  mesh.userData.propSuffix = src.name.includes(".") ? src.name.split(".").pop()! : src.name;
   return mesh;
 }
 
@@ -122,6 +126,11 @@ export function ModelViewer({
 
     (async () => {
       try {
+        const dbg0 = document.createElement("div");
+        dbg0.style.cssText = "position:absolute;top:4px;left:4px;font-size:10px;color:#fff;background:rgba(0,0,0,0.7);padding:4px 6px;border-radius:4px;z-index:10;";
+        dbg0.textContent = "loading...";
+        container.appendChild(dbg0);
+
         const THREE = await import("three") as typeof import("three");
         const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
         const { MeshoptDecoder } = await import("three/examples/jsm/libs/meshopt_decoder.module.js");
@@ -129,6 +138,8 @@ export function ModelViewer({
         const { RoomEnvironment } = await import("three/examples/jsm/environments/RoomEnvironment.js");
 
         if (cancelled) return;
+
+        dbg0.textContent = "three loaded";
 
         const width = container.clientWidth || 400;
         const height = container.clientHeight || 480;
@@ -180,15 +191,21 @@ export function ModelViewer({
         // Collect prop meshes (skinned) and bake them into plain meshes positioned
         // to the left/right of the character at head/body height.
         const propMeshes: SkinnedMesh[] = [];
+        const allMeshNames: string[] = [];
         root.traverse((obj: Object3D) => {
           const mesh = obj as SkinnedMesh & { isMesh?: boolean; name?: string };
           if (mesh.isMesh && mesh.name) {
-            const suffix = mesh.name.includes(".") ? mesh.name.split(".").pop()! : mesh.name;
-            if (PROP_SUFFIXES.has(suffix)) {
+            allMeshNames.push(mesh.name);
+            const lower = mesh.name.toLowerCase();
+            // Check if any prop suffix matches
+            const matchedSuffix = [...PROP_SUFFIXES].find((suffix) => lower.endsWith(suffix));
+            if (matchedSuffix) {
               propMeshes.push(mesh);
             }
           }
         });
+
+        // Debug removed
 
         // Compute character bbox (excluding props) for framing and placement.
         propMeshes.forEach((m) => (m.visible = false));
@@ -258,15 +275,15 @@ export function ModelViewer({
           }
         });
 
-        // Map prop-based POI anchors to the baked prop's world position.
+        // Map prop-based POI anchors to the baked prop's actual center position.
         pois.forEach((p) => {
           if (p.anchor.startsWith("prop:")) {
             const suffix = p.anchor.slice(5);
             const bakedMesh = propGroup.children.find((c) => (c.name ?? "").toLowerCase().endsWith(suffix.toLowerCase()));
             if (bakedMesh) {
-              const v = new THREE.Vector3();
-              bakedMesh.getWorldPosition(v);
-              anchorMap.set(p.anchor, v);
+              const pBox = new THREE.Box3().setFromObject(bakedMesh);
+              const pCenter = pBox.getCenter(new THREE.Vector3());
+              anchorMap.set(p.anchor, pCenter);
             }
           }
         });
