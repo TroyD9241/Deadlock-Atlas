@@ -185,7 +185,7 @@ export function HeroCard({
         />
       </div>
 
-      <div style={{ padding: 14 }}>
+      <div style={{ position: "relative", padding: "14px 14px 16px" }}>
         <div
           style={{
             display: "flex",
@@ -284,36 +284,20 @@ export function HeroCard({
             [artwork not verified]
           </span>
         ) : null}
+
+        {/*
+          Full lore, revealed on hover or keyboard focus. Split into distinct
+          paragraph blocks with accent styling for readability.
+        */}
+        <div className="hero-card-lore">
+          {lore.split('\n\n').map((paragraph, idx) => (
+            <p key={idx} className="lore-paragraph">
+              {paragraph.trim()}
+            </p>
+          ))}
+        </div>
       </div>
 
-      {/*
-        Expanded lore overlay on hover: replaces the bottom content with the
-        full lore text, filling the available space.
-      */}
-      <div
-        className="hero-card-lore"
-        style={{
-          position: "absolute",
-          left: 14,
-          right: 14,
-          bottom: 14,
-          maxHeight: 0,
-          opacity: 0,
-          overflow: "hidden",
-          background: "var(--panel)",
-          border: "1px solid var(--line)",
-          borderRadius: "var(--radius-card)",
-          padding: 12,
-          fontSize: 11,
-          color: "var(--text)",
-          lineHeight: 1.6,
-          transition: "max-height 0.25s ease, opacity 0.2s ease",
-          pointerEvents: "none",
-          zIndex: 10,
-        }}
-      >
-        {lore}
-      </div>
     </Link>
   );
 }

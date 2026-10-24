@@ -42,6 +42,11 @@ All values below come from the mock. Keep them as CSS custom properties.
   --nerf: #ff8a80;         /* semantic, never themed */
   --radius-card: 18px;
   --radius-hero: 28px;
+  
+  /* Typography (section 2.3) */
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Gronau Neue", "Inter", system-ui, sans-serif;
+  --font-mono: "Colus", "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 ```
 
@@ -56,10 +61,39 @@ Page background: two radial glows over `--bg` (purple at top right, teal at bott
 
 ### 2.3 Typography
 
-- Font: Inter, falling back to the system UI stack (as in the mock). No other fonts unless approved.
-- Eyebrows: 10px, uppercase, 0.17-0.2em letter-spacing, weight 850, accent colored.
-- Hero names: `clamp(44px, 7vw, 82px)`, tight negative letter-spacing.
-- Section headings: 21px, letter-spacing -0.03em. Supporting text: 12px, `--muted`.
+The site uses a tiered font system to match Deadlock's aesthetic:
+
+**Primary fonts:**
+
+1. **Inter** — Body text and UI elements (fallback to system UI stack)
+   - Used for: general body text, navigation, buttons, labels
+   - Weights: 400 (regular), 500 (medium), 600 (semibold), 850 (eyebrows)
+
+2. **Gronau Neue** — Stylized display elements (hero names, item names, ability names)
+   - Source: Gronau Neue Trial (CC BY-NC license)
+   - Weights: 400 (regular), 700 (bold), 900 (fette/black)
+   - Used for: hero names on cards and banners, item names, ability names, section headings that need a "game UI" feel
+   - Characteristics: condensed, geometric, slightly industrial — captures the game's aesthetic
+
+3. **Colus** — Technical data and stats (monospace-like)
+   - Used for: numerical stats, data tables, lore text overlays, any text that should feel technical or precise
+   - Characteristics: all-caps optimized, mechanical/industrial feel
+   - Style: 10px, uppercase, 0.08em letter-spacing, with subtle accent glow for lore overlays
+
+**Typography scale:**
+
+- **Eyebrows:** 10px, uppercase, 0.17-0.2em letter-spacing, weight 850 (Inter), accent colored
+- **Hero names (display):** `clamp(44px, 7vw, 82px)`, tight negative letter-spacing, Gronau Neue
+- **Item/ability names:** 18-24px, Gronau Neue Bold, accent color
+- **Section headings:** 21px, letter-spacing -0.03em (Inter), or Gronau Neue for game-themed sections
+- **Body text:** 14-16px, Inter Regular
+- **Stats/data:** 11-13px, Colus, uppercase, 0.08em letter-spacing
+- **Supporting text:** 12px, Inter, `--muted`
+
+**Font loading:**
+- All custom fonts use `font-display: swap` for fast initial render
+- Inter loads from system fonts (no download required)
+- Gronau Neue and Colus are self-hosted in `/public/fonts/`
 
 ### 2.4 Components (from the mock; port these as React components)
 

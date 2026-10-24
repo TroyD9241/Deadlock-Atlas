@@ -74,6 +74,8 @@
   /* --- typography (design.md 2.3) --- */
   --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
+  --font-display: "Gronau Neue", "Inter", system-ui, sans-serif;
+  --font-mono: "Colus", "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
 /*

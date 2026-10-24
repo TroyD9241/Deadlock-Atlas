@@ -2,6 +2,44 @@
 @import "../styles/tokens.css";
 
 /*
+ * Custom fonts for Deadlock Atlas
+ * - Colus: monospace-like font for stats and data (technical, precise)
+ * - Gronau Neue: display font for hero names, item names (stylized, bold)
+ */
+@font-face {
+  font-family: "Colus";
+  src: url("/fonts/Colus-Regular.woff2") format("woff2"),
+       url("/fonts/Colus-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gronau Neue";
+  src: url("/fonts/Gronau-Neue-Regular-trial.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gronau Neue";
+  src: url("/fonts/Gronau-Neue-Bold-trial.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gronau Neue";
+  src: url("/fonts/Gronau-Fette-trial.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
  * Tailwind v4 is CSS-first: there is no tailwind.config.js. Utilities are
  * generated from the theme block below, which maps Tailwind's colour scale
  * onto the design tokens in styles/tokens.css so components can use
@@ -151,38 +189,15 @@
     min-width: 44px;
   }
 
-  /* Hero card hover lore expansion */
+  /*
+   * Hero card, from the mock's .card rules, plus the lore reveal.
+   *
+   * The reveal is CSS-only and lives here rather than in the component: the
+   * card is a Server Component, and any inline style on `.hero-card-lore`
+   * would outrank the `:hover` rule below and pin it shut.
+   */
   .hero-card {
     position: relative;
-  }
-  .hero-card-lore {
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-card);
-    padding: 12px;
-    font-size: 11px;
-    color: var(--text);
-    line-height: 1.6;
-    transition: max-height 0.25s ease, opacity 0.2s ease;
-    pointer-events: none;
-    z-index: 10;
-  }
-  .hero-card:hover .hero-card-lore {
-    max-height: 200px;
-    opacity: 1;
-    top: 60px;
-    bottom: 14px;
-  }
-
-  /* Hero card, from the mock's .card rules. */
-  .hero-card {
     min-width: 0;
     text-align: left;
     border: 1px solid var(--line);
@@ -201,9 +216,88 @@
     border-color: var(--accent);
   }
 
+  /*
+   * The lore panel lives in the card body (bottom section), filling it
+   * exactly (the body is the 287x175 area under the art band). On hover/focus
+   * it reveals the hero's lore over the name/tagline/swatches with a
+   * frosted gradient. Scrollable by wheel/trackpad but the scrollbar itself
+   * is hidden so the reveal reads as a clean reveal rather than a list.
+   */
+  .hero-card-lore {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background:
+      radial-gradient(ellipse 140% 36% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 80%),
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        color-mix(in srgb, #0b0e17 76%, var(--accent) 10%) 24%,
+        color-mix(in srgb, #0b0e17 98%, transparent) 100%
+      );
+    backdrop-filter: blur(10px) saturate(1.12);
+    -webkit-backdrop-filter: blur(10px) saturate(1.12);
+    padding: 16px 14px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--accent-text);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+    transition:
+      opacity 0.18s ease;
+    pointer-events: none;
+    z-index: 20;
+    column-count: 2;
+    column-gap: 16px;
+    column-rule: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  .hero-card-lore p {
+    margin: 0 0 10px 0;
+    break-inside: avoid;
+  }
+
+  .hero-card-lore::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero-card:hover .hero-card-lore,
+  .hero-card:focus-within .hero-card-lore {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Touch devices never hover, so show a readable preview of the lore. */
+  @media (hover: none) {
+    .hero-card-lore {
+      opacity: 0.98;
+      pointer-events: auto;
+      max-height: 4.6em;
+      bottom: auto;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    .hero-card {
+      transition: none;
+    }
+
     .hero-card:hover {
       transform: none;
+    }
+
+    .hero-card-lore {
+      transition: none;
     }
   }
 }
