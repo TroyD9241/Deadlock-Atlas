@@ -80,10 +80,11 @@ export function HeroBanner({
             backgroundPosition: "center right",
             opacity: 1,
             // Fade the left edge so the text always has a dark field to sit on.
+            // Less aggressive fade to show more of the character's body.
             maskImage:
-              "linear-gradient(to right, transparent 0%, transparent 18%, #000 52%)",
+              "linear-gradient(to right, transparent 0%, transparent 8%, #000 40%)",
             WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, transparent 18%, #000 52%)",
+              "linear-gradient(to right, transparent 0%, transparent 8%, #000 40%)",
           }}
         />
       ) : null}
@@ -106,7 +107,7 @@ export function HeroBanner({
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(to right, #0b0e17 0%, #0b0e17cc 30%, transparent 60%)",
+            "linear-gradient(to right, #0b0e17 0%, #0b0e1799 25%, transparent 50%)",
         }}
       />
 
