@@ -370,7 +370,7 @@ export default async function HeroProfilePage({
             </div>
           </div>
           <div className="panel">
-            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.7, color: "#b5b7c7" }}>
+            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.7, color: "#b5b7c7", fontFamily: "var(--font-mono)" }}>
               {hero.officialLore}
             </p>
           </div>

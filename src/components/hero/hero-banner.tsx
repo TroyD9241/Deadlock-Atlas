@@ -112,7 +112,7 @@ export function HeroBanner({
           alignSelf: "center",
         }}
       >
-        <div className="eyebrow" style={{ marginBottom: 17 }}>
+        <div className="eyebrow" style={{ marginBottom: 17, fontFamily: "var(--font-display)" }}>
           {eyebrow}
         </div>
         {/*
@@ -152,6 +152,7 @@ export function HeroBanner({
             fontSize: "clamp(18px,2vw,24px)",
             color: "#e7dfee",
             marginBottom: 14,
+            fontFamily: "var(--font-display)",
           }}
         >
           {tagline}
@@ -162,6 +163,8 @@ export function HeroBanner({
             maxWidth: 470,
             lineHeight: 1.8,
             margin: 0,
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
           }}
         >
           {description}

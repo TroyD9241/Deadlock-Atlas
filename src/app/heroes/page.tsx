@@ -25,7 +25,7 @@ export default async function HeroesPage({
         <div className="eyebrow" style={{ marginBottom: 14 }}>
           Characters
         </div>
-        <h1 style={{ margin: "0 0 8px", fontSize: 30, letterSpacing: "-0.04em" }}>
+        <h1 style={{ margin: "0 0 8px", fontSize: 30, letterSpacing: "-0.04em", fontFamily: "var(--font-display)" }}>
           Hero directory
         </h1>
         <p style={{ margin: 0, color: "var(--muted)", fontSize: 12, maxWidth: "58ch" }}>

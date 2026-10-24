@@ -70,6 +70,8 @@
   --radius-hero: var(--radius-hero);
 
   --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
 /*
@@ -336,6 +338,7 @@
   .stat-value {
     font-size: 14px;
     margin-top: 5px;
+    font-family: var(--font-mono);
   }
 
   .section {
@@ -355,6 +358,7 @@
     font-size: 21px;
     letter-spacing: -0.03em;
     margin: 0;
+    font-family: var(--font-display);
   }
 
   .section-head p {
@@ -399,6 +403,7 @@
   .ability h4 {
     margin: 0 0 4px;
     font-size: 13px;
+    font-family: var(--font-display);
   }
 
   .ability p {

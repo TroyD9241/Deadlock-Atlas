@@ -214,6 +214,7 @@ export function HeroCard({
                   fontSize: 16,
                   color: "var(--accent-text)",
                   letterSpacing: "-0.01em",
+                  fontFamily: "var(--font-display)",
                 }}
               >
                 {name}
