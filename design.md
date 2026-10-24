@@ -56,7 +56,7 @@ Page background: two radial glows over `--bg` (purple at top right, teal at bott
 
 - Panels: 1px `--line` border, `--radius-card`, subtle diagonal gradient (`#171b28e8` to `#111520e8`).
 - Hero banner: `--radius-hero`, gradient base, plus a radial glow `color-mix(in srgb, var(--accent) 34%, transparent)` behind the artwork.
-- Buttons: primary = accent fill with `--on-accent` text; secondary = translucent fill with a `#ffffff2b` border; navigation and filters = pills (`border-radius: 999px`).
+- Buttons: primary = accent fill with `--on-accent` text; secondary = translucent fill with a `#ffffff2b` border; **filters** = pills (`border-radius: 999px`). The **header nav** uses chamfered plates instead (section 5.2).
 - Max content width 1240px, centered.
 
 ### 2.3 Typography
@@ -331,9 +331,10 @@ VOICE LINES: https://deadlock.wiki/Deadman_Danny/Voice_lines
 
 ### 5.2 Header and navigation
 
-- Brand `DEADLOCK ATLAS` (letter-spaced, accent on "ATLAS"), then pill nav: Home, Heroes, Items, Lore, Map, Patches.
-- Active page is highlighted. On narrow screens the nav becomes a horizontally scrolling row; it is never hidden.
-- A global search sits on Home and the directory pages. Pressing Enter opens results.
+- Brand `DEADLOCK ATLAS` in Gronau Neue (letter-spaced, accent on "ATLAS"), then chamfered-plate nav: Home, Heroes (with portrait dropdown), Items, Lore, Map, Patches.
+- Nav labels are Gronau Neue, uppercase, 12px/700, wide tracking. Each sits on a cut-corner angular plate (`clip-path` chamfer); hover = 12% accent tint; active page = 26%→10% gradient plate with 1px inset accent edge.
+- A global search field, styled as a chamfered plate in matching typography, sits at the end of the nav row with Cmd+K shortcut and debounced autocomplete.
+- The header bar is sticky at the top of the viewport with a translucent `--bg` background + backdrop blur; the mobile nav scrolls horizontally and is never hidden.
 - "Hero profile" in the nav returns to the last hero viewed.
 
 ### 5.3 Home (dashboard)

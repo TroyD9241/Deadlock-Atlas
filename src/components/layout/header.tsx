@@ -17,19 +17,11 @@ export function Header() {
         alignItems: "center",
         justifyContent: "space-between",
         gap: 16,
-        marginBottom: 22,
       }}
     >
       <Link
         href="/"
-        style={{
-          fontSize: 13,
-          letterSpacing: "0.16em",
-          fontWeight: 850,
-          color: "#eee8f6",
-          whiteSpace: "nowrap",
-          textDecoration: "none",
-        }}
+        className="brand"
       >
         DEADLOCK <span style={{ color: "var(--accent)" }}>ATLAS</span>
       </Link>

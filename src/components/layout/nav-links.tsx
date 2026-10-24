@@ -57,14 +57,10 @@ export function NavLinks({ heroes }: NavLinksProps) {
             key={link.href}
             href={link.href}
             aria-current={active ? "page" : undefined}
-            className={`pill tap${active ? " pill-active" : ""}`}
+            className="nav-link"
             style={{
-              // Keep the pill on one line while the row scrolls.
+              // Keep the nav on one line while the row scrolls.
               flex: "0 0 auto",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              fontSize: 13,
             }}
           >
             {link.label}

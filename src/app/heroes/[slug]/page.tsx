@@ -146,24 +146,7 @@ export default async function HeroProfilePage({
         </section>
       )}
 
-      {/* Class switch nav */}
-      <nav className="class-nav" aria-label="Switch hero class">
-        <Link
-          href="/heroes/classes"
-          className={CLASSES.includes(hero.heroType as (typeof CLASSES)[number]) ? "" : "active"}
-        >
-          ALL CLASSES
-        </Link>
-        {CLASSES.map((c) => (
-          <Link
-            key={c}
-            href={`/heroes?class=${c}`}
-            className={hero.heroType === c ? "active" : ""}
-          >
-            {c.toUpperCase()}
-          </Link>
-        ))}
-      </nav>
+
 
       {/* Profile switcher */}
       <div className="profile-switcher" aria-label="Switch hero profile">

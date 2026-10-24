@@ -32,7 +32,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <div className="shell flex min-h-full flex-col">
-          <Header />
+          {/*
+           * Full-bleed sticky header wrapper. The shell's padding is cancelled
+           * by negative margins so the bar spans the viewport; the inner div
+           * re-applies the shell's padding so brand + nav align with the page
+           * content. (design.md 5.2, user-approved: sticky translucent header.)
+           */}
+          <div className="site-header-sticky">
+            <div className="site-header-inner">
+              <Header />
+            </div>
+          </div>
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
