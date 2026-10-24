@@ -435,6 +435,141 @@
   }
 
   /*
+   * Item popout (design.md 5.5).
+   *
+   * Preview: translucent, not interactive, a progress ring runs for 5s.
+   * Pinned: solid, full border, ring complete, scrollable, has a button.
+   */
+  .item-popover {
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: linear-gradient(145deg, #171b28f2, #111520f2);
+    box-shadow: 0 18px 60px #000b;
+    opacity: 0.92;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: opacity 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .item-popover.is-pinned {
+    opacity: 1;
+    background: linear-gradient(145deg, #1b2030, #141824);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  }
+
+  /* The 5-second pin progress ring. */
+  @property --item-ring-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  .item-popover-ring {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: conic-gradient(var(--accent) var(--item-ring-angle), transparent 0);
+    -webkit-mask: radial-gradient(circle, transparent 58%, #000 62%);
+    mask: radial-gradient(circle, transparent 58%, #000 62%);
+    animation: item-pin-ring 5s linear forwards;
+    pointer-events: none;
+  }
+
+  @keyframes item-pin-ring {
+    to {
+      --item-ring-angle: 360deg;
+    }
+  }
+
+  .item-popover.is-pinned .item-popover-ring {
+    opacity: 0;
+  }
+
+  .item-popover-open {
+    margin-top: 10px;
+    padding: 8px 12px;
+    font-size: 11px;
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .item-popover-ring {
+      animation: none;
+      opacity: 0;
+    }
+  }
+
+  /* Item card and the item page's own text styles. */
+  .item-card {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .item-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+      0 14px 40px -18px #000c;
+  }
+
+  /* Valve's inline item text, restyled for the page. */
+  .item-effect {
+    color: #b5b7c7;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  .item-effect p {
+    margin: 0 0 12px;
+  }
+
+  .item-effect p:first-child {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .item-effect .item-highlight {
+    color: var(--accent-text);
+    font-weight: 700;
+  }
+
+  .item-effect .item-diminish {
+    color: var(--muted);
+  }
+
+  .item-effect .item-attribute-label {
+    display: inline-block;
+    padding: 0 5px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 0.88em;
+    color: var(--accent-text);
+    font-weight: 700;
+    vertical-align: baseline;
+  }
+
+  .item-effect svg {
+    width: 1.05em;
+    height: 1.05em;
+    vertical-align: -0.18em;
+    fill: var(--accent-text);
+  }
+
+  .item-effect svg path,
+  .item-effect svg g {
+    fill: var(--accent-text);
+  }
+
+  /*
    * Hero card, from the mock's .card rules, plus the lore reveal.
    *
    * The reveal is CSS-only and lives here rather than in the component: the

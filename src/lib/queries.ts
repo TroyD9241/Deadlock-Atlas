@@ -237,3 +237,101 @@ export async function getHero(slug: string) {
     abilities: row.abilities,
   };
 }
+
+/*
+ * Items (M5).
+ *
+ * The 95 items with no `slotType` are the weapon-upgrade rows the API lists
+ * as separate entries (weapon_upgrade_t1 and friends). They are not shop
+ * items, so the list and the pages leave them out (see the M5 plan).
+ */
+
+export type ItemSummary = {
+  slug: string;
+  name: string;
+  nameSource: string;
+  slotType: string | null;
+  tier: number | null;
+  cost: number | null;
+  itemType: string | null;
+  shopable: boolean | null;
+  image: string | null;
+  imageWebp: string | null;
+  shopImage: string | null;
+  accent: string | null;
+  accentText: string | null;
+  onAccent: string | null;
+  accentSource: string;
+};
+
+export type ItemDetail = ItemSummary & {
+  description: unknown;
+  properties: unknown;
+  tooltipSections: unknown;
+  upgrades: unknown;
+  activation: unknown;
+  imbue: unknown;
+};
+
+const ITEM_SELECT = {
+  slug: true,
+  name: true,
+  nameSource: true,
+  slotType: true,
+  tier: true,
+  cost: true,
+  itemType: true,
+  shopable: true,
+  image: true,
+  imageWebp: true,
+  shopImage: true,
+  accent: true,
+  accentText: true,
+  onAccent: true,
+  accentSource: true,
+} as const;
+
+/**
+ * Every item in the shop, for the list page.
+ *
+ * Slot-less rows are excluded. Ordered by slot, then tier, then name so the
+ * list reads like the in-game shop.
+ */
+export async function getItems(): Promise<ItemSummary[]> {
+  return db.item.findMany({
+    where: { slotType: { not: null } },
+    orderBy: [{ slotType: "asc" }, { tier: "asc" }, { name: "asc" }],
+    select: ITEM_SELECT,
+  });
+}
+
+/** One item, for its page and the popover. */
+export async function getItem(slug: string): Promise<ItemDetail | null> {
+  const row = await db.item.findUnique({
+    where: { slug },
+    select: {
+      ...ITEM_SELECT,
+      description: true,
+      properties: true,
+      tooltipSections: true,
+      upgrades: true,
+      activation: true,
+      imbue: true,
+    },
+  });
+  return row;
+}
+
+/** How many items each slot has, for the filter chips. */
+export async function getItemSlotCounts(): Promise<Record<string, number>> {
+  const rows = await db.item.groupBy({
+    by: ["slotType"],
+    where: { slotType: { not: null } },
+    _count: true,
+  });
+  const counts: Record<string, number> = {};
+  for (const row of rows) {
+    if (row.slotType) counts[row.slotType] = row._count;
+  }
+  return counts;
+}
