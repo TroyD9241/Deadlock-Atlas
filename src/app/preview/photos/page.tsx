@@ -43,7 +43,7 @@ export default async function PhotoPreviewPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
               {art.background ? (
                 <div>
-                  <div style={{ fontSize: 9, color: "var(--muted)", marginBottom: 4, letterSpacing: "0.1em" }}>BACKGROUND</div>
+                  <div style={{ fontSize: 9, color: "var(--muted)", marginBottom: 4, letterSpacing: "0.1em" }}>BACKGROUND (4096×2312)</div>
                   <img
                     src={art.background}
                     alt={`${h.name} background`}
@@ -63,13 +63,13 @@ export default async function PhotoPreviewPage() {
                 </div>
               ) : null}
 
-              {art.vertical ? (
+              {art.cardCritical ? (
                 <div>
-                  <div style={{ fontSize: 9, color: "var(--muted)", marginBottom: 4, letterSpacing: "0.1em" }}>VERTICAL (120×200)</div>
+                  <div style={{ fontSize: 9, color: "var(--muted)", marginBottom: 4, letterSpacing: "0.1em" }}>CARD CRITICAL</div>
                   <img
-                    src={art.vertical}
-                    alt={`${h.name} vertical`}
-                    style={{ width: "auto", height: 180, objectFit: "contain", borderRadius: 8, border: "1px solid var(--line)", background: "#000" }}
+                    src={art.cardCritical}
+                    alt={`${h.name} critical`}
+                    style={{ width: "100%", height: 180, objectFit: "contain", borderRadius: 8, border: "1px solid var(--line)", background: "#000" }}
                   />
                 </div>
               ) : null}
@@ -81,6 +81,28 @@ export default async function PhotoPreviewPage() {
                     src={art.cardGloat}
                     alt={`${h.name} gloat`}
                     style={{ width: "100%", height: 180, objectFit: "contain", borderRadius: 8, border: "1px solid var(--line)", background: "#000" }}
+                  />
+                </div>
+              ) : null}
+
+              {art.vertical ? (
+                <div>
+                  <div style={{ fontSize: 9, color: "var(--muted)", marginBottom: 4, letterSpacing: "0.1em" }}>VERTICAL (120×200)</div>
+                  <img
+                    src={art.vertical}
+                    alt={`${h.name} vertical`}
+                    style={{ width: "auto", height: 180, objectFit: "contain", borderRadius: 8, border: "1px solid var(--line)", background: "#000" }}
+                  />
+                </div>
+              ) : null}
+
+              {art.small ? (
+                <div>
+                  <div style={{ fontSize: 9, color: "var(--muted)", marginBottom: 4, letterSpacing: "0.1em" }}>SMALL (128×128)</div>
+                  <img
+                    src={art.small}
+                    alt={`${h.name} small`}
+                    style={{ width: 128, height: 128, objectFit: "contain", borderRadius: 8, border: "1px solid var(--line)", background: "#000" }}
                   />
                 </div>
               ) : null}
