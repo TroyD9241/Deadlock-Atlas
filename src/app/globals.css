@@ -158,6 +158,11 @@
     min-width: 0;
   }
 
+  .panel h3 {
+    margin: 0 0 14px;
+    font-family: var(--font-display);
+  }
+
   /* Eyebrows: 10px, uppercase, wide tracking, weight 850, accent. */
   .eyebrow {
     font-size: 10px;
@@ -333,6 +338,7 @@
     letter-spacing: 0.17em;
     color: var(--accent);
     font-weight: 850;
+    font-family: var(--font-display);
   }
 
   .stat-value {
@@ -411,6 +417,7 @@
     color: #aeb2c3;
     font-size: 12px;
     line-height: 1.65;
+    font-family: var(--font-mono);
   }
 
   .tiny-tag {
