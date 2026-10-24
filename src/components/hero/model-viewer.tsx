@@ -23,13 +23,40 @@ export type ModelViewerProps = {
 
 type Marker = { anchor: string; x: number; y: number; visible: boolean };
 
-// Meshes whose names contain any of these are treated as props/weapons and
-// repositioned away from the character body.
-const PROP_KEYWORDS = ["gun", "book", "flask", "cards", "baton", "weapon", "reliquary", "muzzle"];
+// Held or carried items only. Everything else (body parts, clothing, effects)
+// stays on the character. Matched against the mesh name's suffix (after the
+// last dot) so bone names like `weapon_hand_R` never trigger a false positive.
+const PROP_SUFFIXES = new Set([
+  "gun",
+  "gun_model",
+  "sword_model",
+  "chrono_gun_model",
+  "haze_gun_l",
+  "haze_gun_r",
+  "magician_wand",
+  "necro_weapon_model",
+  "nurse_weapon_model",
+  "ratking_weapon_model",
+  "primary_weapon_only",
+  "primary_weapon_drum_only",
+  "weapon",
+  "unicorn_baton_a",
+  "yamato_weapon_longhilt",
+  "yamato_weapon_shortsword",
+  "yamato_weapon_beltscabbard",
+  "archer_bow_model",
+  "archer_clip_inbow_model",
+  "book_model",
+  "flask_on_hip",
+  "wraith_handcards_model",
+  "briefcase",
+  "urn",
+  "umbrella",
+  "cat_v2",
+]);
 
-// Bake a skinned mesh into a plain mesh so it can be moved freely.
-function bakeSkinnedMesh(src: SkinnedMesh, THREE: typeof import("three")): Object3D {
-  src.updateMatrixWorld(true);
+function bakeSkinnedMesh(src: SkinnedMesh, THREE: typeof import("three"), root: Object3D): Object3D {
+  root.updateMatrixWorld(true);
   src.skeleton.update();
 
   const geo = src.geometry;
@@ -41,7 +68,6 @@ function bakeSkinnedMesh(src: SkinnedMesh, THREE: typeof import("three")): Objec
   const newNrm = nrm ? new Float32Array(nrm.count * 3) : null;
 
   const v = new THREE.Vector3();
-  const n = new THREE.Vector3();
 
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i);
@@ -51,10 +77,8 @@ function bakeSkinnedMesh(src: SkinnedMesh, THREE: typeof import("three")): Objec
     newPos[i * 3 + 2] = v.z;
 
     if (nrm && newNrm) {
+      const n = new THREE.Vector3();
       n.fromBufferAttribute(nrm, i);
-      // Approximate: transform normal by the same bone matrix used for the vertex.
-      // applyBoneTransform only gives position, so we transform the normal by
-      // the dominant bone's rotation. Good enough for props.
       newNrm[i * 3] = n.x;
       newNrm[i * 3 + 1] = n.y;
       newNrm[i * 3 + 2] = n.z;
@@ -117,7 +141,7 @@ export function ModelViewer({
         container.appendChild(renderer.domElement);
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 100);
+        const camera = new THREE.PerspectiveCamera(38, width / height, 0.01, 100);
         camera.position.set(0, 1.6, 4);
 
         const pmrem = new THREE.PMREMGenerator(renderer);
@@ -159,8 +183,8 @@ export function ModelViewer({
         root.traverse((obj: Object3D) => {
           const mesh = obj as SkinnedMesh & { isMesh?: boolean; name?: string };
           if (mesh.isMesh && mesh.name) {
-            const lower = mesh.name.toLowerCase();
-            if (PROP_KEYWORDS.some((kw) => lower.includes(kw))) {
+            const suffix = mesh.name.includes(".") ? mesh.name.split(".").pop()! : mesh.name;
+            if (PROP_SUFFIXES.has(suffix)) {
               propMeshes.push(mesh);
             }
           }
@@ -177,12 +201,12 @@ export function ModelViewer({
         const propGroup = new THREE.Group();
         scene.add(propGroup);
 
-        const sideX = charSize.x / 2 + 1.2;
+        const sideX = charSize.x / 2 + 0.7;
         const headY = charBox.max.y - charSize.y * 0.15;
         const bodyY = charCenter.y;
 
         propMeshes.forEach((prop, i) => {
-          const baked = bakeSkinnedMesh(prop, THREE);
+          const baked = bakeSkinnedMesh(prop, THREE, root);
           propGroup.add(baked);
 
           const side = i % 2 === 0 ? 1 : -1;
@@ -199,47 +223,83 @@ export function ModelViewer({
           if (prop.parent) prop.parent.remove(prop);
         });
 
-        // Frame the camera on character + props.
+        // Frame the camera on character + props (height-based, not width-based).
         const allBox = new THREE.Box3().setFromObject(scene);
         const size = allBox.getSize(new THREE.Vector3());
         const center = allBox.getCenter(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
         const fov = camera.fov * (Math.PI / 180);
-        const cameraZ = (maxDim / 2) / Math.tan(fov / 2) * 1.5;
+        const aspect = width / height;
+        const distH = (size.y / 2) / Math.tan(fov / 2);
+        const distW = (size.x / 2) / (Math.tan(fov / 2) * aspect);
+        const cameraZ = Math.max(distH, distW) * 1.08;
         camera.position.set(center.x, center.y, center.z + cameraZ);
         camera.lookAt(center);
-        camera.near = Math.max(0.01, maxDim / 100);
-        camera.far = maxDim * 10;
+        camera.near = Math.max(0.01, Math.max(size.x, size.y, size.z) / 100);
+        camera.far = Math.max(size.x, size.y, size.z) * 10;
         camera.updateProjectionMatrix();
 
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.08;
-        controls.target.copy(center);
-        controls.enablePan = false;
-        controls.minDistance = maxDim * 0.6;
-        controls.maxDistance = maxDim * 4;
-        controls.autoRotate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        controls.autoRotateSpeed = 0.6;
+        // Home camera state for the zoom-to-POI animation.
+        const homeTarget = center.clone();
+        const homeDistance = cameraZ;
+        const closeDistance = Math.max(size.y * 0.35, 1.2);
+        const focusTarget = new THREE.Vector3().copy(homeTarget);
+        const focusDistance = { value: homeDistance };
+        const targetGoal = homeTarget.clone();
+        let distanceGoal = homeDistance;
+        let activeAnchorPos: Vector3 | null = null;
 
         // Map anchor names -> world positions (bones, not props).
         const anchorMap = new Map<string, Vector3>();
         root.traverse((obj: Object3D) => {
-          if (obj.name && pois.some((p) => p.anchor === obj.name)) {
+          if (obj.name && pois.some((p) => p.anchor === obj.name || p.anchor === `bone:${obj.name}`)) {
             const v = new THREE.Vector3();
             obj.getWorldPosition(v);
             anchorMap.set(obj.name, v);
           }
         });
 
-        // Prop anchors are mapped to bones for now (props are hidden).
+        // Map prop-based POI anchors to the baked prop's world position.
+        pois.forEach((p) => {
+          if (p.anchor.startsWith("prop:")) {
+            const suffix = p.anchor.slice(5);
+            const bakedMesh = propGroup.children.find((c) => (c.name ?? "").toLowerCase().endsWith(suffix.toLowerCase()));
+            if (bakedMesh) {
+              const v = new THREE.Vector3();
+              bakedMesh.getWorldPosition(v);
+              anchorMap.set(p.anchor, v);
+            }
+          }
+        });
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.target.copy(homeTarget);
+        controls.enablePan = false;
+        controls.minDistance = Math.max(size.y * 0.25, 0.8);
+        controls.maxDistance = Math.max(size.x, size.y, size.z) * 4;
+        controls.autoRotate = false;
 
         let raf = 0;
         const tmp = new THREE.Vector3();
         const tick = () => {
           if (cancelled) return;
+
+          // Smoothly steer toward the active POI (or home) on click.
+          const goalPos = activeAnchorPos ? activeAnchorPos : homeTarget;
+          const goalDist = activeAnchorPos ? closeDistance : homeDistance;
+          targetGoal.lerp(goalPos, 0.09);
+          distanceGoal += (goalDist - distanceGoal) * 0.09;
+
+          const dir = camera.position.clone().sub(controls.target);
+          const curDist = dir.length();
+          if (curDist > 0.001) dir.normalize();
+          else dir.set(0, 0, 1);
+
+          controls.target.lerp(targetGoal, 0.09);
+          const newDist = THREE.MathUtils.lerp(curDist, distanceGoal, 0.09);
+          camera.position.copy(controls.target).addScaledVector(dir, newDist);
           controls.update();
-          renderer.render(scene, camera);
 
           // Project anchors to screen space.
           const rect = renderer.domElement.getBoundingClientRect();
@@ -254,6 +314,7 @@ export function ModelViewer({
           });
           setMarkers(next);
 
+          renderer.render(scene, camera);
           raf = requestAnimationFrame(tick);
         };
         tick();
@@ -288,6 +349,17 @@ export function ModelViewer({
             container.removeChild(renderer.domElement);
           }
         };
+
+        // Expose a way to drive the focus from outside (click on a POI).
+        // We stash the goal on the container so the parent can update it via props.
+        (container as { __setFocus?: (anchor: string | null) => void }).__setFocus = (anchor: string | null) => {
+          if (anchor) {
+            const w = anchorMap.get(anchor);
+            if (w) activeAnchorPos = w;
+          } else {
+            activeAnchorPos = null;
+          }
+        };
       } catch (e) {
         if (!cancelled) setStatus("error");
       }
@@ -299,7 +371,15 @@ export function ModelViewer({
     };
   }, [modelUrl, accent, pois]);
 
-  const activePoiData = pois.find((p) => p.anchor === activePoi || p.anchor === hoveredPoi);
+  // Drive the focus goal from the activePoi prop.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const setter = (container as { __setFocus?: (anchor: string | null) => void }).__setFocus;
+    if (setter) setter(activePoi);
+  }, [activePoi]);
+
+  const activePoiData = pois.find((p) => p.anchor === activePoi);
   const ringAnchor = activePoi ?? hoveredPoi;
   const ringMarker = markers.find((m) => m.anchor === ringAnchor && m.visible);
 

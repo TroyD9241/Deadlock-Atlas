@@ -50,8 +50,16 @@ async function main() {
     }
     const gltf = await fetchGlbJson(url);
     const nodeNames = new Set((gltf.nodes as { name?: string }[]).map((n) => n.name).filter(Boolean));
+    const meshNames = new Set((gltf.meshes as { name?: string }[]).map((m) => m.name).filter(Boolean));
     for (const poi of pois) {
-      if (!nodeNames.has(poi.anchor)) {
+      if (poi.anchor.startsWith("prop:")) {
+        const suffix = poi.anchor.slice(5);
+        const found = [...meshNames].some((n) => (n ?? "").endsWith(suffix));
+        if (!found) {
+          console.error(`  ${slug}: prop anchor "${poi.anchor}" not found in model meshes`);
+          errors += 1;
+        }
+      } else if (!nodeNames.has(poi.anchor)) {
         console.error(`  ${slug}: anchor "${poi.anchor}" not found in model`);
         errors += 1;
       }

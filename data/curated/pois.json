@@ -1,38 +1,38 @@
 {
   "abrams": [
-    { "anchor": "weapon", "label": "The Revolver", "body": "Abrams' sidearm. In close quarters it fires a wide spread — the same close-range pressure that defines his Shoulder Charge.", "order": 1 },
-    { "anchor": "book_0", "label": "The Tome", "body": "The mysterious book that arrived on his desk with a note scrawled in onyx blood: \"Don't let them have it.\" It is the source of his Siphon Life ability.", "order": 2 },
+    { "anchor": "prop:gun_model", "label": "The Revolver", "body": "Abrams' sidearm. In close quarters it fires a wide spread — the same close-range pressure that defines his Shoulder Charge.", "order": 1 },
+    { "anchor": "prop:book_model", "label": "The Tome", "body": "The mysterious book that arrived on his desk with a note scrawled in onyx blood: \"Don't let them have it.\" It is the source of his Siphon Life ability.", "order": 2 },
     { "anchor": "head", "label": "Detective Abrams", "body": "A fixture of the New York investigating scene for years. Stolen art, missing persons, ritual murders — he solved them all before the Tome found him.", "order": 3 },
     { "anchor": "coat_main", "label": "The Coat", "body": "Worn through years of detective work and now through firefights. The bulk and sustain to lead from the front.", "order": 4 },
     { "anchor": "cig_0", "label": "The Cigar", "body": "A small comfort between cases. Some habits survive the supernatural.", "order": 5 }
   ],
   "infernus": [
     { "anchor": "muzzle_fx", "label": "The Flames", "body": "Infernus burns. His flames are both his weapon and his identity — a constant, searing presence on the battlefield.", "order": 1 },
-    { "anchor": "hip_flask_tracker", "label": "The Flask", "body": "Carried at the hip. A small vessel of something volatile — the fuel for his fire.", "order": 2 },
+    { "anchor": "prop:flask_on_hip", "label": "The Flask", "body": "Carried at the hip. A small vessel of something volatile — the fuel for his fire.", "order": 2 },
     { "anchor": "head", "label": "Infernus", "body": "A being of fire and fury. Where he walks, the ground scorches.", "order": 3 },
     { "anchor": "hand_R", "label": "The Hand", "body": "Even fire needs a guiding hand. Infernus directs his flames with precision.", "order": 4 }
   ],
   "wraith": [
-    { "anchor": "cards", "label": "The Cards", "body": "Wraith's cards are her weapon and her calling card. Each one carries a trick — and a debt.", "order": 1 },
+    { "anchor": "prop:wraith_handcards_model", "label": "The Cards", "body": "Wraith's cards are her weapon and her calling card. Each one carries a trick — and a debt.", "order": 1 },
     { "anchor": "hand_R", "label": "The Pistol", "body": "A sidearm for when the cards aren't enough. Quick, precise, and deadly at range.", "order": 2 },
     { "anchor": "head", "label": "Wraith", "body": "A woman of mystery and shadow. The cards chose her, and she chose to survive.", "order": 3 },
     { "anchor": "clavicle_L", "label": "The Shawl", "body": "Worn like armor. A reminder of who she was before the cards found her.", "order": 4 }
   ],
   "viscous": [
     { "anchor": "head", "label": "The Eyes", "body": "Two points of awareness in an otherwise formless body. They track everything.", "order": 1 },
-    { "anchor": "weapon_bone_R", "label": "The Weapon", "body": "Even a blob needs a gun. Viscous wields his weapon with surprising precision.", "order": 2 },
+    { "anchor": "prop:gun", "label": "The Weapon", "body": "Even a blob needs a gun. Viscous wields his weapon with surprising precision.", "order": 2 },
     { "anchor": "muzzle", "label": "The Muzzle", "body": "Where the shot comes from. Viscous can reshape his body to aim from unexpected angles.", "order": 3 },
     { "anchor": "pelvis", "label": "The Goo", "body": "Viscous is a sentient mass of gel. He can split, reform, and absorb damage that would destroy a solid body.", "order": 4 }
   ],
   "shiv": [
-    { "anchor": "weapon_hand_R", "label": "The Blade", "body": "Shiv's weapon of choice. Close-range, brutal, and precise.", "order": 1 },
+    { "anchor": "prop:gun", "label": "The Blade", "body": "Shiv's weapon of choice. Close-range, brutal, and precise.", "order": 1 },
     { "anchor": "hair_0", "label": "The Hair", "body": "A distinctive look. Part of the identity that Shiv projects.", "order": 2 },
     { "anchor": "head", "label": "Shiv", "body": "A warrior forged in the streets. Every scar tells a story.", "order": 3 },
     { "anchor": "cig_0", "label": "The Cigar", "body": "A small comfort. Even in the heat of battle, some rituals remain.", "order": 4 }
   ],
   "celeste": [
-    { "anchor": "weapon", "label": "The Baton", "body": "Celeste's instrument of control. It channels her spirit energy into devastating attacks.", "order": 1 },
-    { "anchor": "weaponPivot", "label": "The Grip", "body": "Where hand meets weapon. The point of control.", "order": 2 },
+    { "anchor": "prop:unicorn_baton_a", "label": "The Baton", "body": "Celeste's instrument of control. It channels her spirit energy into devastating attacks.", "order": 1 },
+    { "anchor": "hand_L", "label": "The Grip", "body": "Where hand meets weapon. The point of control.", "order": 2 },
     { "anchor": "eye_0_L", "label": "The Gaze", "body": "A performer at heart. Even in combat, there is a theatrical quality to everything she does.", "order": 3 },
     { "anchor": "head", "label": "Celeste", "body": "A star on the battlefield. Dazzling, disruptive, and deadly.", "order": 4 }
   ]
