@@ -139,6 +139,30 @@ export async function getReleasedHeroes(): Promise<HeroSummary[]> {
   return rows.map(toSummary);
 }
 
+/** All abilities, for the /abilities index. */
+export async function getAllAbilities() {
+  const rows = await db.ability.findMany({
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      className: true,
+      name: true,
+      kind: true,
+      image: true,
+      imageWebp: true,
+      description: true,
+      heroes: {
+        select: {
+          hero: {
+            select: { slug: true, name: true },
+          },
+        },
+      },
+    },
+  });
+  return rows;
+}
+
 /** One hero by slug, with its abilities. */
 export async function getHero(slug: string) {
   const row = await db.hero.findUnique({
@@ -180,5 +204,12 @@ export async function getHero(slug: string) {
   });
 
   if (!row) return null;
-  return { ...toSummary(row), id: row.id, abilities: row.abilities };
+  return {
+    ...toSummary(row),
+    id: row.id,
+    isReleased: row.isReleased,
+    needsReview: row.needsReview,
+    startingStats: row.startingStats,
+    abilities: row.abilities,
+  };
 }
