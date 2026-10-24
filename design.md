@@ -106,6 +106,41 @@ The site uses a tiered font system to match Deadlock's aesthetic:
 - Icons: inline SVG, stroke style, `currentColor`. No emoji.
 - Buff/nerf badges always pair color with an arrow and a word or label (up/down). Color alone never carries meaning.
 
+### 2.6 Art-forward backgrounds (idea to build on)
+
+The API hands us far more art than a page needs, and blank areas are where a site looks unfinished. The idea: **use the game's own assets as background texture and as character, so a page is never empty where it could carry a character.**
+
+Two layers of this pattern, one already shipped and one to build on:
+
+**Shipped — ability icon field (`AbilityIconField`).** The hero profile's background gradient carries the hero's own ability icons: the API gives every hero ability class its own art (`abilities/vampirebat/vampirebat_love_bites.png`), so each hero's page is themed by its own kit. Signature and innate abilities render large and stronger; the shared universal ones render small and faint. The banner uses a stronger field; the page background uses a fainter, sticky one that drifts behind the sections as you scroll.
+
+**To build on — character assets on blank backgrounds.** The API ships several renders per hero and we currently use one:
+
+| Key | Size | Shape | Used today |
+|---|---|---|---|
+| `card` | 280×380 | portrait crop | banner cutout, directory cards, nav dropdown |
+| `cardCritical` | 280×380 | portrait crop | nav dropdown only |
+| `cardGloat` | 280×380 | portrait crop | nav dropdown only |
+| `vertical` | portrait | full height | unused |
+| `small` | 128×128 | square | unused |
+| `background` | 4096×2312 | wide motif | banner backdrop, directory cards |
+| `nameImage` | wordmark | official logo | banner and card headings |
+
+Where a page has a blank area, reach for the assets before adding a box or a rule:
+
+- **Placeholder sections** ("Looks & cosmetics", build paths, map, lore cards, item pages) can carry a character render or the hero's motif instead of sitting empty.
+- **The 3D model's fallback** can use a different hero render than the banner, so the same hero is not repeated twice in a row.
+- **Directory cards** can rotate through `card` / `cardCritical` / `cardGloat` so the grid is not 44 identical portraits.
+- **Section backgrounds** can use the hero's `vertical` or `small` art at low opacity behind headings.
+
+Rules when doing this:
+
+- Decorative only: `aria-hidden`, no pointer events, never inside a link or a control.
+- Never behind body text at a readable opacity — background art stays faint, text keeps its 4.5:1 contrast.
+- Placement is deterministic (PRNG seeded with the entity slug), so a page renders identically on the server and the client.
+- Hero-specific art only on hero-specific pages; a generic page uses the site's own gradient, not a hero's art.
+- Asset use is Valve's: hotlink the API's CDN, never self-host copies (see the open question in section 11).
+
 ## 3. Theming system (character colors)
 
 ### 3.1 Rule
@@ -488,3 +523,4 @@ Graph of heroes and factions (React Flow or Cytoscape). Home shows a preview; th
 - **Hero profile body copy:** 18 of 44 released heroes have no `playstyle` or `role` from the API (only `lore`). Deferred — profile pages will lead with Valve's official text where present and show `[lore only]` for the rest until we draft personalized taglines. Revisit after M2 profile page scaffolding.
 - **Hero profile image choice:** The profile banner currently uses the 280×380 card portrait as the character cutout (matching the mock). The 4096×2312 background motif is used as a backdrop. We explored using the background as the main image but reverted — the portrait reads better at this size. Revisit if better artwork (full-body renders) becomes available.
 - **3D character model:** Each hero page has a "Character model" section below the banner, rendering the hero's `hero_select.glb` from Valve's CDN via three.js. The model is lazy-loaded (IntersectionObserver) and shows the card portrait as a placeholder. POI hotspots are HTML markers projected onto the model's bone positions each frame, with an accessible list of buttons below the canvas. POI copy is our own words, stored in `HeroPoi` and seeded from `data/curated/pois.json`. Anchors are validated by `scripts/check-model-anchors.ts` before seeding. Mo & Krill has no model and the section is omitted.
+- **Art-forward backgrounds (accepted as a direction, section 2.6):** use the API's own art to fill blank areas instead of leaving them empty. Shipped: the hero profile's background gradient carries the hero's ability icons (banner field plus a fainter sticky page field). Next: use the unused character renders (`cardCritical`, `cardGloat`, `vertical`, `small`) and the `background` motif on placeholder sections, the 3D fallback, directory cards and section headings. Decorative only, deterministic placement, never behind body text at readable opacity.

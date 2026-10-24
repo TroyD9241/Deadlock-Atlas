@@ -431,6 +431,7 @@ Work milestone by milestone. Finish and verify each before the next.
 
 **M9: Polish and deploy**
 - Search, mobile layout, performance, accessibility pass, deployment.
+- Art-forward backgrounds: use the API's unused character renders (`cardCritical`, `cardGloat`, `vertical`, `small`) and the `background` motif on the blank areas left by placeholder sections, the 3D fallback, directory cards and section headings (design.md 2.6). Decorative only, deterministic placement.
 
 **Deferred: patch work.** `Patch` stays in the schema as a build-version container so nothing needs backfilling when this resumes.
 
