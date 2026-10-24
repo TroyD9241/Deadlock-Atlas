@@ -6,6 +6,8 @@ import { Header } from "@/components/layout/header";
 
 import "./globals.css";
 
+export const instant = false;
+
 /*
  * design.md 2.3: Inter, falling back to the system UI stack as in the mock.
  * next/font self-hosts the file, so there is no runtime request to Google.

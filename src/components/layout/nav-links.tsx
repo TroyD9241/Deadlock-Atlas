@@ -3,18 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { HeroDropdown } from "./hero-dropdown";
+import { Search } from "./search";
+
+import type { HeroSummary } from "@/lib/queries";
+
 /**
  * Pill navigation — design.md 5.2.
  *
- * Home, Heroes, Items, Lore, Map, Patches, plus Abilities (added alongside the
- * global /abilities index agreed in the locked decisions).
- *
- * This is a client island purely because the active pill follows the route.
+ * Home, Heroes (with portrait dropdown), Abilities, Items, Lore, Map, Patches.
  * Under 780px the row scrolls horizontally and is never hidden (design.md 7).
  */
 const LINKS = [
   { href: "/", label: "Home" },
-  { href: "/heroes", label: "Heroes" },
   { href: "/abilities", label: "Abilities" },
   { href: "/items", label: "Items" },
   { href: "/lore", label: "Lore" },
@@ -27,7 +28,11 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function NavLinks() {
+type NavLinksProps = {
+  heroes: HeroSummary[];
+};
+
+export function NavLinks({ heroes }: NavLinksProps) {
   const pathname = usePathname() ?? "/";
 
   return (
@@ -43,6 +48,8 @@ export function NavLinks() {
         maxWidth: "100%",
       }}
     >
+      <HeroDropdown heroes={heroes} />
+
       {LINKS.map((link) => {
         const active = isActive(pathname, link.href);
         return (
@@ -64,6 +71,8 @@ export function NavLinks() {
           </Link>
         );
       })}
+
+      <Search />
     </nav>
   );
 }

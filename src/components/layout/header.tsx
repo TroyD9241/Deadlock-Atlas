@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { NavLinks } from "./nav-links";
+import { HeaderNav } from "./header-nav";
 
 /**
  * Site header — design.md 5.2, ported from reference/deadlock-atlas.html.
@@ -34,7 +34,7 @@ export function Header() {
         DEADLOCK <span style={{ color: "var(--accent)" }}>ATLAS</span>
       </Link>
 
-      <NavLinks />
+      <HeaderNav />
     </header>
   );
 }
