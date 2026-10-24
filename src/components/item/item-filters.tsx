@@ -60,28 +60,43 @@ export function ItemFilters({ counts, facets, initialQuery, active }: Props) {
   const [open, setOpen] = useState(true);
   const [query, setQuery] = useState(initialQuery);
 
-  const current = new URLSearchParams(
-    typeof window === "undefined" ? "" : window.location.search,
-  );
-
-  /** The URL for a filter set: toggles one value, or sets a single one. */
+  /**
+   * The URL for a filter set.
+   *
+   * It is built from the active filters the server rendered, not from
+   * window.location: during a client navigation the browser's URL can be
+   * out of step with the page on screen, and toggling against it would add
+   * or drop filters the user never picked.
+   */
   const hrefFor = (
     key: string,
     value: string,
     mode: "toggle" | "set" = "toggle",
   ) => {
-    const params = new URLSearchParams(current);
+    const params = new URLSearchParams();
+
+    const list = (values: string[]) => values.join(",");
+    if (active.slots.length) params.set("slot", list(active.slots));
+    if (active.tiers.length) params.set("tier", list(active.tiers));
+    if (active.gameFilters.length) params.set("filter", list(active.gameFilters));
+    if (active.facets.length) params.set("facet", list(active.facets));
+    if (active.maxCost) params.set("maxCost", active.maxCost);
+    if (active.inShopOnly) params.set("shop", "1");
+    if (active.starterOnly) params.set("starter", "1");
+    if (active.query) params.set("q", active.query);
+
     if (mode === "set") {
       if (params.get(key) === value) params.delete(key);
       else params.set(key, value);
     } else {
-      const list = (params.get(key) ?? "").split(",").filter(Boolean);
-      const next = list.includes(value)
-        ? list.filter((v) => v !== value)
-        : [...list, value];
+      const existing = (params.get(key) ?? "").split(",").filter(Boolean);
+      const next = existing.includes(value)
+        ? existing.filter((v) => v !== value)
+        : [...existing, value];
       if (next.length) params.set(key, next.join(","));
       else params.delete(key);
     }
+
     const search = params.toString();
     return search ? `${pathname}?${search}` : pathname;
   };
@@ -89,14 +104,15 @@ export function ItemFilters({ counts, facets, initialQuery, active }: Props) {
   const chipStyle = { cursor: "pointer", border: "none", font: "inherit" } as const;
 
   const activeChip = (
-    key: string,
+    filterKey: string,
     value: string,
     label: string,
     count?: number,
     on?: boolean,
   ) => (
     <Link
-      href={hrefFor(key, value)}
+      key={`${filterKey}-${value}`}
+      href={hrefFor(filterKey, value)}
       scroll={false}
       aria-pressed={on}
       className={`chip${on ? " active" : ""}`}
@@ -148,11 +164,20 @@ export function ItemFilters({ counts, facets, initialQuery, active }: Props) {
           style={{ position: "relative", flex: "1 1 200px", maxWidth: 320 }}
         >
           {/* Keep the other filters when the search is submitted. */}
-          {(["slot", "tier", "filter", "facet", "maxCost", "shop", "starter"] as const).map(
-            (key) =>
-              current.getAll(key).map((value) => (
-                <input key={`${key}-${value}`} type="hidden" name={key} value={value} />
-              )),
+          {(
+            [
+              ["slot", active.slots],
+              ["tier", active.tiers],
+              ["filter", active.gameFilters],
+              ["facet", active.facets],
+              ["maxCost", active.maxCost ? [active.maxCost] : []],
+              ["shop", active.inShopOnly ? ["1"] : []],
+              ["starter", active.starterOnly ? ["1"] : []],
+            ] as const
+          ).flatMap(([key, values]) =>
+            values.map((value) => (
+              <input key={`${key}-${value}`} type="hidden" name={key} value={value} />
+            )),
           )}
           <input
             type="search"
