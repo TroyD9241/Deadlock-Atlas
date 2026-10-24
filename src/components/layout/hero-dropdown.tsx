@@ -22,12 +22,12 @@ type HeroDropdownProps = {
   heroes: HeroSummary[];
 };
 
-type Pos = { top: number; left: number };
+type Pos = { top: number; left: number; width: number };
 
 export function HeroDropdown({ heroes }: HeroDropdownProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [pos, setPos] = useState<Pos>({ top: 0, left: 0 });
+  const [pos, setPos] = useState<Pos>({ top: 0, left: 0, width: 1240 });
   const [portraits, setPortraits] = useState<Array<HeroSummary & { portrait: string | null }>>([]);
   const triggerRef = useRef<HTMLAnchorElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -46,8 +46,15 @@ export function HeroDropdown({ heroes }: HeroDropdownProps) {
   const updatePos = () => {
     const el = triggerRef.current;
     if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setPos({ top: rect.bottom + 8, left: Math.max(8, rect.left) });
+    const nav = el.closest("nav");
+    if (!nav) return;
+    const navRect = nav.getBoundingClientRect();
+    const width = Math.min(navRect.width, 1240);
+    // Center the strip under the nav when the nav is narrower than 1240px.
+    const left = navRect.width > 1240
+      ? navRect.left
+      : navRect.left + (navRect.width - width) / 2;
+    setPos({ top: navRect.bottom + 4, left, width });
   };
 
   const openDropdown = () => {
@@ -106,23 +113,23 @@ export function HeroDropdown({ heroes }: HeroDropdownProps) {
           position: "fixed",
           top: pos.top,
           left: pos.left,
+          width: pos.width,
           background: "linear-gradient(145deg, #171b28f0, #111520f0)",
           border: "1px solid var(--line)",
-          borderRadius: 18,
-          padding: 16,
+          borderRadius: 12,
+          padding: "10px 12px",
           boxShadow: "0 24px 90px #000c",
           zIndex: 9999,
-          maxWidth: 680,
-          maxHeight: 420,
-          overflowY: "auto",
+          maxHeight: 130,
+          overflowX: "auto",
+          overflowY: "hidden",
           scrollbarWidth: "thin",
         }}
       >
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(82px, 1fr))",
-            gap: 10,
+            display: "flex",
+            gap: 8,
           }}
         >
           {portraits.map((h) => (
@@ -136,11 +143,12 @@ export function HeroDropdown({ heroes }: HeroDropdownProps) {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 6,
-                padding: 6,
-                borderRadius: 10,
+                gap: 4,
+                padding: 4,
+                borderRadius: 8,
                 transition: "background 0.15s, transform 0.15s",
-                minHeight: 44,
+                flex: "0 0 auto",
+                width: 70,
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLElement;
@@ -167,25 +175,25 @@ export function HeroDropdown({ heroes }: HeroDropdownProps) {
                   alt={h.name}
                   loading="lazy"
                   style={{
-                    width: 70,
-                    height: 96,
+                    width: 56,
+                    height: 76,
                     objectFit: "cover",
-                    borderRadius: 8,
+                    borderRadius: 6,
                     border: "1px solid var(--line)",
-                    boxShadow: "0 10px 40px #0008",
+                    boxShadow: "0 6px 20px #0008",
                   }}
                 />
               ) : (
                 <div
                   style={{
-                    width: 70,
-                    height: 96,
-                    borderRadius: 8,
+                    width: 56,
+                    height: 76,
+                    borderRadius: 6,
                     border: "1px solid var(--line)",
                     background: "#141824",
                     display: "grid",
                     placeItems: "center",
-                    fontSize: 12,
+                    fontSize: 10,
                     color: "var(--muted)",
                     fontFamily: "var(--font-display)",
                   }}
@@ -195,13 +203,17 @@ export function HeroDropdown({ heroes }: HeroDropdownProps) {
               )}
               <span
                 style={{
-                  fontSize: 9,
+                  fontSize: 8,
                   color: "var(--muted)",
                   textAlign: "center",
                   fontFamily: "var(--font-display)",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   lineHeight: 1.2,
+                  width: "100%",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {h.name}
