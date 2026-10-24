@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { HeroBanner } from "@/components/hero/hero-banner";
-import { ModelViewer } from "@/components/hero/model-viewer";
+import { ModelSection } from "@/components/hero/model-section";
 import { themeStyle } from "@/lib/theme";
 import { getHero, getHeroesByClass } from "@/lib/queries";
 
@@ -126,13 +126,12 @@ export default async function HeroProfilePage({
           <div className="section-head">
             <div>
               <h2>Character model</h2>
-              <p>Interactive 3D view. Drag to rotate.</p>
+              <p>Interactive 3D view. Drag to rotate. Hover a point of interest to highlight it.</p>
             </div>
           </div>
-          <ModelViewer
+          <ModelSection
             modelUrl={hero.model.modelUrl}
             accent={hero.accent ?? "#c09fc8"}
-            name={hero.name}
             fallbackImage={hero.artwork?.images?.card ?? null}
             pois={hero.pois.map((p) => ({ anchor: p.anchor, label: p.label, body: p.body }))}
           />

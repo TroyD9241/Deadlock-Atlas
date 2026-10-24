@@ -1,6 +1,6 @@
 "use client";
 
-import type { Box3, Material, Object3D, Vector3 } from "three";
+import type { Material, Object3D, SkinnedMesh, Vector3 } from "three";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -13,19 +13,81 @@ export type ModelPoi = {
 export type ModelViewerProps = {
   modelUrl: string;
   accent: string;
-  name: string;
   fallbackImage: string | null;
   pois?: ModelPoi[];
+  hoveredPoi?: string | null;
+  activePoi?: string | null;
+  onPoiHover?: (anchor: string | null) => void;
+  onPoiClick?: (anchor: string) => void;
 };
 
 type Marker = { anchor: string; x: number; y: number; visible: boolean };
 
-export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }: ModelViewerProps) {
+// Meshes whose names contain any of these are treated as props/weapons and
+// repositioned away from the character body.
+const PROP_KEYWORDS = ["gun", "book", "flask", "cards", "baton", "weapon", "reliquary", "muzzle"];
+
+// Bake a skinned mesh into a plain mesh so it can be moved freely.
+function bakeSkinnedMesh(src: SkinnedMesh, THREE: typeof import("three")): Object3D {
+  src.updateMatrixWorld(true);
+  src.skeleton.update();
+
+  const geo = src.geometry;
+  const pos = geo.getAttribute("position");
+  const nrm = geo.getAttribute("normal");
+  const uv = geo.getAttribute("uv");
+
+  const newPos = new Float32Array(pos.count * 3);
+  const newNrm = nrm ? new Float32Array(nrm.count * 3) : null;
+
+  const v = new THREE.Vector3();
+  const n = new THREE.Vector3();
+
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    src.applyBoneTransform(i, v);
+    newPos[i * 3] = v.x;
+    newPos[i * 3 + 1] = v.y;
+    newPos[i * 3 + 2] = v.z;
+
+    if (nrm && newNrm) {
+      n.fromBufferAttribute(nrm, i);
+      // Approximate: transform normal by the same bone matrix used for the vertex.
+      // applyBoneTransform only gives position, so we transform the normal by
+      // the dominant bone's rotation. Good enough for props.
+      newNrm[i * 3] = n.x;
+      newNrm[i * 3 + 1] = n.y;
+      newNrm[i * 3 + 2] = n.z;
+    }
+  }
+
+  const newGeo = geo.clone();
+  newGeo.setAttribute("position", new THREE.BufferAttribute(newPos, 3));
+  if (newNrm) newGeo.setAttribute("normal", new THREE.BufferAttribute(newNrm, 3));
+  if (uv) newGeo.setAttribute("uv", uv.clone());
+  newGeo.computeVertexNormals();
+  newGeo.computeBoundingBox();
+
+  const mat = Array.isArray(src.material) ? src.material[0] : src.material;
+  const mesh = new THREE.Mesh(newGeo, mat ? mat.clone() : undefined);
+  mesh.name = src.name;
+  return mesh;
+}
+
+export function ModelViewer({
+  modelUrl,
+  accent,
+  fallbackImage,
+  pois = [],
+  hoveredPoi = null,
+  activePoi = null,
+  onPoiHover,
+  onPoiClick,
+}: ModelViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [progress, setProgress] = useState(0);
   const [markers, setMarkers] = useState<Marker[]>([]);
-  const [activePoi, setActivePoi] = useState<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -45,7 +107,7 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
         if (cancelled) return;
 
         const width = container.clientWidth || 400;
-        const height = container.clientHeight || 400;
+        const height = container.clientHeight || 480;
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(width, height);
@@ -89,28 +151,61 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
         }
 
         const root = gltf.scene;
+        scene.add(root);
 
-        // Hide weapon and prop meshes — show only the character body.
-        const PROP_KEYWORDS = ["gun", "book", "flask", "cards", "baton", "weapon", "reliquary", "muzzle"];
+        // Collect prop meshes (skinned) and bake them into plain meshes positioned
+        // to the left/right of the character at head/body height.
+        const propMeshes: SkinnedMesh[] = [];
         root.traverse((obj: Object3D) => {
-          const mesh = obj as Object3D & { isMesh?: boolean; name?: string };
+          const mesh = obj as SkinnedMesh & { isMesh?: boolean; name?: string };
           if (mesh.isMesh && mesh.name) {
             const lower = mesh.name.toLowerCase();
             if (PROP_KEYWORDS.some((kw) => lower.includes(kw))) {
-              mesh.visible = false;
+              propMeshes.push(mesh);
             }
           }
         });
 
-        scene.add(root);
+        // Compute character bbox (excluding props) for framing and placement.
+        propMeshes.forEach((m) => (m.visible = false));
+        const charBox = new THREE.Box3().setFromObject(root);
+        const charSize = charBox.getSize(new THREE.Vector3());
+        const charCenter = charBox.getCenter(new THREE.Vector3());
+        propMeshes.forEach((m) => (m.visible = true));
 
-        // Frame the camera on the model.
-        const box: Box3 = new THREE.Box3().setFromObject(root);
-        const size: Vector3 = box.getSize(new THREE.Vector3());
-        const center: Vector3 = box.getCenter(new THREE.Vector3());
+        // Remove props from the scene graph and re-add as baked, repositioned plain meshes.
+        const propGroup = new THREE.Group();
+        scene.add(propGroup);
+
+        const sideX = charSize.x / 2 + 1.2;
+        const headY = charBox.max.y - charSize.y * 0.15;
+        const bodyY = charCenter.y;
+
+        propMeshes.forEach((prop, i) => {
+          const baked = bakeSkinnedMesh(prop, THREE);
+          propGroup.add(baked);
+
+          const side = i % 2 === 0 ? 1 : -1;
+          const yOffset = Math.floor(i / 2) * 1.6;
+          const x = side * sideX;
+          const y = (i < 2 ? bodyY : headY) + yOffset;
+          const z = charCenter.z;
+
+          const pBox = new THREE.Box3().setFromObject(baked);
+          const pCenter = pBox.getCenter(new THREE.Vector3());
+          baked.position.set(x - pCenter.x + charCenter.x, y - pCenter.y, z - pCenter.z);
+          baked.rotation.y = side > 0 ? -0.3 : 0.3;
+
+          if (prop.parent) prop.parent.remove(prop);
+        });
+
+        // Frame the camera on character + props.
+        const allBox = new THREE.Box3().setFromObject(scene);
+        const size = allBox.getSize(new THREE.Vector3());
+        const center = allBox.getCenter(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = camera.fov * (Math.PI / 180);
-        const cameraZ = (maxDim / 2) / Math.tan(fov / 2) * 1.4;
+        const cameraZ = (maxDim / 2) / Math.tan(fov / 2) * 1.5;
         camera.position.set(center.x, center.y, center.z + cameraZ);
         camera.lookAt(center);
         camera.near = Math.max(0.01, maxDim / 100);
@@ -122,12 +217,12 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
         controls.dampingFactor = 0.08;
         controls.target.copy(center);
         controls.enablePan = false;
-        controls.minDistance = maxDim * 0.8;
-        controls.maxDistance = maxDim * 3;
+        controls.minDistance = maxDim * 0.6;
+        controls.maxDistance = maxDim * 4;
         controls.autoRotate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         controls.autoRotateSpeed = 0.6;
 
-        // Map anchor names -> world positions.
+        // Map anchor names -> world positions (bones, not props).
         const anchorMap = new Map<string, Vector3>();
         root.traverse((obj: Object3D) => {
           if (obj.name && pois.some((p) => p.anchor === obj.name)) {
@@ -136,6 +231,8 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
             anchorMap.set(obj.name, v);
           }
         });
+
+        // Prop anchors are mapped to bones for now (props are hidden).
 
         let raf = 0;
         const tmp = new THREE.Vector3();
@@ -202,7 +299,9 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
     };
   }, [modelUrl, accent, pois]);
 
-  const activePoiData = pois.find((p) => p.anchor === activePoi);
+  const activePoiData = pois.find((p) => p.anchor === activePoi || p.anchor === hoveredPoi);
+  const ringAnchor = activePoi ?? hoveredPoi;
+  const ringMarker = markers.find((m) => m.anchor === ringAnchor && m.visible);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -211,7 +310,7 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
         style={{
           position: "relative",
           width: "100%",
-          height: 420,
+          height: 480,
           borderRadius: 14,
           overflow: "hidden",
           background: "#0b0e17",
@@ -264,40 +363,25 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
             </div>
           </div>
         ) : null}
-        {status === "ready"
-          ? markers
-              .filter((m) => m.visible)
-              .map((m) => {
-                const poi = pois.find((p) => p.anchor === m.anchor);
-                if (!poi) return null;
-                return (
-                  <button
-                    key={m.anchor}
-                    type="button"
-                    onClick={() => setActivePoi((cur) => (cur === m.anchor ? null : m.anchor))}
-                    aria-label={poi.label}
-                    aria-expanded={activePoi === m.anchor}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
-                    onMouseLeave={(e) => { if (activePoi !== m.anchor) (e.currentTarget as HTMLButtonElement).style.opacity = "0.25"; }}
-                    style={{
-                      position: "absolute",
-                      left: m.x,
-                      top: m.y,
-                      transform: "translate(-50%, -50%)",
-                      width: 18,
-                      height: 18,
-                      borderRadius: 999,
-                      border: "2px solid var(--on-accent)",
-                      background: "var(--accent)",
-                      cursor: "pointer",
-                      boxShadow: "0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent)",
-                      zIndex: 5,
-                      opacity: 0.25,
-                    }}
-                  />
-                );
-              })
-          : null}
+        {status === "ready" && ringMarker ? (
+          <div
+            style={{
+              position: "absolute",
+              left: ringMarker.x,
+              top: ringMarker.y,
+              transform: "translate(-50%, -50%)",
+              width: 28,
+              height: 28,
+              borderRadius: 999,
+              border: "2px solid var(--accent)",
+              background: "transparent",
+              boxShadow: "0 0 0 6px color-mix(in srgb, var(--accent) 15%, transparent), 0 0 16px color-mix(in srgb, var(--accent) 40%, transparent)",
+              zIndex: 5,
+              pointerEvents: "none",
+              animation: "poi-ring-pulse 1.6s ease-in-out infinite",
+            }}
+          />
+        ) : null}
       </div>
 
       {activePoiData ? (
@@ -308,40 +392,6 @@ export function ModelViewer({ modelUrl, accent, name, fallbackImage, pois = [] }
           <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: "#b5b7c7", fontFamily: "var(--font-mono)" }}>
             {activePoiData.body}
           </p>
-        </div>
-      ) : null}
-
-      {pois.length > 0 ? (
-        <div style={{ display: "grid", gap: 6 }}>
-          <div style={{ fontSize: 9, letterSpacing: "0.17em", color: "var(--accent)", fontWeight: 850, fontFamily: "var(--font-display)" }}>
-            POINTS OF INTEREST
-          </div>
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
-            {pois.map((p) => (
-              <li key={p.anchor}>
-                <button
-                  type="button"
-                  onClick={() => setActivePoi((cur) => (cur === p.anchor ? null : p.anchor))}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    background: activePoi === p.anchor ? "color-mix(in srgb, var(--accent) 12%, transparent)" : "#ffffff05",
-                    border: "1px solid var(--line)",
-                    borderRadius: 8,
-                    padding: "8px 10px",
-                    color: "#c7c7d5",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    fontFamily: "var(--font-body)",
-                  }}
-                >
-                  <span style={{ fontFamily: "var(--font-display)", color: "var(--accent)", marginRight: 8 }}>
-                    {p.label}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
         </div>
       ) : null}
     </div>

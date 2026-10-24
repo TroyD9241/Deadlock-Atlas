@@ -605,6 +605,34 @@
     color: #fff;
   }
 
+  /*
+   * Model viewer layout — character model on the left, POI list on the right,
+   * vertically aligned.
+   */
+  .model-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .model-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+
+  @keyframes poi-ring-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+    50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.5; }
+  }
+
+  @media (max-width: 780px) {
+    .model-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
   /* Official in-game text marker in the banner */
   .official-marker {
     display: inline-block;
