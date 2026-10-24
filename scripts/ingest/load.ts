@@ -21,6 +21,7 @@ import {
   normaliseAbility,
   normaliseHero,
   normaliseItem,
+  resolveHeroModel,
   slugify,
   type NormalisedHero,
 } from "./normalize";
@@ -78,6 +79,17 @@ async function main() {
   const activeIds = new Set(
     (rawActive as ApiHero[]).map((h) => h.id),
   );
+
+  // Models endpoint is a CDN bucket listing; cache is best-effort (may be absent
+  // on older builds). Missing file means no models, not a hard failure.
+  let rawModels: unknown = null;
+  try {
+    rawModels = JSON.parse(
+      await readFile(path.join(dir, "models.json"), "utf8"),
+    );
+  } catch {
+    console.log("  (no models.json cache; skipping model ingest)");
+  }
 
   const heroes = rawHeroes.map((h) => ApiHeroSchema.parse(h)) as ApiHero[];
   const items = rawItems.map((i) => ApiItemSchema.parse(i)) as ApiItem[];
@@ -220,6 +232,26 @@ async function main() {
     if (id === undefined) throw new Error(`no hero row for slug ${slug}`);
     return id;
   };
+
+  // ── 3D models ────────────────────────────────────────────────────────────
+  if (rawModels) {
+    let modelCount = 0;
+    for (const h of normalisedHeroes) {
+      const id = heroIdBySlug.get(h.slug);
+      if (id === undefined) continue;
+      const raw = (rawHeroes as ApiHero[]).find((r) => r.id === h.apiId);
+      const model = raw ? resolveHeroModel(rawModels, raw.class_name) : null;
+      if (model) {
+        await db.heroModel.upsert({
+          where: { heroId: id },
+          create: { heroId: id, modelUrl: model.modelUrl, modelKey: model.modelKey, group: model.group },
+          update: { modelUrl: model.modelUrl, modelKey: model.modelKey, group: model.group },
+        });
+        modelCount += 1;
+      }
+    }
+    console.log(`upserted ${modelCount} hero models`);
+  }
 
   // ── abilities and the hero join ─────────────────────────────────────────
   const abilities = items.filter((i) => i.type === "ability");

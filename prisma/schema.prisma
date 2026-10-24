@@ -72,11 +72,41 @@ model Hero {
   relationsFrom Relationship[] @relation("From")
   relationsTo   Relationship[] @relation("To")
   playStats     HeroPlayStat[]
+  model         HeroModel?
+  pois          HeroPoi[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([name])
+}
+
+/// The hero's 3D model, from the API's /v1/assets/models endpoint.
+/// One row per hero. Streamed from Valve's CDN at runtime (never self-hosted).
+model HeroModel {
+  heroId    Int    @id
+  hero      Hero   @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  modelUrl  String
+  modelKey  String   // folder name in the CDN path, e.g. "abrams"
+  group     String   // heroes_wip | heroes_staging
+  byteSize  Int?
+  createdAt DateTime @default(now())
+}
+
+/// A named point of interest on a hero's 3D model.
+/// `anchor` is a glTF node name; validated by scripts/check-model-anchors.ts.
+/// `body` is our own words (never wiki prose).
+model HeroPoi {
+  id     Int    @id @default(autoincrement())
+  heroId Int
+  hero   Hero   @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  anchor String
+  label  String
+  body   String
+  order  Int    @default(0)
+
+  @@unique([heroId, anchor])
+  @@index([heroId])
 }
 
 model HeroSnapshot {         // one row per hero per ingested build

@@ -15,7 +15,7 @@ A fan-made, interactive Deadlock reference site. Read these before doing anythin
 - Never copy wiki prose. Link to the wiki and credit it. Our own text is in our own words.
 - Anything not verified against real data is shown in brackets, for example `[old value]`. Never invent stats, patch notes, or lore.
 - Schema changes need a plan first and a Prisma migration. Never edit an applied migration.
-- No accounts, no per-user data, no emoji, no new fonts or libraries without asking.
+- No accounts, no per-user data, no emoji, no new fonts or libraries without asking. (three.js added for the 3D character model viewer; approved.)
 - Accessibility is required: 4.5:1 text contrast, 44px targets, visible focus, buff/nerf shown with arrow and label.
 - Before finishing a task: build passes, lint passes, check the page against the mock, then commit.
 - Not in scope yet: the interactive map, the voiceline explorer, the Hero of the Patch formula (placeholder rule only until M8), Stats and Esports.

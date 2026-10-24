@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { HeroBanner } from "@/components/hero/hero-banner";
+import { ModelViewer } from "@/components/hero/model-viewer";
 import { themeStyle } from "@/lib/theme";
 import { getHero, getHeroesByClass } from "@/lib/queries";
 
@@ -118,6 +119,34 @@ export default async function HeroProfilePage({
         palette={palette}
         art={art}
       />
+
+      {/* Character model */}
+      {hero.model ? (
+        <section className="section" id="model">
+          <div className="section-head">
+            <div>
+              <h2>Character model</h2>
+              <p>Interactive 3D view. Drag to rotate.</p>
+            </div>
+          </div>
+          <ModelViewer
+            modelUrl={hero.model.modelUrl}
+            accent={hero.accent ?? "#c09fc8"}
+            name={hero.name}
+            fallbackImage={hero.artwork?.images?.card ?? null}
+            pois={hero.pois.map((p) => ({ anchor: p.anchor, label: p.label, body: p.body }))}
+          />
+        </section>
+      ) : (
+        <section className="section">
+          <div className="section-head">
+            <div>
+              <h2>Character model</h2>
+              <p>Not available for this hero.</p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Class switch nav */}
       <nav className="class-nav" aria-label="Switch hero class">

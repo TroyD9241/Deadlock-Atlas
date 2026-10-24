@@ -399,6 +399,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   Patch: 'Patch',
   Hero: 'Hero',
+  HeroModel: 'HeroModel',
+  HeroPoi: 'HeroPoi',
   HeroSnapshot: 'HeroSnapshot',
   Ability: 'Ability',
   HeroAbility: 'HeroAbility',
@@ -424,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "patch" | "hero" | "heroSnapshot" | "ability" | "heroAbility" | "abilitySnapshot" | "item" | "itemSnapshot" | "relationship" | "faction" | "location" | "heroPlayStat"
+    modelProps: "patch" | "hero" | "heroModel" | "heroPoi" | "heroSnapshot" | "ability" | "heroAbility" | "abilitySnapshot" | "item" | "itemSnapshot" | "relationship" | "faction" | "location" | "heroPlayStat"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -573,6 +575,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.HeroCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.HeroCountAggregateOutputType> | number
+        }
+      }
+    }
+    HeroModel: {
+      payload: Prisma.$HeroModelPayload<ExtArgs>
+      fields: Prisma.HeroModelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HeroModelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HeroModelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>
+        }
+        findFirst: {
+          args: Prisma.HeroModelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HeroModelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>
+        }
+        findMany: {
+          args: Prisma.HeroModelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>[]
+        }
+        create: {
+          args: Prisma.HeroModelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>
+        }
+        createMany: {
+          args: Prisma.HeroModelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HeroModelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>[]
+        }
+        delete: {
+          args: Prisma.HeroModelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>
+        }
+        update: {
+          args: Prisma.HeroModelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>
+        }
+        deleteMany: {
+          args: Prisma.HeroModelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HeroModelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HeroModelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>[]
+        }
+        upsert: {
+          args: Prisma.HeroModelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroModelPayload>
+        }
+        aggregate: {
+          args: Prisma.HeroModelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHeroModel>
+        }
+        groupBy: {
+          args: Prisma.HeroModelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroModelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HeroModelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroModelCountAggregateOutputType> | number
+        }
+      }
+    }
+    HeroPoi: {
+      payload: Prisma.$HeroPoiPayload<ExtArgs>
+      fields: Prisma.HeroPoiFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HeroPoiFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HeroPoiFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>
+        }
+        findFirst: {
+          args: Prisma.HeroPoiFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HeroPoiFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>
+        }
+        findMany: {
+          args: Prisma.HeroPoiFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>[]
+        }
+        create: {
+          args: Prisma.HeroPoiCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>
+        }
+        createMany: {
+          args: Prisma.HeroPoiCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HeroPoiCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>[]
+        }
+        delete: {
+          args: Prisma.HeroPoiDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>
+        }
+        update: {
+          args: Prisma.HeroPoiUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>
+        }
+        deleteMany: {
+          args: Prisma.HeroPoiDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HeroPoiUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HeroPoiUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>[]
+        }
+        upsert: {
+          args: Prisma.HeroPoiUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HeroPoiPayload>
+        }
+        aggregate: {
+          args: Prisma.HeroPoiAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHeroPoi>
+        }
+        groupBy: {
+          args: Prisma.HeroPoiGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroPoiGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HeroPoiCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HeroPoiCountAggregateOutputType> | number
         }
       }
     }
@@ -1406,6 +1556,30 @@ export const HeroScalarFieldEnum = {
 export type HeroScalarFieldEnum = (typeof HeroScalarFieldEnum)[keyof typeof HeroScalarFieldEnum]
 
 
+export const HeroModelScalarFieldEnum = {
+  heroId: 'heroId',
+  modelUrl: 'modelUrl',
+  modelKey: 'modelKey',
+  group: 'group',
+  byteSize: 'byteSize',
+  createdAt: 'createdAt'
+} as const
+
+export type HeroModelScalarFieldEnum = (typeof HeroModelScalarFieldEnum)[keyof typeof HeroModelScalarFieldEnum]
+
+
+export const HeroPoiScalarFieldEnum = {
+  id: 'id',
+  heroId: 'heroId',
+  anchor: 'anchor',
+  label: 'label',
+  body: 'body',
+  order: 'order'
+} as const
+
+export type HeroPoiScalarFieldEnum = (typeof HeroPoiScalarFieldEnum)[keyof typeof HeroPoiScalarFieldEnum]
+
+
 export const HeroSnapshotScalarFieldEnum = {
   id: 'id',
   heroId: 'heroId',
@@ -1839,6 +2013,8 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   patch?: Prisma.PatchOmit
   hero?: Prisma.HeroOmit
+  heroModel?: Prisma.HeroModelOmit
+  heroPoi?: Prisma.HeroPoiOmit
   heroSnapshot?: Prisma.HeroSnapshotOmit
   ability?: Prisma.AbilityOmit
   heroAbility?: Prisma.HeroAbilityOmit

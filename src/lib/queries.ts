@@ -43,6 +43,8 @@ export type HeroSummary = {
   officialPlaystyle: string | null;
   officialLore: string | null;
   officialRole: string | null;
+  model: { modelUrl: string; modelKey: string; group: string; byteSize: number | null } | null;
+  pois: { anchor: string; label: string; body: string; order: number }[];
 };
 
 /**
@@ -116,11 +118,15 @@ function toSummary(row: {
   officialPlaystyle: string | null;
   officialLore: string | null;
   officialRole: string | null;
+  model?: unknown;
+  pois?: unknown;
 }): HeroSummary {
   return {
     ...row,
     palette: Array.isArray(row.palette) ? (row.palette as string[]) : [],
     artwork: (row.artwork as HeroArtwork | null) ?? null,
+    model: (row.model as HeroSummary["model"]) ?? null,
+    pois: Array.isArray(row.pois) ? (row.pois as HeroSummary["pois"]) : [],
   };
 }
 
@@ -188,7 +194,9 @@ export async function getHero(slug: string) {
       heroStatsUi: true,
       statsDisplay: true,
       shopStatDisplay: true,
-      abilities: {
+      model: { select: { modelUrl: true, modelKey: true, group: true, byteSize: true } },
+  pois: { select: { anchor: true, label: true, body: true, order: true }, orderBy: { order: "asc" } },
+  abilities: {
         select: {
           id: true,
           slot: true,

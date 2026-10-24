@@ -110,6 +110,81 @@ export function slugify(name: string): string {
 }
 
 /** "Mo & Krill" -> "mo-and-krill"; "The Doorman" -> "the-doorman". */
+/**
+ * Map a hero's API class_name to its model folder in /v1/assets/models.
+ *
+ * Most folders are the class_name with the `hero_` prefix stripped. Five
+ * differ and are listed explicitly so the mapping stays reviewable.
+ */
+const MODEL_ALIASES: Record<string, string> = {
+  hero_atlas: "abrams", // Abrams is "atlas" in the API class_name
+  hero_ghost: "geist",
+  hero_forge: "mcginnis",
+  hero_synth: "pocket",
+  hero_tengu: "ivy",
+  hero_orion: "gen_man", // Grey Talon's "Gen Man" form; alt candidate is
+  // grey_talon/grey_talon_owl/default.glb (visual check pending)
+};
+
+/**
+ * Resolve a hero's model URL from the cached /v1/assets/models response.
+ * Returns null when no hero_select.glb exists for that hero.
+ */
+export function resolveHeroModel(
+  rawModels: unknown,
+  className: string,
+): { modelUrl: string; modelKey: string; group: string; byteSize: number | null } | null {
+  const base = MODEL_ALIASES[className] ?? className.replace(/^hero_/, "");
+
+  // Walk the nested structure: group -> folder -> variant -> { file: url }.
+  const groups = ["heroes_wip", "heroes_staging"] as const;
+  for (const group of groups) {
+    const groupNode = (rawModels as Record<string, unknown>)?.[group];
+    if (!groupNode || typeof groupNode !== "object") continue;
+
+    // Try exact match first, then prefix match for versioned folders (e.g. yamato_v2).
+    let folderKey: string | null = null;
+    const groupObj = groupNode as Record<string, unknown>;
+    if (groupObj[base] && typeof groupObj[base] === "object") {
+      folderKey = base;
+    } else {
+      folderKey =
+        Object.keys(groupObj).find((k) => k === base || k.startsWith(`${base}_`) || base.startsWith(k)) ?? null;
+    }
+    if (!folderKey) continue;
+
+    const folderNode = groupObj[folderKey];
+    if (!folderNode || typeof folderNode !== "object") continue;
+
+    // Some entries have one nesting level, others two (e.g. nano -> nano_v2 -> nano).
+    // Walk recursively and pick the first hero_select.glb.
+    const found = findFile(folderNode, "hero_select.glb");
+    if (found) {
+      return {
+        modelUrl: found.url,
+        modelKey: folderKey,
+        group,
+        byteSize: null, // HEAD request happens at ingest time if needed
+      };
+    }
+  }
+  return null;
+}
+
+function findFile(node: unknown, target: string): { url: string } | null {
+  if (!node || typeof node !== "object") return null;
+  for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+    if (typeof v === "string" && v.startsWith("http") && k === target) {
+      return { url: v };
+    }
+    if (typeof v === "object" && v !== null) {
+      const found = findFile(v, target);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export function heroSlug(name: string): string {
   return slugify(name);
 }

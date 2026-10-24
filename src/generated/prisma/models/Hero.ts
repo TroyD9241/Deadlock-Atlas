@@ -417,6 +417,8 @@ export type HeroWhereInput = {
   relationsFrom?: Prisma.RelationshipListRelationFilter
   relationsTo?: Prisma.RelationshipListRelationFilter
   playStats?: Prisma.HeroPlayStatListRelationFilter
+  model?: Prisma.XOR<Prisma.HeroModelNullableScalarRelationFilter, Prisma.HeroModelWhereInput> | null
+  pois?: Prisma.HeroPoiListRelationFilter
 }
 
 export type HeroOrderByWithRelationInput = {
@@ -460,6 +462,8 @@ export type HeroOrderByWithRelationInput = {
   relationsFrom?: Prisma.RelationshipOrderByRelationAggregateInput
   relationsTo?: Prisma.RelationshipOrderByRelationAggregateInput
   playStats?: Prisma.HeroPlayStatOrderByRelationAggregateInput
+  model?: Prisma.HeroModelOrderByWithRelationInput
+  pois?: Prisma.HeroPoiOrderByRelationAggregateInput
 }
 
 export type HeroWhereUniqueInput = Prisma.AtLeast<{
@@ -506,6 +510,8 @@ export type HeroWhereUniqueInput = Prisma.AtLeast<{
   relationsFrom?: Prisma.RelationshipListRelationFilter
   relationsTo?: Prisma.RelationshipListRelationFilter
   playStats?: Prisma.HeroPlayStatListRelationFilter
+  model?: Prisma.XOR<Prisma.HeroModelNullableScalarRelationFilter, Prisma.HeroModelWhereInput> | null
+  pois?: Prisma.HeroPoiListRelationFilter
 }, "id" | "slug" | "apiId">
 
 export type HeroOrderByWithAggregationInput = {
@@ -632,6 +638,8 @@ export type HeroCreateInput = {
   relationsFrom?: Prisma.RelationshipCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiCreateNestedManyWithoutHeroInput
 }
 
 export type HeroUncheckedCreateInput = {
@@ -675,6 +683,8 @@ export type HeroUncheckedCreateInput = {
   relationsFrom?: Prisma.RelationshipUncheckedCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipUncheckedCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatUncheckedCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelUncheckedCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiUncheckedCreateNestedManyWithoutHeroInput
 }
 
 export type HeroUpdateInput = {
@@ -717,6 +727,8 @@ export type HeroUpdateInput = {
   relationsFrom?: Prisma.RelationshipUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroUncheckedUpdateInput = {
@@ -760,6 +772,8 @@ export type HeroUncheckedUpdateInput = {
   relationsFrom?: Prisma.RelationshipUncheckedUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUncheckedUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUncheckedUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUncheckedUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUncheckedUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroCreateManyInput = {
@@ -996,6 +1010,34 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
+export type HeroCreateNestedOneWithoutModelInput = {
+  create?: Prisma.XOR<Prisma.HeroCreateWithoutModelInput, Prisma.HeroUncheckedCreateWithoutModelInput>
+  connectOrCreate?: Prisma.HeroCreateOrConnectWithoutModelInput
+  connect?: Prisma.HeroWhereUniqueInput
+}
+
+export type HeroUpdateOneRequiredWithoutModelNestedInput = {
+  create?: Prisma.XOR<Prisma.HeroCreateWithoutModelInput, Prisma.HeroUncheckedCreateWithoutModelInput>
+  connectOrCreate?: Prisma.HeroCreateOrConnectWithoutModelInput
+  upsert?: Prisma.HeroUpsertWithoutModelInput
+  connect?: Prisma.HeroWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.HeroUpdateToOneWithWhereWithoutModelInput, Prisma.HeroUpdateWithoutModelInput>, Prisma.HeroUncheckedUpdateWithoutModelInput>
+}
+
+export type HeroCreateNestedOneWithoutPoisInput = {
+  create?: Prisma.XOR<Prisma.HeroCreateWithoutPoisInput, Prisma.HeroUncheckedCreateWithoutPoisInput>
+  connectOrCreate?: Prisma.HeroCreateOrConnectWithoutPoisInput
+  connect?: Prisma.HeroWhereUniqueInput
+}
+
+export type HeroUpdateOneRequiredWithoutPoisNestedInput = {
+  create?: Prisma.XOR<Prisma.HeroCreateWithoutPoisInput, Prisma.HeroUncheckedCreateWithoutPoisInput>
+  connectOrCreate?: Prisma.HeroCreateOrConnectWithoutPoisInput
+  upsert?: Prisma.HeroUpsertWithoutPoisInput
+  connect?: Prisma.HeroWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.HeroUpdateToOneWithWhereWithoutPoisInput, Prisma.HeroUpdateWithoutPoisInput>, Prisma.HeroUncheckedUpdateWithoutPoisInput>
+}
+
 export type HeroCreateNestedOneWithoutSnapshotsInput = {
   create?: Prisma.XOR<Prisma.HeroCreateWithoutSnapshotsInput, Prisma.HeroUncheckedCreateWithoutSnapshotsInput>
   connectOrCreate?: Prisma.HeroCreateOrConnectWithoutSnapshotsInput
@@ -1066,6 +1108,386 @@ export type HeroUpdateOneRequiredWithoutPlayStatsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.HeroUpdateToOneWithWhereWithoutPlayStatsInput, Prisma.HeroUpdateWithoutPlayStatsInput>, Prisma.HeroUncheckedUpdateWithoutPlayStatsInput>
 }
 
+export type HeroCreateWithoutModelInput = {
+  slug: string
+  apiId?: number | null
+  name: string
+  complexity?: number | null
+  heroType?: string | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
+  tagline?: string | null
+  summary?: string | null
+  officialRole?: string | null
+  officialPlaystyle?: string | null
+  officialLore?: string | null
+  accent?: string | null
+  accentText?: string | null
+  onAccent?: string | null
+  apiAccent?: string | null
+  accentSource?: string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  abilities?: Prisma.HeroAbilityCreateNestedManyWithoutHeroInput
+  snapshots?: Prisma.HeroSnapshotCreateNestedManyWithoutHeroInput
+  relationsFrom?: Prisma.RelationshipCreateNestedManyWithoutFromInput
+  relationsTo?: Prisma.RelationshipCreateNestedManyWithoutToInput
+  playStats?: Prisma.HeroPlayStatCreateNestedManyWithoutHeroInput
+  pois?: Prisma.HeroPoiCreateNestedManyWithoutHeroInput
+}
+
+export type HeroUncheckedCreateWithoutModelInput = {
+  id?: number
+  slug: string
+  apiId?: number | null
+  name: string
+  complexity?: number | null
+  heroType?: string | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
+  tagline?: string | null
+  summary?: string | null
+  officialRole?: string | null
+  officialPlaystyle?: string | null
+  officialLore?: string | null
+  accent?: string | null
+  accentText?: string | null
+  onAccent?: string | null
+  apiAccent?: string | null
+  accentSource?: string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  abilities?: Prisma.HeroAbilityUncheckedCreateNestedManyWithoutHeroInput
+  snapshots?: Prisma.HeroSnapshotUncheckedCreateNestedManyWithoutHeroInput
+  relationsFrom?: Prisma.RelationshipUncheckedCreateNestedManyWithoutFromInput
+  relationsTo?: Prisma.RelationshipUncheckedCreateNestedManyWithoutToInput
+  playStats?: Prisma.HeroPlayStatUncheckedCreateNestedManyWithoutHeroInput
+  pois?: Prisma.HeroPoiUncheckedCreateNestedManyWithoutHeroInput
+}
+
+export type HeroCreateOrConnectWithoutModelInput = {
+  where: Prisma.HeroWhereUniqueInput
+  create: Prisma.XOR<Prisma.HeroCreateWithoutModelInput, Prisma.HeroUncheckedCreateWithoutModelInput>
+}
+
+export type HeroUpsertWithoutModelInput = {
+  update: Prisma.XOR<Prisma.HeroUpdateWithoutModelInput, Prisma.HeroUncheckedUpdateWithoutModelInput>
+  create: Prisma.XOR<Prisma.HeroCreateWithoutModelInput, Prisma.HeroUncheckedCreateWithoutModelInput>
+  where?: Prisma.HeroWhereInput
+}
+
+export type HeroUpdateToOneWithWhereWithoutModelInput = {
+  where?: Prisma.HeroWhereInput
+  data: Prisma.XOR<Prisma.HeroUpdateWithoutModelInput, Prisma.HeroUncheckedUpdateWithoutModelInput>
+}
+
+export type HeroUpdateWithoutModelInput = {
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  heroType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialPlaystyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialLore?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentSource?: Prisma.StringFieldUpdateOperationsInput | string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  abilities?: Prisma.HeroAbilityUpdateManyWithoutHeroNestedInput
+  snapshots?: Prisma.HeroSnapshotUpdateManyWithoutHeroNestedInput
+  relationsFrom?: Prisma.RelationshipUpdateManyWithoutFromNestedInput
+  relationsTo?: Prisma.RelationshipUpdateManyWithoutToNestedInput
+  playStats?: Prisma.HeroPlayStatUpdateManyWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUpdateManyWithoutHeroNestedInput
+}
+
+export type HeroUncheckedUpdateWithoutModelInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  heroType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialPlaystyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialLore?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentSource?: Prisma.StringFieldUpdateOperationsInput | string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  abilities?: Prisma.HeroAbilityUncheckedUpdateManyWithoutHeroNestedInput
+  snapshots?: Prisma.HeroSnapshotUncheckedUpdateManyWithoutHeroNestedInput
+  relationsFrom?: Prisma.RelationshipUncheckedUpdateManyWithoutFromNestedInput
+  relationsTo?: Prisma.RelationshipUncheckedUpdateManyWithoutToNestedInput
+  playStats?: Prisma.HeroPlayStatUncheckedUpdateManyWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUncheckedUpdateManyWithoutHeroNestedInput
+}
+
+export type HeroCreateWithoutPoisInput = {
+  slug: string
+  apiId?: number | null
+  name: string
+  complexity?: number | null
+  heroType?: string | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
+  tagline?: string | null
+  summary?: string | null
+  officialRole?: string | null
+  officialPlaystyle?: string | null
+  officialLore?: string | null
+  accent?: string | null
+  accentText?: string | null
+  onAccent?: string | null
+  apiAccent?: string | null
+  accentSource?: string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  abilities?: Prisma.HeroAbilityCreateNestedManyWithoutHeroInput
+  snapshots?: Prisma.HeroSnapshotCreateNestedManyWithoutHeroInput
+  relationsFrom?: Prisma.RelationshipCreateNestedManyWithoutFromInput
+  relationsTo?: Prisma.RelationshipCreateNestedManyWithoutToInput
+  playStats?: Prisma.HeroPlayStatCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelCreateNestedOneWithoutHeroInput
+}
+
+export type HeroUncheckedCreateWithoutPoisInput = {
+  id?: number
+  slug: string
+  apiId?: number | null
+  name: string
+  complexity?: number | null
+  heroType?: string | null
+  isReleased?: boolean
+  isDisabled?: boolean
+  isInDevelopment?: boolean
+  tagline?: string | null
+  summary?: string | null
+  officialRole?: string | null
+  officialPlaystyle?: string | null
+  officialLore?: string | null
+  accent?: string | null
+  accentText?: string | null
+  onAccent?: string | null
+  apiAccent?: string | null
+  accentSource?: string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  abilities?: Prisma.HeroAbilityUncheckedCreateNestedManyWithoutHeroInput
+  snapshots?: Prisma.HeroSnapshotUncheckedCreateNestedManyWithoutHeroInput
+  relationsFrom?: Prisma.RelationshipUncheckedCreateNestedManyWithoutFromInput
+  relationsTo?: Prisma.RelationshipUncheckedCreateNestedManyWithoutToInput
+  playStats?: Prisma.HeroPlayStatUncheckedCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelUncheckedCreateNestedOneWithoutHeroInput
+}
+
+export type HeroCreateOrConnectWithoutPoisInput = {
+  where: Prisma.HeroWhereUniqueInput
+  create: Prisma.XOR<Prisma.HeroCreateWithoutPoisInput, Prisma.HeroUncheckedCreateWithoutPoisInput>
+}
+
+export type HeroUpsertWithoutPoisInput = {
+  update: Prisma.XOR<Prisma.HeroUpdateWithoutPoisInput, Prisma.HeroUncheckedUpdateWithoutPoisInput>
+  create: Prisma.XOR<Prisma.HeroCreateWithoutPoisInput, Prisma.HeroUncheckedCreateWithoutPoisInput>
+  where?: Prisma.HeroWhereInput
+}
+
+export type HeroUpdateToOneWithWhereWithoutPoisInput = {
+  where?: Prisma.HeroWhereInput
+  data: Prisma.XOR<Prisma.HeroUpdateWithoutPoisInput, Prisma.HeroUncheckedUpdateWithoutPoisInput>
+}
+
+export type HeroUpdateWithoutPoisInput = {
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  heroType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialPlaystyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialLore?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentSource?: Prisma.StringFieldUpdateOperationsInput | string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  abilities?: Prisma.HeroAbilityUpdateManyWithoutHeroNestedInput
+  snapshots?: Prisma.HeroSnapshotUpdateManyWithoutHeroNestedInput
+  relationsFrom?: Prisma.RelationshipUpdateManyWithoutFromNestedInput
+  relationsTo?: Prisma.RelationshipUpdateManyWithoutToNestedInput
+  playStats?: Prisma.HeroPlayStatUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUpdateOneWithoutHeroNestedInput
+}
+
+export type HeroUncheckedUpdateWithoutPoisInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  apiId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  complexity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  heroType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isReleased?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isDisabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isInDevelopment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tagline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialPlaystyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  officialLore?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiAccent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentSource?: Prisma.StringFieldUpdateOperationsInput | string
+  palette?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  paletteOverride?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  needsReview?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  artwork?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sourceLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startingStats?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  heroStatsUi?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  statsDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  shopStatDisplay?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlots?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  itemSlotInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  physics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  removedContent?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  abilities?: Prisma.HeroAbilityUncheckedUpdateManyWithoutHeroNestedInput
+  snapshots?: Prisma.HeroSnapshotUncheckedUpdateManyWithoutHeroNestedInput
+  relationsFrom?: Prisma.RelationshipUncheckedUpdateManyWithoutFromNestedInput
+  relationsTo?: Prisma.RelationshipUncheckedUpdateManyWithoutToNestedInput
+  playStats?: Prisma.HeroPlayStatUncheckedUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUncheckedUpdateOneWithoutHeroNestedInput
+}
+
 export type HeroCreateWithoutSnapshotsInput = {
   slug: string
   apiId?: number | null
@@ -1105,6 +1527,8 @@ export type HeroCreateWithoutSnapshotsInput = {
   relationsFrom?: Prisma.RelationshipCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiCreateNestedManyWithoutHeroInput
 }
 
 export type HeroUncheckedCreateWithoutSnapshotsInput = {
@@ -1147,6 +1571,8 @@ export type HeroUncheckedCreateWithoutSnapshotsInput = {
   relationsFrom?: Prisma.RelationshipUncheckedCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipUncheckedCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatUncheckedCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelUncheckedCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiUncheckedCreateNestedManyWithoutHeroInput
 }
 
 export type HeroCreateOrConnectWithoutSnapshotsInput = {
@@ -1204,6 +1630,8 @@ export type HeroUpdateWithoutSnapshotsInput = {
   relationsFrom?: Prisma.RelationshipUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroUncheckedUpdateWithoutSnapshotsInput = {
@@ -1246,6 +1674,8 @@ export type HeroUncheckedUpdateWithoutSnapshotsInput = {
   relationsFrom?: Prisma.RelationshipUncheckedUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUncheckedUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUncheckedUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUncheckedUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUncheckedUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroCreateWithoutAbilitiesInput = {
@@ -1287,6 +1717,8 @@ export type HeroCreateWithoutAbilitiesInput = {
   relationsFrom?: Prisma.RelationshipCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiCreateNestedManyWithoutHeroInput
 }
 
 export type HeroUncheckedCreateWithoutAbilitiesInput = {
@@ -1329,6 +1761,8 @@ export type HeroUncheckedCreateWithoutAbilitiesInput = {
   relationsFrom?: Prisma.RelationshipUncheckedCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipUncheckedCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatUncheckedCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelUncheckedCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiUncheckedCreateNestedManyWithoutHeroInput
 }
 
 export type HeroCreateOrConnectWithoutAbilitiesInput = {
@@ -1386,6 +1820,8 @@ export type HeroUpdateWithoutAbilitiesInput = {
   relationsFrom?: Prisma.RelationshipUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroUncheckedUpdateWithoutAbilitiesInput = {
@@ -1428,6 +1864,8 @@ export type HeroUncheckedUpdateWithoutAbilitiesInput = {
   relationsFrom?: Prisma.RelationshipUncheckedUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUncheckedUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUncheckedUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUncheckedUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUncheckedUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroCreateWithoutRelationsFromInput = {
@@ -1469,6 +1907,8 @@ export type HeroCreateWithoutRelationsFromInput = {
   snapshots?: Prisma.HeroSnapshotCreateNestedManyWithoutHeroInput
   relationsTo?: Prisma.RelationshipCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiCreateNestedManyWithoutHeroInput
 }
 
 export type HeroUncheckedCreateWithoutRelationsFromInput = {
@@ -1511,6 +1951,8 @@ export type HeroUncheckedCreateWithoutRelationsFromInput = {
   snapshots?: Prisma.HeroSnapshotUncheckedCreateNestedManyWithoutHeroInput
   relationsTo?: Prisma.RelationshipUncheckedCreateNestedManyWithoutToInput
   playStats?: Prisma.HeroPlayStatUncheckedCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelUncheckedCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiUncheckedCreateNestedManyWithoutHeroInput
 }
 
 export type HeroCreateOrConnectWithoutRelationsFromInput = {
@@ -1557,6 +1999,8 @@ export type HeroCreateWithoutRelationsToInput = {
   snapshots?: Prisma.HeroSnapshotCreateNestedManyWithoutHeroInput
   relationsFrom?: Prisma.RelationshipCreateNestedManyWithoutFromInput
   playStats?: Prisma.HeroPlayStatCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiCreateNestedManyWithoutHeroInput
 }
 
 export type HeroUncheckedCreateWithoutRelationsToInput = {
@@ -1599,6 +2043,8 @@ export type HeroUncheckedCreateWithoutRelationsToInput = {
   snapshots?: Prisma.HeroSnapshotUncheckedCreateNestedManyWithoutHeroInput
   relationsFrom?: Prisma.RelationshipUncheckedCreateNestedManyWithoutFromInput
   playStats?: Prisma.HeroPlayStatUncheckedCreateNestedManyWithoutHeroInput
+  model?: Prisma.HeroModelUncheckedCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiUncheckedCreateNestedManyWithoutHeroInput
 }
 
 export type HeroCreateOrConnectWithoutRelationsToInput = {
@@ -1656,6 +2102,8 @@ export type HeroUpdateWithoutRelationsFromInput = {
   snapshots?: Prisma.HeroSnapshotUpdateManyWithoutHeroNestedInput
   relationsTo?: Prisma.RelationshipUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroUncheckedUpdateWithoutRelationsFromInput = {
@@ -1698,6 +2146,8 @@ export type HeroUncheckedUpdateWithoutRelationsFromInput = {
   snapshots?: Prisma.HeroSnapshotUncheckedUpdateManyWithoutHeroNestedInput
   relationsTo?: Prisma.RelationshipUncheckedUpdateManyWithoutToNestedInput
   playStats?: Prisma.HeroPlayStatUncheckedUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUncheckedUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUncheckedUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroUpsertWithoutRelationsToInput = {
@@ -1750,6 +2200,8 @@ export type HeroUpdateWithoutRelationsToInput = {
   snapshots?: Prisma.HeroSnapshotUpdateManyWithoutHeroNestedInput
   relationsFrom?: Prisma.RelationshipUpdateManyWithoutFromNestedInput
   playStats?: Prisma.HeroPlayStatUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroUncheckedUpdateWithoutRelationsToInput = {
@@ -1792,6 +2244,8 @@ export type HeroUncheckedUpdateWithoutRelationsToInput = {
   snapshots?: Prisma.HeroSnapshotUncheckedUpdateManyWithoutHeroNestedInput
   relationsFrom?: Prisma.RelationshipUncheckedUpdateManyWithoutFromNestedInput
   playStats?: Prisma.HeroPlayStatUncheckedUpdateManyWithoutHeroNestedInput
+  model?: Prisma.HeroModelUncheckedUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUncheckedUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroCreateWithoutPlayStatsInput = {
@@ -1833,6 +2287,8 @@ export type HeroCreateWithoutPlayStatsInput = {
   snapshots?: Prisma.HeroSnapshotCreateNestedManyWithoutHeroInput
   relationsFrom?: Prisma.RelationshipCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipCreateNestedManyWithoutToInput
+  model?: Prisma.HeroModelCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiCreateNestedManyWithoutHeroInput
 }
 
 export type HeroUncheckedCreateWithoutPlayStatsInput = {
@@ -1875,6 +2331,8 @@ export type HeroUncheckedCreateWithoutPlayStatsInput = {
   snapshots?: Prisma.HeroSnapshotUncheckedCreateNestedManyWithoutHeroInput
   relationsFrom?: Prisma.RelationshipUncheckedCreateNestedManyWithoutFromInput
   relationsTo?: Prisma.RelationshipUncheckedCreateNestedManyWithoutToInput
+  model?: Prisma.HeroModelUncheckedCreateNestedOneWithoutHeroInput
+  pois?: Prisma.HeroPoiUncheckedCreateNestedManyWithoutHeroInput
 }
 
 export type HeroCreateOrConnectWithoutPlayStatsInput = {
@@ -1932,6 +2390,8 @@ export type HeroUpdateWithoutPlayStatsInput = {
   snapshots?: Prisma.HeroSnapshotUpdateManyWithoutHeroNestedInput
   relationsFrom?: Prisma.RelationshipUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUpdateManyWithoutToNestedInput
+  model?: Prisma.HeroModelUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUpdateManyWithoutHeroNestedInput
 }
 
 export type HeroUncheckedUpdateWithoutPlayStatsInput = {
@@ -1974,6 +2434,8 @@ export type HeroUncheckedUpdateWithoutPlayStatsInput = {
   snapshots?: Prisma.HeroSnapshotUncheckedUpdateManyWithoutHeroNestedInput
   relationsFrom?: Prisma.RelationshipUncheckedUpdateManyWithoutFromNestedInput
   relationsTo?: Prisma.RelationshipUncheckedUpdateManyWithoutToNestedInput
+  model?: Prisma.HeroModelUncheckedUpdateOneWithoutHeroNestedInput
+  pois?: Prisma.HeroPoiUncheckedUpdateManyWithoutHeroNestedInput
 }
 
 
@@ -1987,6 +2449,7 @@ export type HeroCountOutputType = {
   relationsFrom: number
   relationsTo: number
   playStats: number
+  pois: number
 }
 
 export type HeroCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1995,6 +2458,7 @@ export type HeroCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   relationsFrom?: boolean | HeroCountOutputTypeCountRelationsFromArgs
   relationsTo?: boolean | HeroCountOutputTypeCountRelationsToArgs
   playStats?: boolean | HeroCountOutputTypeCountPlayStatsArgs
+  pois?: boolean | HeroCountOutputTypeCountPoisArgs
 }
 
 /**
@@ -2042,6 +2506,13 @@ export type HeroCountOutputTypeCountPlayStatsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.HeroPlayStatWhereInput
 }
 
+/**
+ * HeroCountOutputType without action
+ */
+export type HeroCountOutputTypeCountPoisArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.HeroPoiWhereInput
+}
+
 
 export type HeroSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2084,6 +2555,8 @@ export type HeroSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   relationsFrom?: boolean | Prisma.Hero$relationsFromArgs<ExtArgs>
   relationsTo?: boolean | Prisma.Hero$relationsToArgs<ExtArgs>
   playStats?: boolean | Prisma.Hero$playStatsArgs<ExtArgs>
+  model?: boolean | Prisma.Hero$modelArgs<ExtArgs>
+  pois?: boolean | Prisma.Hero$poisArgs<ExtArgs>
   _count?: boolean | Prisma.HeroCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hero"]>
 
@@ -2208,6 +2681,8 @@ export type HeroInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   relationsFrom?: boolean | Prisma.Hero$relationsFromArgs<ExtArgs>
   relationsTo?: boolean | Prisma.Hero$relationsToArgs<ExtArgs>
   playStats?: boolean | Prisma.Hero$playStatsArgs<ExtArgs>
+  model?: boolean | Prisma.Hero$modelArgs<ExtArgs>
+  pois?: boolean | Prisma.Hero$poisArgs<ExtArgs>
   _count?: boolean | Prisma.HeroCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type HeroIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2221,6 +2696,8 @@ export type $HeroPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     relationsFrom: Prisma.$RelationshipPayload<ExtArgs>[]
     relationsTo: Prisma.$RelationshipPayload<ExtArgs>[]
     playStats: Prisma.$HeroPlayStatPayload<ExtArgs>[]
+    model: Prisma.$HeroModelPayload<ExtArgs> | null
+    pois: Prisma.$HeroPoiPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2660,6 +3137,8 @@ export interface Prisma__HeroClient<T, Null = never, ExtArgs extends runtime.Typ
   relationsFrom<T extends Prisma.Hero$relationsFromArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hero$relationsFromArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RelationshipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   relationsTo<T extends Prisma.Hero$relationsToArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hero$relationsToArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RelationshipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   playStats<T extends Prisma.Hero$playStatsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hero$playStatsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HeroPlayStatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  model<T extends Prisma.Hero$modelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hero$modelArgs<ExtArgs>>): Prisma.Prisma__HeroModelClient<runtime.Types.Result.GetResult<Prisma.$HeroModelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  pois<T extends Prisma.Hero$poisArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hero$poisArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HeroPoiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3234,6 +3713,49 @@ export type Hero$playStatsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.HeroPlayStatScalarFieldEnum | Prisma.HeroPlayStatScalarFieldEnum[]
+}
+
+/**
+ * Hero.model
+ */
+export type Hero$modelArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HeroModel
+   */
+  select?: Prisma.HeroModelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HeroModel
+   */
+  omit?: Prisma.HeroModelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HeroModelInclude<ExtArgs> | null
+  where?: Prisma.HeroModelWhereInput
+}
+
+/**
+ * Hero.pois
+ */
+export type Hero$poisArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HeroPoi
+   */
+  select?: Prisma.HeroPoiSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HeroPoi
+   */
+  omit?: Prisma.HeroPoiOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HeroPoiInclude<ExtArgs> | null
+  where?: Prisma.HeroPoiWhereInput
+  orderBy?: Prisma.HeroPoiOrderByWithRelationInput | Prisma.HeroPoiOrderByWithRelationInput[]
+  cursor?: Prisma.HeroPoiWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.HeroPoiScalarFieldEnum | Prisma.HeroPoiScalarFieldEnum[]
 }
 
 /**

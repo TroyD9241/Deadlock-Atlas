@@ -10,6 +10,8 @@
  */
 export type * from './models/Patch'
 export type * from './models/Hero'
+export type * from './models/HeroModel'
+export type * from './models/HeroPoi'
 export type * from './models/HeroSnapshot'
 export type * from './models/Ability'
 export type * from './models/HeroAbility'

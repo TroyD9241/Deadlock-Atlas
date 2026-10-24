@@ -29,6 +29,19 @@ export type Patch = Prisma.PatchModel
  */
 export type Hero = Prisma.HeroModel
 /**
+ * Model HeroModel
+ * The hero's 3D model, from the API's /v1/assets/models endpoint.
+ * One row per hero. Streamed from Valve's CDN at runtime (never self-hosted).
+ */
+export type HeroModel = Prisma.HeroModelModel
+/**
+ * Model HeroPoi
+ * A named point of interest on a hero's 3D model.
+ * `anchor` is a glTF node name; validated by scripts/check-model-anchors.ts.
+ * `body` is our own words (never wiki prose).
+ */
+export type HeroPoi = Prisma.HeroPoiModel
+/**
  * Model HeroSnapshot
  * 
  */

@@ -53,6 +53,8 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Patch: 'Patch',
   Hero: 'Hero',
+  HeroModel: 'HeroModel',
+  HeroPoi: 'HeroPoi',
   HeroSnapshot: 'HeroSnapshot',
   Ability: 'Ability',
   HeroAbility: 'HeroAbility',
@@ -130,6 +132,30 @@ export const HeroScalarFieldEnum = {
 } as const
 
 export type HeroScalarFieldEnum = (typeof HeroScalarFieldEnum)[keyof typeof HeroScalarFieldEnum]
+
+
+export const HeroModelScalarFieldEnum = {
+  heroId: 'heroId',
+  modelUrl: 'modelUrl',
+  modelKey: 'modelKey',
+  group: 'group',
+  byteSize: 'byteSize',
+  createdAt: 'createdAt'
+} as const
+
+export type HeroModelScalarFieldEnum = (typeof HeroModelScalarFieldEnum)[keyof typeof HeroModelScalarFieldEnum]
+
+
+export const HeroPoiScalarFieldEnum = {
+  id: 'id',
+  heroId: 'heroId',
+  anchor: 'anchor',
+  label: 'label',
+  body: 'body',
+  order: 'order'
+} as const
+
+export type HeroPoiScalarFieldEnum = (typeof HeroPoiScalarFieldEnum)[keyof typeof HeroPoiScalarFieldEnum]
 
 
 export const HeroSnapshotScalarFieldEnum = {

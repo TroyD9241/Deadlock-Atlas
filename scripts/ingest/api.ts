@@ -107,7 +107,9 @@ const SIMPLE_CACHE: Record<string, string | null> = {
   fonts: null,
   icons: null,
   images: null,
-  models: null,
+  // `models` is a CDN bucket listing, but we resolve hero model URLs at ingest
+  // time and store them on the HeroModel table, so it must be cached.
+  models: "models.json",
   sounds: null,
   "steam-info": null,
   "loot-tables": null,
