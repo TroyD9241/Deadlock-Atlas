@@ -10,6 +10,37 @@
     { "id": "sustain", "label": "Sustain" },
     { "id": "utility", "label": "Utility" }
   ],
+  "rail": {
+    "$comment": "The seven stats the theorycraft rail shows while building. Each names the modifier types that feed it, so the rail reads the build by modifier type rather than by the display label — several modifier types share a label, and the label depends on which property an item happens to use.",
+    "health": {
+      "label": "Max Health",
+      "modifiers": ["MODIFIER_VALUE_HEALTH_MAX", "MODIFIER_VALUE_HEALTH_MAX_PERCENT", "MODIFIER_VALUE_BASE_HEALTH_PERCENT"]
+    },
+    "spirit": {
+      "label": "Spirit Power",
+      "modifiers": ["MODIFIER_VALUE_TECH_POWER"]
+    },
+    "weapon": {
+      "label": "Weapon Damage",
+      "modifiers": ["MODIFIER_VALUE_WEAPON_POWER"]
+    },
+    "spiritResist": {
+      "label": "Spirit Resist",
+      "modifiers": ["MODIFIER_VALUE_TECH_RESIST", "MODIFIER_VALUE_TECH_RESIST_REDUCTION"]
+    },
+    "bulletResist": {
+      "label": "Bullet Resist",
+      "modifiers": ["MODIFIER_VALUE_BULLET_ARMOR_DAMAGE_RESIST", "MODIFIER_VALUE_BULLET_AND_MELEE_RESIST_REDUCTION"]
+    },
+    "moveSpeed": {
+      "label": "Move Speed",
+      "modifiers": ["MODIFIER_VALUE_MOVEMENT_SPEED_MAX"]
+    },
+    "cooldown": {
+      "label": "Cooldown Reduction",
+      "modifiers": ["MODIFIER_VALUE_COOLDOWN_REDUCTION_PERCENTAGE", "MODIFIER_VALUE_ITEM_COOLDOWN_REDUCTION_PERCENTAGE", "MODIFIER_VALUE_ULTIMATE_COOLDOWN_REDUCTION_PERCENTAGE"]
+    }
+  },
   "modifiers": {
     "MODIFIER_VALUE_HEALTH_MAX": { "group": "health", "kind": "add", "heroStat": "max_health" },
     "MODIFIER_VALUE_HEALTH_MAX_PERCENT": { "group": "health", "kind": "percent", "heroStat": "max_health" },

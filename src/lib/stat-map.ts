@@ -36,6 +36,14 @@ export type ModifierMap = {
 export type StatMap = {
   groups: StatGroup[];
   modifiers: Record<string, ModifierMap>;
+  /** The stat rail's curated set. */
+  rail?: Record<string, RailSpec>;
+};
+
+/** One stat the rail shows, and the modifier types that feed it. */
+export type RailSpec = {
+  label: string;
+  modifiers: string[];
 };
 
 /** One property on an item or an ability. */
@@ -103,6 +111,8 @@ export type StatLine = {
   key: string;
   /** The display name, from the property's own label. */
   label: string;
+  /** The engine modifier type, e.g. MODIFIER_VALUE_HEALTH_MAX. */
+  modifierType: string;
   /** The group it belongs to, from the stat map. */
   group: string;
   kind: ModifierKind;
@@ -139,31 +149,19 @@ export function buildReadout(
   const lines = new Map<string, StatLine>();
 
   for (const item of items) {
-    const properties = toProperties(item.properties);
-    for (const [key, property] of Object.entries(properties)) {
-      const type = property.provided_property_type;
-      if (!type) continue;
-      const mapped = map.modifiers[type];
-      if (!mapped) continue;
-
-      const value = numericValue(property.value);
-      if (value == null || value === 0) continue;
-
-      const line = lines.get(key) ?? {
-        key,
-        label: property.label?.trim() || key,
-        group: mapped.group,
-        kind: mapped.kind,
-        total: 0,
-        base: mapped.heroStat ? (stats[mapped.heroStat] ?? null) : null,
-        heroStat: mapped.heroStat ?? null,
-        postfix: property.postfix ?? "",
-        sources: [],
-      };
-
-      line.total += value;
-      line.sources.push({ slug: item.slug, name: item.name, value });
-      lines.set(key, line);
+    for (const line of itemContributions(item, map)) {
+      const existing = lines.get(line.key);
+      if (!existing) {
+        // The base is set here, because itemContributions does not know the
+        // hero — only the build does.
+        lines.set(line.key, {
+          ...line,
+          base: line.heroStat ? (stats[line.heroStat] ?? null) : null,
+        });
+        continue;
+      }
+      existing.total += line.total;
+      existing.sources.push(...line.sources);
     }
   }
 
@@ -176,6 +174,45 @@ export function buildReadout(
 }
 
 /**
+ * The stat lines one item contributes on its own.
+ *
+ * The board shows this on the card, so the reader can see what an item does
+ * without adding it first. `buildReadout` is the sum of these.
+ */
+export function itemContributions(
+  item: BuildItem,
+  map: StatMap,
+): StatLine[] {
+  const properties = toProperties(item.properties);
+  const lines: StatLine[] = [];
+
+  for (const [key, property] of Object.entries(properties)) {
+    const type = property.provided_property_type;
+    if (!type) continue;
+    const mapped = map.modifiers[type];
+    if (!mapped) continue;
+
+    const value = numericValue(property.value);
+    if (value == null || value === 0) continue;
+
+    lines.push({
+      key,
+      label: property.label?.trim() || key,
+      modifierType: type,
+      group: mapped.group,
+      kind: mapped.kind,
+      total: value,
+      base: null,
+      heroStat: mapped.heroStat ?? null,
+      postfix: property.postfix ?? "",
+      sources: [{ slug: item.slug, name: item.name, value }],
+    });
+  }
+
+  return lines;
+}
+
+/**
  * The final value of a stat after a build.
  *
  * `add` modifiers are added to the base; `percent` modifiers are summed and
@@ -184,9 +221,26 @@ export function buildReadout(
  * says so.
  */
 export function statTotal(line: StatLine): number | null {
-  if (line.base == null) return null;
+  if (line.base == null || line.base === 0) return null;
   if (line.kind === "add") return line.base + line.total;
   return line.base * (1 + line.total / 100);
+}
+
+/**
+ * Whether a stat has a base worth showing.
+ *
+ * A base of zero is not a meaningful "before" value: the hero has no
+ * Weapon Power to start from, so `0 → 14` says nothing. Those stats show
+ * their contribution alone.
+ */
+export function hasBase(line: StatLine): boolean {
+  return line.base != null && line.base !== 0;
+}
+
+/** The contribution as it is written on a card: `+80`, `+14%`. */
+export function contributionText(line: StatLine): string {
+  const sign = line.total > 0 ? "+" : "";
+  return `${sign}${line.total}${line.postfix}`;
 }
 
 /** The lines grouped for display, in the stat map's group order. */
@@ -225,6 +279,75 @@ export function headlineLines(lines: StatLine[]): StatLine[] {
     if (line) out.push(line);
   }
   return out;
+}
+
+/**
+ * The stat rail's headline set.
+ *
+ * Seven stats a reader wants at a glance while building: health, the two
+ * damage scales, the two resistances, movement, and ability uptime.
+ *
+ * The set is curated in `data/curated/stat-map.json`, keyed by modifier
+ * type rather than by display label — several modifier types share a label
+ * ("Spirit Resist" covers both the resist and the reduction), and the label
+ * depends on which property an item happens to use.
+ */
+export type RailStat = {
+  /** The stable key for the row. */
+  id: string;
+  /** The label shown. */
+  label: string;
+  /** The modifier types that feed this stat, so the board can match on them. */
+  modifiers: string[];
+  /** The line it reads from, when the build touches it. */
+  line: StatLine | null;
+  /** Every line that feeds this stat, so the breakdown can list them all. */
+  lines: StatLine[];
+  /** The hero's base, when the stat has one. */
+  base: number | null;
+  /** The build's contribution. */
+  contribution: number;
+  /** The postfix for the numbers. */
+  postfix: string;
+  /** Whether the stat has a base worth showing. */
+  hasBase: boolean;
+};
+
+/**
+ * The rail rows for a build.
+ *
+ * Every rail stat gets a row even when the build does not touch it, so the
+ * reader can see what a stat is at with nothing in it.
+ */
+export function railStats(lines: StatLine[], map: StatMap): RailStat[] {
+  const rail = map.rail ?? {};
+  return Object.entries(rail)
+    // The curated file carries a $comment key for the reader; it is not a
+    // rail spec.
+    .filter((entry): entry is [string, RailSpec] =>
+      Array.isArray((entry[1] as RailSpec)?.modifiers),
+    )
+    .map(([id, spec]) => {
+      const feeding = lines.filter((l) => spec.modifiers.includes(l.modifierType));
+      const first = feeding[0] ?? null;
+
+      // The base comes from the hero, and only the first feeding line knows
+      // it — they all feed the same stat, so they share a base.
+      const base = first?.base ?? null;
+      const contribution = feeding.reduce((sum, l) => sum + l.total, 0);
+
+      return {
+        id,
+        label: spec.label,
+        modifiers: spec.modifiers,
+        line: first,
+        lines: feeding,
+        base,
+        contribution,
+        postfix: first?.postfix ?? "",
+        hasBase: base != null && base !== 0,
+      };
+    });
 }
 
 /** The resist lines, so the contrast view can show them side by side. */

@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { Theorycraft } from "@/components/hero/theorycraft";
 import { themeStyle } from "@/lib/theme";
 import { getStatMap } from "@/lib/stat-map.server";
-import { getHero, getHeroAbilities } from "@/lib/queries";
+import { parseBuild } from "@/lib/build";
+import { getHero, getHeroAbilities, getItemsBySlugs } from "@/lib/queries";
 
 export const instant = false;
 
@@ -67,16 +68,33 @@ function popularBuilds(raw: unknown) {
 
 export default async function TheorycraftPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ build?: string; up?: string }>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
   const hero = await getHero(slug);
   if (!hero) notFound();
 
-  const [abilities, statMap] = await Promise.all([
+  /*
+   * The build in the URL is read on the server, so the board renders with
+   * its items on the first paint rather than filling in a moment later.
+   */
+  const urlBuild = parseBuild(
+    new URLSearchParams(
+      query.build || query.up
+        ? `build=${query.build ?? ""}&up=${query.up ?? ""}`
+        : "",
+    ),
+  );
+  const urlSlugs = urlBuild.items.filter(Boolean);
+
+  const [abilities, statMap, initialItems] = await Promise.all([
     getHeroAbilities(slug),
     getStatMap(),
+    getItemsBySlugs(urlSlugs),
   ]);
 
   return (
@@ -141,11 +159,10 @@ export default async function TheorycraftPage({
 
         <Theorycraft
           heroSlug={hero.slug}
-          heroName={hero.name}
-          heroAccent={hero.accent}
-          heroAccentText={hero.accentText}
-          heroOnAccent={hero.onAccent}
           startingStats={hero.startingStats}
+          initialBuild={urlBuild}
+          initialItems={initialItems}
+          hasUrlBuild={Boolean(query.build || query.up)}
           abilities={abilities.map((entry) => ({
             id: entry.id,
             slot: entry.slot,
