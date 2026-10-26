@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 
-import { propertiesAtLevel, scaleFor, upgradeTiers } from "@/lib/ability-upgrades";
+import { propertiesAtLevel, propertyLabel, scaleSource, upgradeTiers } from "@/lib/ability-upgrades";
 import { numericValue } from "@/lib/stat-map";
 
+import type { ScaleSource } from "@/lib/ability-upgrades";
 import type { HeroAbility, StatMap } from "./types";
 
 /**
@@ -19,6 +20,14 @@ import type { HeroAbility, StatMap } from "./types";
 type Props = {
   abilities: HeroAbility[];
   statMap: StatMap;
+  /**
+   * The hero's stat keys by the game's display name.
+   *
+   * The abilities' scale functions name their source stat in the same
+   * vocabulary, so this is how "scales with ETechRange" becomes "scales
+   * with tech range".
+   */
+  displayNames: Record<string, string>;
   levels: Record<string, number>;
   onSetLevel: (slot: string, level: number) => void;
   onSetStage: (stage: "early" | "mid" | "late") => void;
@@ -27,6 +36,7 @@ type Props = {
 export function Abilities({
   abilities,
   statMap,
+  displayNames,
   levels,
   onSetLevel,
   onSetStage,
@@ -91,6 +101,7 @@ export function Abilities({
             key={entry.slot}
             entry={entry}
             statMap={statMap}
+            displayNames={displayNames}
             level={levels[entry.slot] ?? 0}
             onSetLevel={onSetLevel}
           />
@@ -150,11 +161,13 @@ function isShared(entry: HeroAbility): boolean {
 function AbilityCard({
   entry,
   statMap,
+  displayNames,
   level,
   onSetLevel,
 }: {
   entry: HeroAbility;
   statMap: StatMap;
+  displayNames: Record<string, string>;
   level: number;
   onSetLevel: (slot: string, level: number) => void;
 }) {
@@ -165,30 +178,61 @@ function AbilityCard({
     level,
   );
 
+  const labels = {
+    bonus: statMap.abilityBonusLabels,
+    modifier: statMap.modifierLabels,
+  };
+
+  /*
+   * The ability's own properties, plus the bonuses its upgrade tiers add.
+   *
+   * A bonus that names a property the ability never had becomes a line of
+   * its own rather than a change to an existing one.
+   */
   const lines: {
     key: string;
     label: string;
     value: number;
     postfix: string;
-    scaled: { coefficient: number; from: string } | null;
+    scale: ScaleSource | null;
   }[] = [];
+
+  const seen = new Set<string>();
 
   for (const [key, property] of Object.entries(properties)) {
     const type = property.provided_property_type;
-    if (!type) continue;
-    const mapped = statMap.modifiers[type];
-    if (!mapped) continue;
+    const mapped = type ? statMap.modifiers[type] : null;
+    // A property with no mapped modifier still shows if an upgrade tier
+    // gave it a value; it just does not feed a hero stat.
+    if (type && !mapped) continue;
+
     const value = numericValue(property.value);
     if (value == null || value === 0) continue;
 
-    const scale = scaleFor(property);
+    seen.add(key);
     lines.push({
       key,
-      label: property.label?.trim() || key,
+      label: propertyLabel(key, property, labels),
       value,
       postfix: property.postfix ?? "",
-      scaled: scale ? { coefficient: scale.coefficient, from: scale.from } : null,
+      scale: scaleSource(property, displayNames, statMap.displayStatLabels ?? {}),
     });
+  }
+
+  // The bonuses the tiers add, where they are not a property the ability
+  // already has.
+  for (const tier of tiers.slice(0, level)) {
+    for (const bonus of tier.upgrades) {
+      if (seen.has(bonus.name)) continue;
+      seen.add(bonus.name);
+      lines.push({
+        key: bonus.name,
+        label: propertyLabel(bonus.name, undefined, labels),
+        value: bonus.bonus,
+        postfix: "",
+        scale: null,
+      });
+    }
   }
 
   return (
@@ -292,12 +336,28 @@ function AbilityCard({
           </div>
         )}
 
-        {lines.some((l) => l.scaled) ? (
-          <p style={{ margin: "6px 0 0", fontSize: 10, color: "var(--muted)" }}>
-            Scales with{" "}
-            {lines.find((l) => l.scaled)?.scaled?.from || "your stats"} (
-            coefficient {lines.find((l) => l.scaled)?.scaled?.coefficient}).
-          </p>
+        {lines.some((l) => l.scale) ? (
+          <div
+            style={{
+              marginTop: 7,
+              display: "grid",
+              gap: 3,
+              fontSize: 10,
+              color: "var(--muted)",
+            }}
+          >
+            {lines
+              .filter((l) => l.scale)
+              .map((l) => (
+                <span key={l.key}>
+                  {l.label} scales with {l.scale?.label}
+                  {l.scale?.coefficient != null
+                    ? ` (× ${l.scale.coefficient})`
+                    : ""}
+                  .
+                </span>
+              ))}
+          </div>
         ) : lines.length > 0 ? (
           <p style={{ margin: "6px 0 0", fontSize: 10, color: "var(--muted)" }}>
             Does not scale with spirit power or weapon damage.

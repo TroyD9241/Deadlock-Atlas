@@ -38,6 +38,19 @@ export type StatMap = {
   modifiers: Record<string, ModifierMap>;
   /** The stat rail's curated set. */
   rail?: Record<string, RailSpec>;
+  /** A display label for modifier types whose properties carry none. */
+  modifierLabels?: Record<string, string>;
+  /** A display label for the ability upgrade bonuses nothing else resolves. */
+  abilityBonusLabels?: Record<string, string>;
+  /** A readable name for the game's display stats: ETechCooldown, etc. */
+  displayStatLabels?: Record<string, string>;
+  /**
+   * The hero's stat keys by the game's display name.
+   *
+   * The abilities' scale functions name their source stat in the same `E*`
+   * vocabulary the hero's stats use, so the bridge is the hero's own data.
+   */
+  displayNames?: Record<string, string>;
 };
 
 /** One stat the rail shows, and the modifier types that feed it. */
@@ -96,6 +109,28 @@ export function heroStats(startingStats: unknown): HeroStats {
     if (!raw || typeof raw !== "object") continue;
     const value = numericValue((raw as { value?: unknown }).value);
     if (value != null) out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * The hero's stat keys by the game's own display name.
+ *
+ * The hero's stats carry a `display_stat_name` in the same `E*` vocabulary
+ * the abilities' scale functions use, so this is the bridge between them.
+ * `ETechRange` → `tech_range`.
+ */
+export function heroStatsByDisplayName(
+  startingStats: unknown,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!startingStats || typeof startingStats !== "object") return out;
+  for (const [key, raw] of Object.entries(
+    startingStats as Record<string, unknown>,
+  )) {
+    if (!raw || typeof raw !== "object") continue;
+    const name = (raw as { display_stat_name?: unknown }).display_stat_name;
+    if (typeof name === "string" && name) out[name] = key;
   }
   return out;
 }

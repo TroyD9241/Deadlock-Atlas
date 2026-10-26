@@ -20,7 +20,7 @@ import {
   readStoredBuild,
   writeStoredBuild,
 } from "@/lib/build";
-import { buildReadout, heroStats } from "@/lib/stat-map";
+import { buildReadout, heroStats, heroStatsByDisplayName } from "@/lib/stat-map";
 import { upgradeTiers } from "@/lib/ability-upgrades";
 
 import { Abilities } from "./abilities";
@@ -409,6 +409,7 @@ export function Theorycraft({
         <Abilities
           abilities={abilities}
           statMap={statMap}
+          displayNames={heroStatsByDisplayName(startingStats)}
           levels={abilityLevels}
           onSetLevel={setAbilityLevel}
           onSetStage={setAbilityStage}
