@@ -34,8 +34,19 @@ export type ItemFilters = {
   search?: string;
 };
 
-/** The game's price points per tier, from generic-data.item_price_per_tier. */
-export const COST_STEPS = [800, 1600, 2600, 3400, 4600];
+/**
+ * The shop's price points, from the API's generic-data.item_price_per_tier:
+ * [0, 800, 1600, 3200, 6400, 9999]. The currency is souls.
+ *
+ * 9999 is the game's "not a fixed price" value (tier 5), so it is labelled
+ * as such rather than shown as a literal price.
+ */
+export const COST_STEPS = [800, 1600, 3200, 6400, 9999];
+
+/** The label for a price. 9999 means "varies" in game. */
+export function costLabel(cost: number): string {
+  return cost === 9999 ? "9999+ souls" : `${cost} souls`;
+}
 
 /** A readable label for the API's shop filter names. */
 export function gameFilterLabel(id: string): string {

@@ -45,6 +45,13 @@ export type HeroCardProps = {
   palette: string[];
   /** True when the hero has no verified artwork yet. */
   missingArtwork?: boolean;
+  /**
+   * Where the card links to. Defaults to the hero's profile, so the card can
+   * be reused for a different destination without a second component.
+   */
+  href?: string;
+  /** The call to action under the name. */
+  action?: string;
 };
 
 export function HeroCard({
@@ -60,13 +67,15 @@ export function HeroCard({
   accentText,
   palette,
   missingArtwork = false,
+  href,
+  action,
 }: HeroCardProps) {
   const p1 = palette[0];
   const p2 = palette[1];
 
   return (
     <Link
-      href={`/heroes/${slug}`}
+      href={href ?? `/heroes/${slug}`}
       className="hero-card"
       style={{
         ...themeStyle({ accent, accentText, palette }),
@@ -272,6 +281,22 @@ export function HeroCard({
             }}
           >
             [artwork not verified]
+          </span>
+        ) : null}
+
+        {action ? (
+          <span
+            style={{
+              display: "block",
+              marginTop: 10,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "var(--accent-text)",
+            }}
+          >
+            {action} →
           </span>
         ) : null}
 

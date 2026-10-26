@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { itemImage } from "@/components/item/item-card";
 import { themeStyle } from "@/lib/theme";
+import { costLabel } from "@/lib/item-filter-shared";
 import { slotLabel } from "@/lib/item-colors";
 import { itemEffectText, itemStats, itemUpgrades, sanitizeItemHtml, splitItemParagraphs } from "@/lib/item-text";
 import { getItem } from "@/lib/queries";
@@ -169,7 +170,7 @@ export default async function ItemPage({
               <span className="tag">{slotLabel(item.slotType)}</span>
               {item.tier ? <span className="tag-muted">Tier {item.tier}</span> : null}
               {item.cost != null ? (
-                <span className="tag-muted">{item.cost} gold</span>
+                <span className="tag-muted">{costLabel(item.cost)}</span>
               ) : null}
               {item.shopable ? <span className="tag-muted">In shop</span> : null}
             </div>

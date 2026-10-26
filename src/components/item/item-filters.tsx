@@ -229,7 +229,7 @@ export function ItemFilters({ counts, facets, initialQuery, active }: Props) {
               facets.find((f) => f.id === v)?.label ?? v,
             ] as const),
             ...(active.maxCost
-              ? ([["maxCost", active.maxCost, `≤ ${active.maxCost} gold`]] as const)
+              ? ([["maxCost", active.maxCost, `≤ ${active.maxCost} souls`]] as const)
               : []),
             ...(active.inShopOnly ? ([["shop", "1", "In shop"]] as const) : []),
             ...(active.starterOnly ? ([["starter", "1", "Starter items"]] as const) : []),

@@ -11,13 +11,15 @@ import type { HeroSummary } from "@/lib/queries";
 /**
  * Pill navigation — design.md 5.2.
  *
- * Home, Heroes (with portrait dropdown), Abilities, Items, Lore, Map, Patches.
- * Under 780px the row scrolls horizontally and is never hidden (design.md 7).
+ * Home, Heroes (with portrait dropdown), Abilities, Items, Theorycraft, Lore,
+ * Map, Patches. Under 780px the row scrolls horizontally and is never hidden
+ * (design.md 7).
  */
 const LINKS = [
   { href: "/", label: "Home" },
   { href: "/abilities", label: "Abilities" },
   { href: "/items", label: "Items" },
+  { href: "/theorycraft", label: "Theorycraft" },
   { href: "/lore", label: "Lore" },
   { href: "/map", label: "Map" },
   { href: "/patches", label: "Patches" },

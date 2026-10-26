@@ -368,7 +368,7 @@ VOICE LINES: https://deadlock.wiki/Deadman_Danny/Voice_lines
 
 ### 5.2 Header and navigation
 
-- Brand `DEADLOCK ATLAS` in Gronau Neue (letter-spaced, accent on "ATLAS"), then chamfered-plate nav: Home, Heroes (with portrait dropdown), Items, Lore, Map, Patches.
+- Brand `DEADLOCK ATLAS` in Gronau Neue (letter-spaced, accent on "ATLAS"), then chamfered-plate nav: Home, Heroes (with portrait dropdown), Items, Theorycraft, Lore, Map, Patches.
 - Nav labels are Gronau Neue, uppercase, 12px/700, wide tracking. Each sits on a cut-corner angular plate (`clip-path` chamfer); hover = 12% accent tint; active page = 26%→10% gradient plate with 1px inset accent edge.
 - A global search field, styled as a chamfered plate in matching typography, sits at the end of the nav row with Cmd+K shortcut and debounced autocomplete.
 - The header bar is sticky at the top of the viewport with a translucent `--bg` background + backdrop blur; the mobile nav scrolls horizontally and is never hidden.

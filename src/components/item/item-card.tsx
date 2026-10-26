@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { themeStyle } from "@/lib/theme";
+import { costLabel } from "@/lib/item-filter-shared";
 import { slotLabel } from "@/lib/item-colors";
 import { itemEffectText, itemText, itemStats, itemUpgrades } from "@/lib/item-text";
 
@@ -112,7 +113,7 @@ export function ItemCard({ item }: { item: ItemSummary }) {
         <span className="tag">{slotLabel(item.slotType)}</span>
         {item.tier ? <span className="tag-muted">Tier {item.tier}</span> : null}
         {item.cost != null ? (
-          <span className="tag-muted">{item.cost} gold</span>
+          <span className="tag-muted">{costLabel(item.cost)}</span>
         ) : null}
       </div>
     </Link>
@@ -161,7 +162,7 @@ export function ItemPopoverContent({ item }: { item: ItemDetail }) {
         </div>
         {item.cost != null ? (
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--accent-text)" }}>
-            {item.cost}
+            {costLabel(item.cost)}
           </div>
         ) : null}
       </div>

@@ -197,6 +197,8 @@ export async function getHero(slug: string) {
       startingStats: true,
       itemSlots: true,
       itemSlotInfo: true,
+      popularItems: true,
+      draftBucketing: true,
       heroStatsUi: true,
       statsDisplay: true,
       shopStatDisplay: true,
@@ -234,6 +236,7 @@ export async function getHero(slug: string) {
     isReleased: row.isReleased,
     needsReview: row.needsReview,
     startingStats: row.startingStats,
+    popularItems: row.popularItems,
     abilities: row.abilities,
   };
 }
@@ -276,6 +279,163 @@ export type ItemDetail = ItemSummary & {
   activation: unknown;
   imbue: unknown;
 };
+
+/** One item, for the theorycraft picker. */
+export async function getItemBySlug(slug: string): Promise<ItemDetail | null> {
+  return getItem(slug);
+}
+
+/**
+ * Every item, keyed by slug, for the theorycraft tool.
+ *
+ * The tool needs each item's properties to compute the readout, and its slot
+ * and tier for the purchase-cap check.
+ */
+export async function getItemIndex(): Promise<
+  Record<
+    string,
+    {
+      slug: string;
+      name: string;
+      slotType: string | null;
+      tier: number | null;
+      cost: number | null;
+      properties: unknown;
+      image: string | null;
+      imageWebp: string | null;
+      shopImage: string | null;
+      accent: string | null;
+      accentText: string | null;
+      onAccent: string | null;
+    }
+  >
+> {
+  const rows = await db.item.findMany({
+    where: { slotType: { not: null } },
+    select: {
+      slug: true,
+      name: true,
+      slotType: true,
+      tier: true,
+      cost: true,
+      properties: true,
+      image: true,
+      imageWebp: true,
+      shopImage: true,
+      accent: true,
+      accentText: true,
+      onAccent: true,
+    },
+  });
+
+  const out: Record<
+    string,
+    {
+      slug: string;
+      name: string;
+      slotType: string | null;
+      tier: number | null;
+      cost: number | null;
+      properties: unknown;
+      image: string | null;
+      imageWebp: string | null;
+      shopImage: string | null;
+      accent: string | null;
+      accentText: string | null;
+      onAccent: string | null;
+    }
+  > = {};
+  for (const row of rows) out[row.slug] = row;
+  return out;
+}
+
+/**
+ * The item fields the theorycraft board needs.
+ *
+ * Narrower than ItemSummary on purpose: the board reads these twelve
+ * fields, and selecting them all for every shop item is wasted work.
+ */
+export type BoardItem = {
+  slug: string;
+  name: string;
+  slotType: string | null;
+  tier: number | null;
+  cost: number | null;
+  image: string | null;
+  imageWebp: string | null;
+  shopImage: string | null;
+  accent: string | null;
+  accentText: string | null;
+  onAccent: string | null;
+  properties: unknown;
+};
+
+/**
+ * Specific items by slug, keyed by slug.
+ *
+ * The theorycraft board needs the properties of the twelve items in the
+ * build and nothing else. Fetching the whole shop for that is 1.4MB of
+ * properties the board never looks at.
+ */
+export async function getItemsBySlugs(
+  slugs: string[],
+): Promise<Record<string, BoardItem>> {
+  if (slugs.length === 0) return {};
+
+  const rows = await db.item.findMany({
+    where: { slug: { in: slugs } },
+    select: {
+      slug: true,
+      name: true,
+      slotType: true,
+      tier: true,
+      cost: true,
+      image: true,
+      imageWebp: true,
+      shopImage: true,
+      accent: true,
+      accentText: true,
+      onAccent: true,
+      properties: true,
+    },
+  });
+
+  const out: Record<string, BoardItem> = {};
+  for (const row of rows) out[row.slug] = row;
+  return out;
+}
+
+/**
+ * A hero's abilities with their upgrade tiers, for the theorycraft tool.
+ */
+export async function getHeroAbilities(slug: string) {
+  const hero = await db.hero.findUnique({
+    where: { slug },
+    select: {
+      abilities: {
+        select: {
+          id: true,
+          slot: true,
+          displayOrder: true,
+          isInnate: true,
+          ability: {
+            select: {
+              id: true,
+              className: true,
+              name: true,
+              image: true,
+              imageWebp: true,
+              properties: true,
+              upgrades: true,
+            },
+          },
+        },
+        orderBy: { displayOrder: "asc" },
+      },
+    },
+  });
+  return hero?.abilities ?? [];
+}
 
 const ITEM_SELECT = {
   slug: true,

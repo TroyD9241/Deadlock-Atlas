@@ -4,9 +4,11 @@ import { notFound } from "next/navigation";
 
 import { HeroBanner } from "@/components/hero/hero-banner";
 import { ModelSection } from "@/components/hero/model-section";
+import { BuildSummary } from "@/components/hero/build-summary";
 import { AbilityIconField, type FieldIcon } from "@/components/hero/ability-icon-field";
 import { themeStyle } from "@/lib/theme";
-import { getHero, getHeroesByClass } from "@/lib/queries";
+import { getStatMap } from "@/lib/stat-map.server";
+import { getHero, getHeroesByClass, getItemIndex } from "@/lib/queries";
 
 export const instant = false;
 
@@ -105,6 +107,12 @@ export default async function HeroProfilePage({
   const classHeroes = hero.heroType
     ? await getHeroesByClass(hero.heroType)
     : [];
+
+  // The build summary needs each item's properties to compute the deltas.
+  const itemIndex = await getItemIndex();
+
+  // The curated modifier map, read on the server.
+  const statMap = await getStatMap();
 
   /*
    * The hero's own ability icons, for the banner's background texture.
@@ -398,6 +406,15 @@ export default async function HeroProfilePage({
           </div>
         </div>
       </section>
+
+      {/* Build summary — the full tool lives on its own page */}
+      <BuildSummary
+        heroSlug={hero.slug}
+        heroName={hero.name}
+        startingStats={hero.startingStats}
+        itemIndex={itemIndex}
+        statMap={statMap}
+      />
 
       {/* Looks & cosmetics */}
       <section className="section">
