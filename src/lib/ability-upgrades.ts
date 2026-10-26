@@ -15,6 +15,18 @@ import { numericValue, type Properties, type Property } from "@/lib/stat-map";
 export type PropertyUpgrade = {
   name: string;
   bonus: number;
+  /**
+   * How the bonus applies, from the API's `upgrade_type`.
+   *
+   * - absent or `EAddToBase` — a flat addition to the property.
+   * - `EAddToScale` — `bonus` is a coefficient: the property gains
+   *   `bonus × stat`, where the stat is `scale_stat_filter`.
+   * - `EMultiplyScale` / `EMultiplyBase` — multiplicative, which the tool
+   *   does not model.
+   */
+  upgradeType?: string;
+  /** The stat a scaled bonus scales off, e.g. `ETechPower`. */
+  scaleStatFilter?: string;
 };
 
 /** One upgrade tier. */
@@ -26,7 +38,12 @@ export type UpgradeTier = {
 };
 
 export type UpgradeTierRaw = {
-  property_upgrades?: { name?: string; bonus?: unknown }[];
+  property_upgrades?: {
+    name?: string;
+    bonus?: unknown;
+    upgrade_type?: string;
+    scale_stat_filter?: string;
+  }[];
 };
 
 /** The upgrade tiers of an ability, empty when it has none. */
@@ -50,7 +67,12 @@ export function upgradeTiers(raw: unknown): UpgradeTier[] {
         bonus: typeof upgrade?.bonus === "number" ? String(upgrade.bonus) : String(upgrade?.bonus ?? ""),
       });
       if (bonus == null || bonus === 0) continue;
-      upgrades.push({ name, bonus });
+      upgrades.push({
+        name,
+        bonus,
+        upgradeType: upgrade?.upgrade_type,
+        scaleStatFilter: upgrade?.scale_stat_filter,
+      });
     }
     tiers.push({ upgrades, raw: rawBonuses });
   }
@@ -68,6 +90,12 @@ export function upgradeLevelCount(tiers: UpgradeTier[]): number {
  * Level 0 is the base ability. Level N applies the bonuses of tiers 1..N.
  * Bonuses are added to the property when it exists, and added as a new
  * property when it does not.
+ *
+ * Only *flat* bonuses are applied here. A bonus with an `upgrade_type` is
+ * relative to something — `EAddToScale` is a coefficient times a stat — so
+ * adding it flat would double-count it once the scaling is applied. Those
+ * bonuses are collected by `scaleBonusesAtLevel` instead, and the resolver
+ * applies them against the build's stats.
  */
 export function propertiesAtLevel(
   properties: Properties,
@@ -82,6 +110,7 @@ export function propertiesAtLevel(
   const applied = Math.max(0, Math.min(level, tiers.length));
   for (let i = 0; i < applied; i += 1) {
     for (const upgrade of tiers[i]?.upgrades ?? []) {
+      if (upgrade.upgradeType) continue;
       const existing = out[upgrade.name];
       if (existing) {
         const value = numericValue(existing.value) ?? 0;
@@ -99,6 +128,46 @@ export function propertiesAtLevel(
   }
 
   return out;
+}
+
+/**
+ * The scaled bonuses a level applies, grouped by the property they affect.
+ *
+ * Only `EAddToScale` against `ETechPower` is modelled — that is the shape
+ * 67 of the 105 scaled bonuses in the API take, and the one the tool can
+ * resolve from the build's spirit power. The rest (`EMultiplyScale`,
+ * `EMultiplyBase`, and scaling off a stat we do not compute) are reported
+ * as not modelled rather than guessed at.
+ */
+export function scaleBonusesAtLevel(
+  tiers: UpgradeTier[],
+  level: number,
+): {
+  /** Property name -> the coefficient to multiply by spirit power. */
+  coefficients: Record<string, number>;
+  /** Property names whose scaling the tool cannot resolve. */
+  notModelled: string[];
+} {
+  const coefficients: Record<string, number> = {};
+  const notModelled = new Set<string>();
+
+  const applied = Math.max(0, Math.min(level, tiers.length));
+  for (let i = 0; i < applied; i += 1) {
+    for (const upgrade of tiers[i]?.upgrades ?? []) {
+      if (!upgrade.upgradeType) continue;
+      if (
+        upgrade.upgradeType === "EAddToScale" &&
+        upgrade.scaleStatFilter === "ETechPower"
+      ) {
+        coefficients[upgrade.name] =
+          (coefficients[upgrade.name] ?? 0) + upgrade.bonus;
+      } else {
+        notModelled.add(upgrade.name);
+      }
+    }
+  }
+
+  return { coefficients, notModelled: [...notModelled] };
 }
 
 /** The bonuses a given tier adds, for the breakdown in the readout. */
@@ -159,6 +228,12 @@ export type ScaleSource = {
   heroStat: string | null;
   /** The name to show a reader. */
   label: string;
+  /**
+   * When true, the stat this scales from is not modelled by the site
+   * (e.g. damage dealt). The value shown should be treated as base/unscaled
+   * by the site's formula.
+   */
+  notModelled?: boolean;
 };
 
 /**
@@ -170,6 +245,16 @@ export type ScaleSource = {
  */
 const TECH_DAMAGE_STAT = "weapon_power";
 
+const NOT_MODELLED_STATS = new Set([
+  "EStatsCount",
+  "EWeaponDamageScale",
+]);
+
+// Subclasses that scale off damage dealt rather than spirit power
+const DAMAGE_DEALT_SUBCLASSES = new Set([
+  "herohealsf",
+]);
+
 export function scaleSource(
   property: Property | undefined,
   displayNames: Record<string, string> = {},
@@ -180,19 +265,27 @@ export function scaleSource(
 
   const coefficient = numericValue(scale.stat_scale);
   const className = scale.class_name ?? "";
-
-  if (className.includes("tech_damage")) {
-    return {
-      coefficient,
-      from: "spirit power",
-      heroStat: TECH_DAMAGE_STAT,
-      label: "Spirit Power",
-    };
-  }
-
   const named = scale.specific_stat_scale_type;
+  const subclass = scale.subclass_name ?? "";
+
+  // Prefer the API's explicit stat when present. The class name is a
+  // bucket/tag; the named stat says what it actually scales from.
   if (named) {
     const heroStat = displayNames[named] ?? null;
+    if (NOT_MODELLED_STATS.has(named)) {
+      return {
+        coefficient,
+        from: named,
+        heroStat: null,
+        label:
+          named === "EStatsCount"
+            ? "Damage Dealt"
+            : named === "EWeaponDamageScale"
+              ? "Weapon Damage"
+              : (displayLabels[named] ?? named),
+        notModelled: true,
+      };
+    }
     return {
       coefficient,
       from: named,
@@ -200,6 +293,25 @@ export function scaleSource(
       label:
         displayLabels[named] ??
         (heroStat ? heroStat.replace(/_/g, " ") : named),
+    };
+  }
+
+  if (DAMAGE_DEALT_SUBCLASSES.has(subclass)) {
+    return {
+      coefficient,
+      from: "damage dealt",
+      heroStat: null,
+      label: "Damage Dealt",
+      notModelled: true,
+    };
+  }
+
+  if (className.includes("tech_damage")) {
+    return {
+      coefficient,
+      from: "spirit power",
+      heroStat: TECH_DAMAGE_STAT,
+      label: "Spirit Power",
     };
   }
 

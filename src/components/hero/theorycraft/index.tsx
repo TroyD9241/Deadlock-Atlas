@@ -20,13 +20,16 @@ import {
   readStoredBuild,
   writeStoredBuild,
 } from "@/lib/build";
-import { buildReadout, heroStats, heroStatsByDisplayName } from "@/lib/stat-map";
+import { buildReadout, heroStats as heroStatsFn, heroStatsByDisplayName } from "@/lib/stat-map";
 import { upgradeTiers } from "@/lib/ability-upgrades";
+import { abilityDamages, conditionOutcome } from "@/lib/damage";
+import { statGlossary } from "@/lib/stat-glossary";
 
 import { Abilities } from "./abilities";
 import { Board } from "./board";
 import { Picker } from "./picker";
 import { Popular } from "./popular";
+import { Procs } from "./procs";
 import { StatRail } from "./stat-rail";
 
 import type {
@@ -37,6 +40,7 @@ import type {
   PopularBuilds,
   StatMap,
 } from "./types";
+import type { ConditionOutcome } from "@/lib/damage";
 
 /**
  * The theorycraft tool.
@@ -79,6 +83,8 @@ export function Theorycraft({
   initialItems,
   hasUrlBuild,
 }: Props) {
+  const glossary = useMemo(() => statGlossary(), []);
+  const heroStats = useMemo(() => heroStatsFn(startingStats), [startingStats]);
   const [itemIndex, setItemIndex] = useState<Record<string, ItemIndexRow>>(
     initialItems,
   );
@@ -117,19 +123,22 @@ export function Theorycraft({
     (next: (current: Build) => Build) => {
       setEdited((current) => {
         const base = current ?? buildRef.current;
-        const updated = next(base);
-        if (typeof window !== "undefined") {
-          const params = buildParams(updated);
-          const search = params.toString();
-          const url = `${window.location.pathname}${search ? `?${search}` : ""}`;
-          window.history.replaceState(null, "", url);
-          writeStoredBuild(heroSlug, updated);
-        }
-        return updated;
+        return next(base);
       });
     },
-    [heroSlug],
+    [],
   );
+
+  useEffect(() => {
+    if (!edited) return;
+    if (typeof window !== "undefined") {
+      const params = buildParams(edited);
+      const search = params.toString();
+      const url = `${window.location.pathname}${search ? `?${search}` : ""}`;
+      window.history.replaceState(null, "", url);
+      writeStoredBuild(heroSlug, edited);
+    }
+  }, [edited, heroSlug]);
 
   /*
    * The board only needs the items that are in the build. The whole shop is
@@ -246,8 +255,8 @@ export function Theorycraft({
   );
 
   // The readout, computed from the items in the build.
-  const readout = useMemo(() => {
-    const items = build.items
+  const readoutBuildItems = useMemo(() => {
+    return build.items
       .filter(Boolean)
       .map((slug) => {
         const row = itemIndex[slug];
@@ -255,8 +264,11 @@ export function Theorycraft({
         return { slug, name: row.name, properties: row.properties };
       })
       .filter((x): x is { slug: string; name: string; properties: unknown } => !!x);
-    return buildReadout(items, heroStats(startingStats), statMap);
-  }, [build.items, itemIndex, startingStats, statMap]);
+  }, [build.items, itemIndex]);
+
+  const readout = useMemo(() => {
+    return buildReadout(readoutBuildItems, heroStatsFn(startingStats), statMap);
+  }, [readoutBuildItems, startingStats, statMap]);
 
   const cost = useMemo(
     () =>
@@ -300,6 +312,29 @@ export function Theorycraft({
     return levels;
   }, [build.abilityLevels]);
 
+  const procs = useMemo(() => {
+    const buildItems = build.items
+      .filter(Boolean)
+      .map((slug) => {
+        const row = itemIndex[slug];
+        if (!row) return null;
+        return { slug, name: row.name, properties: row.properties };
+      })
+      .filter((x): x is { slug: string; name: string; properties: unknown } => !!x);
+
+    const dmg = abilityDamages(abilities, buildItems);
+    const conditions = statMap.conditions ?? {};
+    const outcomes: ConditionOutcome[] = [];
+
+    for (const item of buildItems) {
+      const cond = conditions[item.slug];
+      if (!cond) continue;
+      outcomes.push(conditionOutcome(cond, item.properties, dmg));
+    }
+
+    return outcomes;
+  }, [build.items, itemIndex, abilities, statMap]);
+
   return (
     <div
       style={{
@@ -325,7 +360,7 @@ export function Theorycraft({
             <div>
               <div
                 style={{
-                  fontFamily: "var(--font-display)",
+                  fontFamily: "var(--font-body)",
                   fontSize: 10,
                   fontWeight: 800,
                   letterSpacing: "0.16em",
@@ -398,6 +433,8 @@ export function Theorycraft({
           ) : null}
         </div>
 
+        <Procs outcomes={procs} />
+
         <Popular
           popular={popular}
           stage={stage}
@@ -413,6 +450,7 @@ export function Theorycraft({
           levels={abilityLevels}
           onSetLevel={setAbilityLevel}
           onSetStage={setAbilityStage}
+          items={readoutBuildItems}
         />
       </div>
 
@@ -425,6 +463,8 @@ export function Theorycraft({
           onHighlight={setHighlight}
           pinned={pinned}
           onPinned={setPinned}
+          glossary={glossary}
+          heroStats={heroStats}
         />
       </div>
 

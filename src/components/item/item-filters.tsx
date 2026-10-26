@@ -76,6 +76,24 @@ export function ItemFilters({ counts, facets, initialQuery, active }: Props) {
     const params = new URLSearchParams();
 
     const list = (values: string[]) => values.join(",");
+    if (key === "tier") {
+      if (active.slots.length) params.set("slot", list(active.slots));
+      if (active.gameFilters.length) params.set("filter", list(active.gameFilters));
+      if (active.facets.length) params.set("facet", list(active.facets));
+      if (active.maxCost) params.set("maxCost", active.maxCost);
+      if (active.inShopOnly) params.set("shop", "1");
+      if (active.starterOnly) params.set("starter", "1");
+      if (active.query) params.set("q", active.query);
+      if (active.tiers.includes(value)) {
+        const remaining = active.tiers.filter((v) => v !== value);
+        if (remaining.length) params.set("tier", list(remaining));
+      } else {
+        params.set("tier", value);
+      }
+      const search = params.toString();
+      return search ? `${pathname}?${search}` : pathname;
+    }
+
     if (active.slots.length) params.set("slot", list(active.slots));
     if (active.tiers.length) params.set("tier", list(active.tiers));
     if (active.gameFilters.length) params.set("filter", list(active.gameFilters));
@@ -237,7 +255,7 @@ export function ItemFilters({ counts, facets, initialQuery, active }: Props) {
           ].map(([key, value, label]) => (
             <Link
               key={`${key}-${value}`}
-              href={hrefFor(key, value, key === "maxCost" || key === "q" ? "set" : "toggle")}
+              href={hrefFor(key, value, key === "maxCost" || key === "q" || key === "tier" ? "set" : "toggle")}
               scroll={false}
               className="tag-muted"
               style={{
@@ -282,9 +300,33 @@ export function ItemFilters({ counts, facets, initialQuery, active }: Props) {
         <FilterGroup label="Tier">
           {Object.entries(counts.tiers)
             .sort((a, b) => Number(a[0]) - Number(b[0]))
-            .map(([tier, count]) =>
-              activeChip("tier", tier, `Tier ${tier}`, count, active.tiers.includes(tier)),
-            )}
+            .map(([tier, count]) => {
+              const on = active.tiers.includes(tier);
+              return (
+                <Link
+                  key={`tier-${tier}`}
+                  href={hrefFor("tier", tier, "set")}
+                  scroll={false}
+                  aria-pressed={on}
+                  className={`chip${on ? " active" : ""}`}
+                  style={{ ...chipStyle, opacity: count === 0 && !on ? 0.4 : 1 }}
+                >
+                  {`Tier ${tier}`}
+                  {count != null ? (
+                    <span
+                      style={{
+                        marginLeft: 7,
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 10,
+                        opacity: 0.6,
+                      }}
+                    >
+                      {count}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
         </FilterGroup>
 
         <FilterGroup label="Maximum cost">

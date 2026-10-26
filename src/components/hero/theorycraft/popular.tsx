@@ -47,7 +47,7 @@ export function Popular({
       >
         <div
           style={{
-            fontFamily: "var(--font-display)",
+            fontFamily: "var(--font-body)",
             fontSize: 10,
             fontWeight: 800,
             letterSpacing: "0.16em",

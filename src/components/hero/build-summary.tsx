@@ -2,11 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 import { itemImage } from "@/components/item/item-card";
-import { costLabel } from "@/lib/item-filter-shared";
-import { slotLabel } from "@/lib/item-colors";
 import { BASE_SLOTS, TOTAL_SLOTS, readStoredBuild } from "@/lib/build";
 import {
   buildReadout,
@@ -14,8 +12,13 @@ import {
   heroStats,
   statTotal,
 } from "@/lib/stat-map";
+import { abilityDamages, conditionOutcome } from "@/lib/damage";
+import { resolveAbilitiesAtLevel } from "@/lib/ability-stats";
+import { heroStatsByDisplayName } from "@/lib/stat-map";
 
 import type { StatMap } from "@/lib/stat-map";
+import type { ConditionOutcome } from "@/lib/damage";
+import type { HeroAbility } from "@/components/hero/theorycraft/types";
 
 /**
  * The compact build block on the hero profile.
@@ -40,6 +43,7 @@ type Props = {
   heroSlug: string;
   heroName: string;
   startingStats: unknown;
+  abilities?: HeroAbility[];
   itemIndex: Record<string, ItemIndexRow>;
   /** The curated modifier map, loaded on the server. */
   statMap: StatMap;
@@ -67,6 +71,7 @@ export function BuildSummary({
   heroSlug,
   heroName,
   startingStats,
+  abilities = [],
   itemIndex,
   statMap,
 }: Props) {
@@ -86,6 +91,69 @@ export function BuildSummary({
   }, [statMap, slugs, itemIndex, startingStats]);
 
   const headlines = useMemo(() => headlineLines(readout), [readout]);
+  const procs = useMemo(() => {
+    const items = slugs
+      .map((slug) => {
+        const row = itemIndex[slug];
+        if (!row) return null;
+        return { slug, name: row.name, properties: row.properties };
+      })
+      .filter((x): x is { slug: string; name: string; properties: unknown } => !!x);
+
+    if (items.length === 0) return [];
+
+    const dmg = abilityDamages(abilities ?? [], items);
+    const conditions = statMap.conditions ?? {};
+    const outcomes: ConditionOutcome[] = [];
+
+    for (const item of items) {
+      const cond = conditions[item.slug];
+      if (!cond) continue;
+      outcomes.push(conditionOutcome(cond, item.properties, dmg));
+    }
+
+    return outcomes;
+  }, [slugs, itemIndex, abilities, statMap]);
+
+  const abilityDeltas = useMemo(() => {
+    const items = slugs
+      .map((slug) => {
+        const row = itemIndex[slug];
+        if (!row) return null;
+        return { slug, name: row.name, properties: row.properties };
+      })
+      .filter((x): x is { slug: string; name: string; properties: unknown } => !!x);
+
+    if (items.length === 0 || !abilities || abilities.length === 0) return [];
+
+    const displayNames = heroStatsByDisplayName(startingStats);
+    const levels: Record<string, number> = {};
+    try {
+      const stored = typeof window !== "undefined" ? localStorage.getItem(`deadlock-atlas:build:${heroSlug}`) : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.abilityLevels) Object.assign(levels, parsed.abilityLevels);
+      }
+    } catch {}
+
+    const resolved = resolveAbilitiesAtLevel(abilities, items, statMap, displayNames, levels);
+    const deltas = [];
+    for (const r of resolved) {
+      for (const p of r.properties) {
+        if (Math.abs(p.resolvedValue - p.baseValue) > 0.001) {
+          deltas.push({
+            abilityName: r.ability.ability.name,
+            label: p.label,
+            base: p.baseValue,
+            resolved: p.resolvedValue,
+            postfix: p.postfix,
+          });
+        }
+      }
+    }
+    return deltas.slice(0, 2);
+  }, [slugs, itemIndex, abilities, statMap, startingStats, heroSlug]);
+
   const cost = useMemo(
     () =>
       slugs.reduce((sum, slug) => {
@@ -220,7 +288,7 @@ export function BuildSummary({
                         marginTop: 2,
                       }}
                     >
-                      {total != null ? total : line.total}
+                      {total != null ? Math.round(total) : line.total}
                       {line.postfix}
                     </div>
                   </div>
@@ -249,6 +317,110 @@ export function BuildSummary({
                 </div>
               </div>
             </div>
+
+            {(abilityDeltas.length > 0 || procs.length > 0) ? (
+              <div
+                style={{
+                  borderTop: "1px solid var(--line)",
+                  paddingTop: 10,
+                  display: "grid",
+                  gap: 6,
+                }}
+              >
+                {abilityDeltas.length > 0 ? (
+                  <>
+                    <div
+                      style={{
+                        fontSize: 9,
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        color: "var(--muted)",
+                      }}
+                    >
+                      Abilities
+                    </div>
+                    {abilityDeltas.map((d, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          fontSize: 11,
+                          color: "var(--muted)",
+                        }}
+                      >
+                        <div>
+                          <span style={{ color: "var(--text)" }}>{d.abilityName}</span>
+                          {" · "}
+                          {d.label}{" "}
+                          <span style={{ fontFamily: "var(--font-mono)" }}>
+                            {d.base}{d.postfix} → {d.resolved > 0 ? "+" : ""}{d.resolved}{d.postfix}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : null}
+                {procs.length > 0 ? (
+                  <>
+                    <div
+                      style={{
+                        fontSize: 9,
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        color: "var(--muted)",
+                        marginTop: abilityDeltas.length > 0 ? 4 : 0,
+                      }}
+                    >
+                      Procs
+                    </div>
+                    <div style={{ borderTop: "1px solid var(--line)", marginTop: 10 }} />
+                {procs.slice(0, 3).map((outcome, idx) => {
+                  const top =
+                    outcome.abilities.find((a) => a.meetsCondition) ||
+                    outcome.abilities[0];
+                  if (!top) return null;
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        fontSize: 11,
+                        color: "var(--muted)",
+                      }}
+                    >
+                      <div>
+                        <span style={{ color: "var(--text)" }}>
+                          {outcome.condition.label}
+                        </span>
+                        {" · "}
+                        {top.ability.abilityName}{" "}
+                        {top.ability.scalable
+                          ? `${top.ability.withoutBuild.toFixed(0)} → ${top.damage.toFixed(0)}`
+                          : "—"}
+                        {outcome.threshold != null && top.margin != null
+                          ? top.meetsCondition
+                            ? `, clears ${outcome.threshold} by ${Math.abs(top.margin).toFixed(0)}`
+                            : `, below ${outcome.threshold} by ${Math.abs(top.margin).toFixed(0)}`
+                          : ""}
+                      </div>
+                      {outcome.bonus != null ? (
+                        <div style={{ color: "var(--accent)" }}>
+                          +{outcome.bonus}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+                  </>
+                ) : null}
+              </div>
+            ) : null}
 
             <p style={{ margin: 0, fontSize: 10, color: "var(--muted)", lineHeight: 1.6 }}>
               Computed from the API&apos;s stat values, not exact in-game

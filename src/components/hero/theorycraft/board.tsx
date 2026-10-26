@@ -7,7 +7,10 @@ import { slotLabel } from "@/lib/item-colors";
 import { itemImage } from "@/components/item/item-card";
 import { themeStyle } from "@/lib/theme";
 import { BASE_SLOTS } from "@/lib/build";
-import { contributionText, itemContributions } from "@/lib/stat-map";
+import { contributionText, itemContributions, sourceBreakdown } from "@/lib/stat-map";
+import { modifierDescription } from "@/lib/stat-glossary";
+import { statGlossary } from "@/lib/stat-glossary";
+import { Tooltip } from "@/components/hero/tooltip";
 
 import type { Highlight, ItemIndexRow, StatMap } from "./types";
 
@@ -81,6 +84,43 @@ const GROUP_ORDER = [
   "utility",
 ];
 
+/**
+ * The tooltip for one stat chip on an item card.
+ *
+ * The chip shows a short label, so the tooltip spells the property out and
+ * names the stat it feeds.
+ */
+function chipTooltip(
+  chip: ReturnType<typeof itemContributions>[number],
+  glossary: ReturnType<typeof statGlossary>,
+) {
+  const desc = modifierDescription(
+    chip.modifierType,
+    chip.group,
+    glossary,
+    chip.cssClass,
+  );
+  if (!desc) return null;
+
+  const content: {
+    what: string;
+    label?: string;
+    rows?: { label: string; value: string }[];
+    rowsLabel?: string;
+  } = { what: desc, label: chip.label };
+
+  const parts = sourceBreakdown(chip);
+  if (parts.length > 0) {
+    content.rows = parts.map((part) => ({
+      label: part.name,
+      value: (part.value > 0 ? "+" : "") + part.value + part.postfix,
+    }));
+    content.rowsLabel = parts.length === 1 ? "From 1 item" : `From ${parts.length} items`;
+  }
+
+  return content;
+}
+
 export function Board({
   items,
   itemIndex,
@@ -90,6 +130,7 @@ export function Board({
   onOpenPicker,
   onRemove,
 }: Props) {
+  const glossary = statGlossary();
   return (
     <div
       style={{
@@ -137,7 +178,7 @@ export function Board({
         const feedsHotStat =
           highlight?.kind === "stat" &&
           chips.some((chip) =>
-            highlight.modifiers?.includes(chip.modifierType),
+            (highlight.modifiers || []).includes(chip.modifierType as string),
           );
         const isDim =
           (highlight?.kind === "item" && highlight.key !== slug) ||
@@ -222,9 +263,10 @@ export function Board({
                   <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
                     <div
                       style={{
-                        fontFamily: "var(--font-display)",
+                        fontFamily: "var(--font-body)",
                         fontSize: 12,
-                        letterSpacing: "0.02em",
+                        fontWeight: 600,
+                        letterSpacing: "0",
                         lineHeight: 1.25,
                         color: "#fff",
                         display: "-webkit-box",
@@ -289,27 +331,31 @@ export function Board({
                     const chipHot =
                       highlight?.kind === "stat" && highlight.key === chip.key;
                     return (
-                      <span
+                      <Tooltip
                         key={chip.key}
-                        className="tag-muted"
-                        title={`${chip.label} ${contributionText(chip)}`}
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: 9,
-                          color: chipHot ? "var(--accent-text)" : undefined,
-                          background: chipHot
-                            ? "color-mix(in srgb, var(--accent) 18%, transparent)"
-                            : undefined,
-                        }}
+                        content={chipTooltip(chip, glossary)}
+                        placement="right"
                       >
-                        {shortLabel(chip.label)} {contributionText(chip)}
-                      </span>
+                        <span
+                          className="tag-muted"
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 9,
+                            color: chipHot ? "var(--accent-text)" : undefined,
+                            background: chipHot
+                              ? "color-mix(in srgb, var(--accent) 18%, transparent)"
+                              : undefined,
+                          }}
+                        >
+                          {shortLabel(chip.label)} {contributionText(chip)}
+                        </span>
+                      </Tooltip>
                     );
                   })}
                 </div>
               ) : row ? (
                 <span style={{ fontSize: 10, color: "var(--muted)" }}>
-                  [no mapped stats]
+                  {statMap.conditions?.[row.slug] ? "Condition" : "[no mapped stats]"}
                 </span>
               ) : null}
             </button>

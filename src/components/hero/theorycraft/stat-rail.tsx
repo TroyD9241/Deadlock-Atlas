@@ -1,16 +1,22 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import {
   contributionText,
   groupLines,
   hasBase,
+  heroStatList,
   railStats,
+  sourceBreakdown,
+  statSourceBreakdown,
   statTotal,
 } from "@/lib/stat-map";
+import { modifierDescription, statDescription } from "@/lib/stat-glossary";
+import { Tooltip } from "@/components/hero/tooltip";
 
 import type { Highlight, StatLine, StatMap } from "./types";
+import type { StatGlossary } from "@/lib/stat-glossary";
 
 /**
  * The stat rail.
@@ -31,6 +37,8 @@ type Props = {
   /** The stat whose breakdown is pinned open. */
   pinned: string | null;
   onPinned: (key: string | null) => void;
+  glossary: StatGlossary;
+  heroStats?: Record<string, number>;
 };
 
 export function StatRail({
@@ -40,6 +48,8 @@ export function StatRail({
   onHighlight,
   pinned,
   onPinned,
+  glossary,
+  heroStats = {},
 }: Props) {
   const rail = useMemo(() => railStats(lines, statMap), [lines, statMap]);
 
@@ -49,7 +59,7 @@ export function StatRail({
       <div className="plate" style={{ padding: 16 }}>
         <div
           style={{
-            fontFamily: "var(--font-display)",
+            fontFamily: "var(--font-body)",
             fontSize: 10,
             fontWeight: 800,
             letterSpacing: "0.16em",
@@ -97,8 +107,8 @@ export function StatRail({
                   onClick={() => onPinned(isPinned ? null : stat.id)}
                   aria-expanded={isPinned}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
+                    display: "grid",
+                    gridTemplateColumns: "minmax(0, 1fr) auto",
                     alignItems: "baseline",
                     gap: 10,
                     width: "100%",
@@ -118,26 +128,33 @@ export function StatRail({
                     transition: "opacity 120ms ease, background 120ms ease",
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: stat.lines.length > 0 ? "#fff" : "var(--muted)",
-                      minWidth: 0,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
+                  <Tooltip
+                    content={headlineTooltip(stat, glossary)}
+                    placement="left"
                   >
-                    {stat.label}
-                  </span>
+                    <span
+                      tabIndex={0}
+                      style={{
+                        fontSize: 12,
+                        color: stat.lines.length > 0 ? "#fff" : "var(--muted)",
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {stat.label}
+                    </span>
+                  </Tooltip>
 
                   <span
                     style={{
                       display: "flex",
                       alignItems: "baseline",
-                      gap: 8,
-                      flex: "0 0 auto",
+                      gap: 6,
+                      justifyContent: "flex-end",
                       fontFamily: "var(--font-mono)",
+                      fontVariantNumeric: "tabular-nums",
                       fontSize: 12,
                     }}
                   >
@@ -169,6 +186,7 @@ export function StatRail({
                   <RailBreakdown
                     stat={stat}
                     onHighlight={onHighlight}
+                    glossary={glossary}
                   />
                 ) : null}
               </div>
@@ -198,7 +216,7 @@ export function StatRail({
       <div className="plate" style={{ padding: 16 }}>
         <div
           style={{
-            fontFamily: "var(--font-display)",
+            fontFamily: "var(--font-body)",
             fontSize: 10,
             fontWeight: 800,
             letterSpacing: "0.16em",
@@ -230,7 +248,9 @@ export function StatRail({
             <div key={group.id} style={{ marginBottom: 16 }}>
               <div
                 style={{
-                  fontFamily: "var(--font-display)",
+                  borderTop: "1px solid var(--line)",
+                  paddingTop: 10,
+                  fontFamily: "var(--font-body)",
                   fontSize: 10,
                   fontWeight: 800,
                   letterSpacing: "0.14em",
@@ -242,19 +262,135 @@ export function StatRail({
                 {group.label}
               </div>
               <div style={{ display: "grid", gap: 2 }}>
-                {groupItems.map((line) => (
-                  <ModifierRow
-                    key={line.key}
-                    line={line}
-                    highlight={highlight}
-                    onHighlight={onHighlight}
-                  />
-                ))}
+                {groupItems.map((line, idx) => {
+                  const striped = groupItems.length > 10 && idx % 2 === 1;
+                  return (
+                    <div
+                      key={line.key}
+                      style={striped ? { background: "rgba(255,255,255,0.02)", borderRadius: 6 } : undefined}
+                    >
+                      <ModifierRow
+                        line={line}
+                        highlight={highlight}
+                        onHighlight={onHighlight}
+                        glossary={glossary}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))
         )}
       </div>
+
+      <BaseStatsPanel stats={heroStats} statMap={statMap} glossary={glossary} />
+    </div>
+  );
+}
+
+function BaseStatsPanel({
+  stats,
+  statMap,
+  glossary,
+}: {
+  stats: Record<string, number>;
+  statMap: StatMap;
+  glossary: StatGlossary;
+}) {
+  const [open, setOpen] = useState(false);
+  const grouped = useMemo(() => heroStatList(stats, statMap), [stats, statMap]);
+  if (grouped.length === 0) return null;
+
+  return (
+    <div className="plate" style={{ padding: 16 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          width: "100%",
+          background: "transparent",
+          border: "none",
+          color: "inherit",
+          font: "inherit",
+          textAlign: "left",
+          cursor: "pointer",
+          padding: 0,
+        }}
+        aria-expanded={open}
+      >
+        <div>
+          <div
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "var(--accent)",
+            }}
+          >
+            Base Stats
+          </div>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+            Hero starting stats (read-only)
+          </div>
+        </div>
+        <span style={{ fontSize: 11, color: "var(--muted)" }}>{open ? "−" : "+"}</span>
+      </button>
+
+      {open ? (
+        <div style={{ display: "grid", gap: 14, marginTop: 12 }}>
+          {grouped.map((group) => (
+            <div key={group.group}>
+              <div
+                style={{
+                  borderTop: "1px solid var(--line)",
+                  paddingTop: 10,
+                  fontFamily: "var(--font-body)",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--muted)",
+                  marginBottom: 7,
+                }}
+              >
+                {group.label}
+              </div>
+              <div style={{ display: "grid", gap: 2 }}>
+                {group.items.map((item, idx) => {
+                  const desc = statDescription(item.key, glossary);
+                  const striped = group.items.length > 10 && idx % 2 === 1;
+                  return (
+                    <Tooltip key={item.key} content={desc ? { what: desc.what, affects: desc.affects, label: item.label } : null} placement="left">
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          fontSize: 11,
+                          color: "#c3c5d4",
+                          padding: "3px 6px",
+                          borderRadius: 6,
+                          background: striped ? "rgba(255,255,255,0.02)" : "transparent",
+                        }}
+                      >
+                        <span>{item.label}</span>
+                        <span style={{ fontFamily: "var(--font-mono)", color: "var(--muted)" }}>{item.value}</span>
+                      </div>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          <p style={{ margin: 0, fontSize: 10, color: "var(--muted)" }}>Not changed by items in this view.</p>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -263,12 +399,84 @@ export function StatRail({
  * The breakdown under a pinned rail row: every line that feeds the stat, who
  * fed it, and the total.
  */
+/**
+ * The tooltip for a headline rail row.
+ *
+ * The row shows one number, so the tooltip shows how that number is built:
+ * the hero's base, the items that add to it, and the result.
+ */
+function headlineTooltip(
+  stat: ReturnType<typeof railStats>[number],
+  glossary: StatGlossary,
+) {
+  const desc = statDescription(stat.id, glossary);
+  if (!desc) return null;
+
+  const { rows, count } = statSourceBreakdown(stat.lines);
+  const content: {
+    what: string;
+    affects?: string;
+    label?: string;
+    rows?: { label: string; value: string }[];
+    rowsLabel?: string;
+  } = { what: desc.what, affects: desc.affects };
+
+  if (rows.length > 0) {
+    content.rows = rows;
+    content.rowsLabel = count === 1 ? "From 1 item" : `From ${count} items`;
+  }
+
+  return content;
+}
+
+/**
+ * The tooltip for one modifier line.
+ *
+ * The line's number is the sum of the items behind it, so the tooltip
+ * lists them.
+ */
+function modifierTooltip(line: StatLine, desc: string | null) {
+  if (!desc) return null;
+  const parts = sourceBreakdown(line);
+  const content: {
+    what: string;
+    affects?: string;
+    label?: string;
+    rows?: { label: string; value: string }[];
+    rowsLabel?: string;
+  } = { what: desc, label: line.label };
+
+  if (parts.length > 0) {
+    // The same item can grant the same stat through two different
+    // properties, so name the property when that happens.
+    const itemCounts = new Map<string, number>();
+    for (const part of parts) {
+      itemCounts.set(part.slug, (itemCounts.get(part.slug) ?? 0) + 1);
+    }
+    content.rows = parts.map((part) => ({
+      label:
+        part.propertyLabel &&
+        part.propertyLabel !== line.label &&
+        (itemCounts.get(part.slug) ?? 0) > 1
+          ? `${part.name} — ${part.propertyLabel}`
+          : part.name,
+      value: (part.value > 0 ? "+" : "") + part.value + part.postfix,
+    }));
+    content.rowsLabel =
+      parts.length === 1 ? "From 1 item" : `From ${parts.length} items`;
+  }
+
+  return content;
+}
+
 function RailBreakdown({
   stat,
   onHighlight,
+  glossary,
 }: {
   stat: ReturnType<typeof railStats>[number];
   onHighlight: (highlight: Highlight) => void;
+  glossary: StatGlossary;
 }) {
   return (
     <div
@@ -286,52 +494,90 @@ function RailBreakdown({
         </p>
       ) : (
         <>
-          {stat.lines.map((line) => (
-            <div
-              key={line.key}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 10,
-                fontSize: 11,
-                color: "#c3c5d4",
-              }}
-            >
-              <span>{line.label}</span>
-              <span style={{ fontFamily: "var(--font-mono)", color: "var(--accent-text)" }}>
-                {contributionText(line)}
-              </span>
-            </div>
-          ))}
-
-          {stat.lines.some((l) => l.sources.length > 0) ? (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 4,
-                marginTop: 4,
-              }}
-            >
-              {[...new Set(stat.lines.flatMap((l) => l.sources.map((s) => s.slug)))]
-                .map((slug) => {
-                  const source = stat.lines
-                    .flatMap((l) => l.sources)
-                    .find((s) => s.slug === slug);
-                  return (
-                    <span
-                      key={slug}
-                      className="tag"
-                      style={{ cursor: "pointer" }}
-                      onMouseEnter={() => onHighlight({ kind: "item", key: slug })}
-                      onMouseLeave={() => onHighlight(null)}
-                    >
-                      {source?.name ?? slug}
+          {stat.lines.map((line) => {
+            const desc = modifierDescription(line.modifierType, line.group, glossary, line.cssClass);
+            const parts = sourceBreakdown(line);
+            // The same item can grant the same stat through two different
+            // properties, so name the property when that happens.
+            const itemCounts = new Map<string, number>();
+            for (const part of parts) {
+              itemCounts.set(part.slug, (itemCounts.get(part.slug) ?? 0) + 1);
+            }
+            return (
+              <div key={line.key}>
+                <Tooltip content={modifierTooltip(line, desc)} placement="left">
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      fontSize: 11,
+                      color: "#c3c5d4",
+                      width: "100%",
+                    }}
+                  >
+                    <span>{line.label}</span>
+                    <span style={{ fontFamily: "var(--font-mono)", color: "var(--accent-text)" }}>
+                      {contributionText(line)}
                     </span>
-                  );
-                })}
-            </div>
-          ) : null}
+                  </div>
+                </Tooltip>
+                {parts.length > 0 ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 2,
+                      marginTop: 3,
+                      paddingLeft: 10,
+                      borderLeft: "1px solid var(--line)",
+                    }}
+                  >
+                    {parts.map((part) => (
+                      <div
+                        key={part.slug + part.propertyLabel}
+                        onMouseEnter={() =>
+                          onHighlight({ kind: "item", key: part.slug })
+                        }
+                        onMouseLeave={() => onHighlight(null)}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          fontSize: 10,
+                          color: "var(--muted)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <span
+                          style={{
+                            minWidth: 0,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {part.propertyLabel &&
+                          part.propertyLabel !== line.label &&
+                          (itemCounts.get(part.slug) ?? 0) > 1
+                            ? `${part.name} — ${part.propertyLabel}`
+                            : part.name}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            color: "var(--accent-text)",
+                            flex: "0 0 auto",
+                          }}
+                        >
+                          {(part.value > 0 ? "+" : "") + part.value + part.postfix}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
 
           {stat.hasBase && stat.line ? (
             <div
@@ -364,64 +610,80 @@ function ModifierRow({
   line,
   highlight,
   onHighlight,
+  glossary,
 }: {
   line: StatLine;
   highlight: Highlight;
   onHighlight: (highlight: Highlight) => void;
+  glossary: StatGlossary;
 }) {
   const total = statTotal(line);
   const isHot =
     highlight?.kind === "stat" && highlight.key === line.key;
   const isDim = highlight?.kind === "stat" && highlight.key !== line.key;
+  const desc = modifierDescription(line.modifierType, line.group, glossary, line.cssClass);
 
   return (
-    <div
-      onMouseEnter={() =>
-        onHighlight({
-          kind: "stat",
-          key: line.key,
-          modifiers: [line.modifierType],
-        })
-      }
-      onMouseLeave={() => onHighlight(null)}
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 12,
-        alignItems: "baseline",
-        padding: "3px 6px",
-        borderRadius: 6,
-        fontSize: 12,
-        color: "#c3c5d4",
-        background: isHot
-          ? "color-mix(in srgb, var(--accent) 14%, transparent)"
-          : "transparent",
-        opacity: isDim ? 0.35 : 1,
-        transition: "opacity 120ms ease, background 120ms ease",
-      }}
-    >
-      <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
-        {line.label}
-        {line.sources.length > 1 ? (
-          <span style={{ color: "var(--muted)", fontSize: 10 }}>
-            {" "}
-            ({line.sources.length} items)
-          </span>
-        ) : null}
-      </span>
-      <span style={{ fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-        {hasBase(line) ? (
-          <span style={{ color: "var(--muted)" }}>{line.base}</span>
-        ) : null}
-        {hasBase(line) ? (
-          <span style={{ color: "var(--muted)" }}> → </span>
-        ) : null}
-        <span style={{ color: total != null ? "var(--accent-text)" : "#e7dfee" }}>
-          {total != null ? total : line.total}
-          {line.postfix}
+    <Tooltip content={modifierTooltip(line, desc)} placement="left">
+      <div
+        onMouseEnter={() =>
+          onHighlight({
+            kind: "stat",
+            key: line.key,
+            modifiers: line.modifierType ? [line.modifierType] : [],
+          })
+        }
+        onMouseLeave={() => onHighlight(null)}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr) auto",
+          gap: 12,
+          alignItems: "baseline",
+          padding: "3px 6px",
+          borderRadius: 6,
+          fontSize: 12,
+          color: "#c3c5d4",
+          background: isHot
+            ? "color-mix(in srgb, var(--accent) 14%, transparent)"
+            : "transparent",
+          opacity: isDim ? 0.35 : 1,
+          transition: "opacity 120ms ease, background 120ms ease",
+          width: "100%",
+        }}
+      >
+        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
+          {line.label}
+          {line.sources.length > 1 ? (
+            <span style={{ color: "var(--muted)", fontSize: 10 }}>
+              {" "}
+              ({line.sources.length} items)
+            </span>
+          ) : null}
         </span>
-      </span>
-    </div>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 6,
+            justifyContent: "flex-end",
+            fontFamily: "var(--font-mono)",
+            fontVariantNumeric: "tabular-nums",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {hasBase(line) ? (
+            <span style={{ color: "var(--muted)" }}>{line.base as number}</span>
+          ) : null}
+          {hasBase(line) ? (
+            <span style={{ color: "var(--muted)" }}>→</span>
+          ) : null}
+          <span style={{ color: total != null ? "var(--accent-text)" : "#e7dfee" }}>
+            {total != null ? Math.round(total as number) : line.total}
+            {line.postfix}
+          </span>
+        </span>
+      </div>
+    </Tooltip>
   );
 }
 
@@ -475,7 +737,7 @@ function ContrastView({
     <div className="plate" style={{ padding: 16 }}>
       <div
         style={{
-          fontFamily: "var(--font-display)",
+          fontFamily: "var(--font-body)",
           fontSize: 10,
           fontWeight: 800,
           letterSpacing: "0.16em",
@@ -506,7 +768,7 @@ function ContrastView({
           >
             <div
               style={{
-                fontFamily: "var(--font-display)",
+                fontFamily: "var(--font-body)",
                 fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: "0.06em",
@@ -544,7 +806,7 @@ function ContrastView({
                         onHighlight({
                           kind: "stat",
                           key: line.key,
-                          modifiers: [line.modifierType],
+                          modifiers: line.modifierType ? [line.modifierType] : [],
                         })
                       }
                       onMouseLeave={() => onHighlight(null)}

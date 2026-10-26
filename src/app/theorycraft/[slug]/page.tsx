@@ -99,7 +99,7 @@ export default async function TheorycraftPage({
 
   return (
     <div
-      className="profile"
+      className="profile theorycraft"
       style={{
         position: "relative",
         ...themeStyle({

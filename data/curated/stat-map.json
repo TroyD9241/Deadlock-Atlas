@@ -251,5 +251,555 @@
     "EParryCooldown": "Parry Cooldown",
     "EStatsCount": "Stat Count"
   },
-  "$invalid": "MODIFIER_VALUE_INVALID has no meaning to a player and is skipped. Any modifier type missing from this file is also skipped: the readout shows only what we can explain."
+  "cssGroups": {
+    "$comment": "The engine's own css_class, mapped to the site's groups. The class is the engine classifying its own property, so this is a lookup rather than a judgement. A property with no provided_property_type falls back to its class, which is how 1323 properties across 301 keys stop being dropped.",
+    "tech_damage":   { "group": "spirit",  "label": "Spirit Damage" },
+    "bullet_damage": { "group": "weapon",  "label": "Bullet Damage" },
+    "damage":        { "group": "weapon",  "label": "Damage" },
+    "melee_damage":  { "group": "weapon",  "label": "Melee Damage" },
+    "health":        { "group": "health",  "label": "Health" },
+    "healing":       { "group": "sustain", "label": "Healing" },
+    "cooldown":      { "group": "ability", "label": "Cooldown" },
+    "charge_cooldown": { "group": "ability", "label": "Charge Cooldown" },
+    "duration":      { "group": "ability", "label": "Duration" },
+    "cast":          { "group": "ability", "label": "Cast" },
+    "range":         { "group": "ability", "label": "Range" },
+    "distance":      { "group": "weapon",  "label": "Distance" },
+    "move_speed":    { "group": "movement", "label": "Move Speed" },
+    "fire_rate":     { "group": "weapon",  "label": "Fire Rate" },
+    "clipsize":      { "group": "weapon",  "label": "Ammo" },
+    "souls":         { "group": "utility", "label": "Souls" },
+    "tech_armor_up": { "group": "defence", "label": "Spirit Resist Gain" },
+    "bullet_armor_up": { "group": "defence", "label": "Bullet Resist Gain" },
+    "tech_armor_down": { "group": "defence", "label": "Spirit Resist" },
+    "bullet_armor_down": { "group": "defence", "label": "Bullet Resist" },
+    "slow":          { "group": "ability", "label": "Slow" },
+    "time":          { "group": "utility", "label": "Time" }
+  },
+  "scaleStatModifiers": {
+    "$comment": "Bridge from derived ability scale stats to item modifiers. For stats without an explicit coefficient on the ability property, the engine resolves via these derived multipliers (computed here, labeled).",
+    "ETechCooldown": {
+      "modifiers": ["MODIFIER_VALUE_COOLDOWN_REDUCTION_PERCENTAGE", "MODIFIER_VALUE_ITEM_COOLDOWN_REDUCTION_PERCENTAGE", "MODIFIER_VALUE_ULTIMATE_COOLDOWN_REDUCTION_PERCENTAGE"],
+      "kind": "percentMultiplier",
+      "base": 1
+    },
+    "ETechDuration": {
+      "modifiers": ["MODIFIER_VALUE_BONUS_ABILITY_DURATION_PERCENTAGE"],
+      "kind": "percentMultiplier",
+      "base": 1
+    },
+    "ETechRange": {
+      "modifiers": ["MODIFIER_VALUE_TECH_RANGE_PERCENT"],
+      "kind": "percentMultiplier",
+      "base": 1
+    },
+    "ETechRadius": {
+      "modifiers": ["MODIFIER_VALUE_TECH_RADIUS_PERCENT"],
+      "kind": "percentMultiplier",
+      "base": 1
+    },
+    "ETechPower": {
+      "modifiers": ["MODIFIER_VALUE_TECH_POWER"],
+      "kind": "additive",
+      "base": 0
+    },
+    "EMaxChargesIncrease": {
+      "modifiers": ["MODIFIER_VALUE_BONUS_ABILITY_CHARGES", "MODIFIER_VALUE_ENABLE_CHARGES"],
+      "kind": "charges",
+      "base": 0
+    },
+    "EParryCooldown": {
+      "modifiers": ["MODIFIER_VALUE_PARRY_COOLDOWN_REDUCTION_FIXED"],
+      "kind": "additive",
+      "base": 0
+    },
+    "ELightMeleeDamage": {
+      "modifiers": ["MODIFIER_VALUE_MELEE_DAMAGE_INCREASE"],
+      "kind": "additive",
+      "base": 0
+    }
+  },
+  "heroStatGroups": {
+    "health": {
+      "label": "Health",
+      "order": 0
+    },
+    "spirit": {
+      "label": "Spirit",
+      "order": 1
+    },
+    "weapon": {
+      "label": "Weapon",
+      "order": 2
+    },
+    "movement": {
+      "label": "Movement",
+      "order": 3
+    },
+    "defence": {
+      "label": "Defence",
+      "order": 4
+    },
+    "utility": {
+      "label": "Utility",
+      "order": 5
+    }
+  },
+  "heroStatSpecs": {
+    "max_health": {
+      "group": "health",
+      "label": "Max Health"
+    },
+    "base_health_regen": {
+      "group": "health",
+      "label": "Base Health Regen"
+    },
+    "ooc_health_regen": {
+      "group": "health",
+      "label": "Out of Combat Regen"
+    },
+    "tech_range": {
+      "group": "spirit",
+      "label": "Tech Range"
+    },
+    "tech_duration": {
+      "group": "spirit",
+      "label": "Tech Duration"
+    },
+    "weapon_power": {
+      "group": "weapon",
+      "label": "Spirit Power / Weapon Power"
+    },
+    "weapon_power_scale": {
+      "group": "weapon",
+      "label": "Weapon Power Scale"
+    },
+    "light_melee_damage": {
+      "group": "weapon",
+      "label": "Light Melee Damage"
+    },
+    "heavy_melee_damage": {
+      "group": "weapon",
+      "label": "Heavy Melee Damage"
+    },
+    "reload_speed": {
+      "group": "weapon",
+      "label": "Reload Speed"
+    },
+    "max_move_speed": {
+      "group": "movement",
+      "label": "Max Move Speed"
+    },
+    "sprint_speed": {
+      "group": "movement",
+      "label": "Sprint Speed"
+    },
+    "crouch_speed": {
+      "group": "movement",
+      "label": "Crouch Speed"
+    },
+    "move_acceleration": {
+      "group": "movement",
+      "label": "Move Acceleration"
+    },
+    "stamina": {
+      "group": "movement",
+      "label": "Stamina"
+    },
+    "stamina_regen_per_second": {
+      "group": "movement",
+      "label": "Stamina Regen"
+    },
+    "air_dash_distance_in_meters": {
+      "group": "movement",
+      "label": "Air Dash Distance"
+    },
+    "air_dash_duration": {
+      "group": "movement",
+      "label": "Air Dash Duration"
+    },
+    "ground_dash_distance_in_meters": {
+      "group": "movement",
+      "label": "Ground Dash Distance"
+    },
+    "ground_dash_duration": {
+      "group": "movement",
+      "label": "Ground Dash Duration"
+    },
+    "bullet_armor_damage_reduction": {
+      "group": "defence",
+      "label": "Bullet Armor"
+    },
+    "tech_armor_damage_reduction": {
+      "group": "defence",
+      "label": "Spirit Armor"
+    },
+    "ability_resource_max": {
+      "group": "utility",
+      "label": "Ability Resource Max"
+    },
+    "ability_resource_regen_per_second": {
+      "group": "utility",
+      "label": "Ability Resource Regen"
+    },
+    "proc_build_up_rate_scale": {
+      "group": "utility",
+      "label": "Proc Build Up Rate"
+    },
+    "crit_damage_received_scale": {
+      "group": "utility",
+      "label": "Crit Damage Received"
+    }
+  },
+  "readOnlyAbilityProperties": {
+    "FallSpeedMax": {
+      "label": "Max Fall Speed",
+      "group": "movement"
+    },
+    "MaxFallSpeed": {
+      "label": "Max Fall Speed",
+      "group": "movement"
+    },
+    "AirSpeedMax": {
+      "label": "Max Air Speed",
+      "group": "movement"
+    },
+    "AirDrag": {
+      "label": "Air Drag",
+      "group": "movement"
+    },
+    "VerticalDrag": {
+      "label": "Vertical Drag",
+      "group": "movement"
+    },
+    "FallingDrag": {
+      "label": "Falling Drag",
+      "group": "movement"
+    },
+    "AirDampingDuration": {
+      "label": "Air Damping Duration",
+      "group": "movement"
+    },
+    "AirJumpForce": {
+      "label": "Air Jump Force",
+      "group": "movement"
+    },
+    "AirJumps": {
+      "label": "Air Jumps",
+      "group": "movement"
+    },
+    "AirJumpVerticalSpeedPercent": {
+      "label": "Air Jump Vertical Speed",
+      "group": "movement"
+    },
+    "AirDashDistancePercent": {
+      "label": "Air Dash Distance Bonus",
+      "group": "movement"
+    },
+    "AirSideMoveSpeedPercentage": {
+      "label": "Air Side Move Speed",
+      "group": "movement"
+    },
+    "AirSpeedBonus": {
+      "label": "Bonus Air Speed",
+      "group": "movement"
+    },
+    "GravityScale": {
+      "label": "Gravity Scale",
+      "group": "movement"
+    },
+    "EnemyDragSpeed": {
+      "label": "Enemy Drag Speed",
+      "group": "movement"
+    },
+    "ChargeDragVerticalOffset": {
+      "label": "Charge Drag Vertical Offset",
+      "group": "movement"
+    },
+    "JuggleAirSpeedMax": {
+      "label": "Juggle Air Speed Max",
+      "group": "movement"
+    },
+    "JuggleFallSpeedMax": {
+      "label": "Juggle Fall Speed Max",
+      "group": "movement"
+    },
+    "BombFriction": {
+      "label": "Bomb Friction",
+      "group": "movement"
+    },
+    "Friction": {
+      "label": "Friction",
+      "group": "movement"
+    },
+    "FrictionPercentage": {
+      "label": "Friction",
+      "group": "movement"
+    },
+    "GroundFrictioNpercentage": {
+      "label": "Ground Friction",
+      "group": "movement"
+    },
+    "DashAirSpeed": {
+      "label": "Dash Air Speed",
+      "group": "movement"
+    }
+  },
+  "conditions": {
+    "$comment": "The items whose effect depends on a condition, and what that condition is. Each entry is hand-checked against the item's threshold property and its description. The threshold property is named so the number can be read from the data rather than typed twice.",
+    "upgrade-magic-burst": {
+      "label": "Mystic Burst",
+      "bonusProperty": "Damage",
+      "bonusLabel": "Bonus Spirit Damage",
+      "thresholdProperty": "MinimumDamage",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than 80 damage",
+      "wording": "from"
+    },
+    "upgrade-crackshot": {
+      "label": "Mystic Shot",
+      "bonusProperty": "BonusSpiritDamage",
+      "thresholdProperty": null,
+      "damageType": "spirit",
+      "condition": "Your next bullet",
+      "wording": "from"
+    },
+    "upgrade-sharpshooter": {
+      "label": "Sharpshooter",
+      "bonusProperty": "LongRangeBonusWeaponPower",
+      "thresholdProperty": "LongRangeBonusWeaponPowerMinRange",
+      "damageType": "weapon",
+      "condition": "Beyond minimum distance",
+      "wording": "beyond"
+    },
+    "upgrade-absorbing-armor": {
+      "label": "Witchmail",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-high-impact-armor": {
+      "label": "High Impact Armor",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-spellbreaker": {
+      "label": "Spellbreaker",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-spirit-bubble": {
+      "label": "Spirit Shielding",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-spirit-burn": {
+      "label": "Spirit Burn",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-patrons-blessing": {
+      "label": "Mystic Conduit",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-close-quarter-combat": {
+      "label": "Point Blank",
+      "bonusProperty": "CloseRangeBonusWeaponPower",
+      "thresholdProperty": "CloseRangeBonusDamageRange",
+      "damageType": "weapon",
+      "condition": "Within close range",
+      "wording": "within"
+    },
+    "upgrade-close-range": {
+      "label": "Close Quarters",
+      "bonusProperty": "CloseRangeBonusWeaponPower",
+      "thresholdProperty": "CloseRangeBonusDamageRange",
+      "damageType": "weapon",
+      "condition": "Within close range",
+      "wording": "within"
+    },
+    "upgrade-long-range": {
+      "label": "Long Range",
+      "bonusProperty": "LongRangeBonusWeaponPower",
+      "thresholdProperty": "LongRangeBonusWeaponPowerMinRange",
+      "damageType": "weapon",
+      "condition": "Beyond minimum distance",
+      "wording": "beyond"
+    },
+    "upgrade-fervor": {
+      "label": "Frenzy",
+      "bonusProperty": "LowHealthThreshold",
+      "thresholdProperty": "LowHealthThreshold",
+      "damageType": "spirit",
+      "condition": "When target health is below threshold",
+      "wording": "below"
+    },
+    "upgrade-chonky": {
+      "label": "Fortitude",
+      "bonusProperty": "HealthThreshold",
+      "thresholdProperty": "HealthThreshold",
+      "damageType": "spirit",
+      "condition": "When target health is above threshold",
+      "wording": "above"
+    },
+    "upgrade-hollow-point-rounds": {
+      "label": "Hollow Point",
+      "bonusProperty": "LifeThreshold",
+      "thresholdProperty": "LifeThreshold",
+      "damageType": "spirit",
+      "condition": "When target health is below threshold",
+      "wording": "below"
+    },
+    "upgrade-magic-shield": {
+      "label": "Enchanter's Emblem",
+      "bonusProperty": "LifeThreshold",
+      "thresholdProperty": "LifeThreshold",
+      "damageType": "spirit",
+      "condition": "When target health is below threshold",
+      "wording": "below"
+    },
+    "upgrade-fervor": {
+      "label": "Frenzy",
+      "bonusProperty": "LowHealthThreshold",
+      "thresholdProperty": "LowHealthThreshold",
+      "damageType": "spirit",
+      "condition": "When target health is below threshold",
+      "wording": "below"
+    },
+    "upgrade-frenzy": {
+      "label": "Frenzy",
+      "bonusProperty": "LowHealthPercentThreshold",
+      "thresholdProperty": "LowHealthPercentThreshold",
+      "damageType": "spirit",
+      "condition": "When target health percent is below threshold",
+      "wording": "below"
+    },
+    "upgrade-magic-shock": {
+      "label": "Tankbuster",
+      "bonusProperty": "MinimumDamage",
+      "thresholdProperty": "MinimumDamage",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than minimum damage",
+      "wording": "from"
+    },
+    "upgrade-mystic-reverb": {
+      "label": "Mystic Reverb",
+      "bonusProperty": "MinimumDamage",
+      "thresholdProperty": "MinimumDamage",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than minimum damage",
+      "wording": "from"
+    },
+    "upgrade-patrons-blessing": {
+      "label": "Mystic Conduit",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-spirit-burn": {
+      "label": "Spirit Burn",
+      "bonusProperty": "DamageThreshold",
+      "thresholdProperty": "DamageThreshold",
+      "damageType": "spirit",
+      "condition": "Abilities dealing more than threshold damage",
+      "wording": "from"
+    },
+    "upgrade-improved-bullet-armor": {
+      "label": "Bullet Resilience",
+      "bonusProperty": "BulletResistBelowThreshold",
+      "thresholdProperty": "BulletResistBelowThreshold",
+      "damageType": "spirit",
+      "condition": "When target bullet resist is below threshold",
+      "wording": "below"
+    },
+    "upgrade-tech-purge": {
+      "label": "Spirit Resilience",
+      "bonusProperty": "TechResistBelowThreshold",
+      "thresholdProperty": "TechResistBelowThreshold",
+      "damageType": "spirit",
+      "condition": "When target spirit resist is below threshold",
+      "wording": "below"
+    }
+  },
+  "heroStatGroups": {
+    "health": { "label": "Health", "order": 0 },
+    "spirit": { "label": "Spirit", "order": 1 },
+    "weapon": { "label": "Weapon", "order": 2 },
+    "movement": { "label": "Movement", "order": 3 },
+    "defence": { "label": "Defence", "order": 4 },
+    "utility": { "label": "Utility", "order": 5 }
+  },
+  "heroStatSpecs": {
+    "max_health": { "group": "health", "label": "Max Health" },
+    "base_health_regen": { "group": "health", "label": "Base Health Regen" },
+    "ooc_health_regen": { "group": "health", "label": "Out of Combat Regen" },
+    "tech_range": { "group": "spirit", "label": "Tech Range" },
+    "tech_duration": { "group": "spirit", "label": "Tech Duration" },
+    "weapon_power": { "group": "weapon", "label": "Spirit Power / Weapon Power" },
+    "weapon_power_scale": { "group": "weapon", "label": "Weapon Power Scale" },
+    "light_melee_damage": { "group": "weapon", "label": "Light Melee Damage" },
+    "heavy_melee_damage": { "group": "weapon", "label": "Heavy Melee Damage" },
+    "reload_speed": { "group": "weapon", "label": "Reload Speed" },
+    "max_move_speed": { "group": "movement", "label": "Max Move Speed" },
+    "sprint_speed": { "group": "movement", "label": "Sprint Speed" },
+    "crouch_speed": { "group": "movement", "label": "Crouch Speed" },
+    "move_acceleration": { "group": "movement", "label": "Move Acceleration" },
+    "stamina": { "group": "movement", "label": "Stamina" },
+    "stamina_regen_per_second": { "group": "movement", "label": "Stamina Regen" },
+    "air_dash_distance_in_meters": { "group": "movement", "label": "Air Dash Distance" },
+    "air_dash_duration": { "group": "movement", "label": "Air Dash Duration" },
+    "ground_dash_distance_in_meters": { "group": "movement", "label": "Ground Dash Distance" },
+    "ground_dash_duration": { "group": "movement", "label": "Ground Dash Duration" },
+    "bullet_armor_damage_reduction": { "group": "defence", "label": "Bullet Armor" },
+    "tech_armor_damage_reduction": { "group": "defence", "label": "Spirit Armor" },
+    "ability_resource_max": { "group": "utility", "label": "Ability Resource Max" },
+    "ability_resource_regen_per_second": { "group": "utility", "label": "Ability Resource Regen" },
+    "proc_build_up_rate_scale": { "group": "utility", "label": "Proc Build Up Rate" },
+    "crit_damage_received_scale": { "group": "utility", "label": "Crit Damage Received" }
+  },
+  "readOnlyAbilityProperties": {
+    "FallSpeedMax": { "label": "Max Fall Speed", "group": "movement" },
+    "MaxFallSpeed": { "label": "Max Fall Speed", "group": "movement" },
+    "AirSpeedMax": { "label": "Max Air Speed", "group": "movement" },
+    "AirDrag": { "label": "Air Drag", "group": "movement" },
+    "VerticalDrag": { "label": "Vertical Drag", "group": "movement" },
+    "FallingDrag": { "label": "Falling Drag", "group": "movement" },
+    "AirDampingDuration": { "label": "Air Damping Duration", "group": "movement" },
+    "AirJumpForce": { "label": "Air Jump Force", "group": "movement" },
+    "AirJumps": { "label": "Air Jumps", "group": "movement" },
+    "AirJumpVerticalSpeedPercent": { "label": "Air Jump Vertical Speed", "group": "movement" },
+    "AirDashDistancePercent": { "label": "Air Dash Distance Bonus", "group": "movement" },
+    "AirSideMoveSpeedPercentage": { "label": "Air Side Move Speed", "group": "movement" },
+    "AirSpeedBonus": { "label": "Bonus Air Speed", "group": "movement" },
+    "GravityScale": { "label": "Gravity Scale", "group": "movement" },
+    "EnemyDragSpeed": { "label": "Enemy Drag Speed", "group": "movement" },
+    "ChargeDragVerticalOffset": { "label": "Charge Drag Vertical Offset", "group": "movement" },
+    "JuggleAirSpeedMax": { "label": "Juggle Air Speed Max", "group": "movement" },
+    "JuggleFallSpeedMax": { "label": "Juggle Fall Speed Max", "group": "movement" },
+    "BombFriction": { "label": "Bomb Friction", "group": "movement" },
+    "Friction": { "label": "Friction", "group": "movement" },
+    "FrictionPercentage": { "label": "Friction", "group": "movement" },
+    "GroundFrictioNpercentage": { "label": "Ground Friction", "group": "movement" },
+    "DashAirSpeed": { "label": "Dash Air Speed", "group": "movement" }
+  }
 }

@@ -412,6 +412,7 @@ export default async function HeroProfilePage({
         heroSlug={hero.slug}
         heroName={hero.name}
         startingStats={hero.startingStats}
+        abilities={abilities}
         itemIndex={itemIndex}
         statMap={statMap}
       />

@@ -150,6 +150,17 @@
   }
 
   /* Panels: 1px --line border, --radius-card, subtle diagonal gradient. */
+  .theorycraft {
+    font-family: var(--font-body);
+  }
+
+  .theorycraft button,
+  .theorycraft input,
+  .theorycraft select,
+  .theorycraft textarea {
+    font-family: var(--font-body);
+  }
+
   .panel {
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
