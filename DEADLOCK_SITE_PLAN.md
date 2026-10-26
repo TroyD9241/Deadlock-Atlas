@@ -447,6 +447,8 @@ Work milestone by milestone. Finish and verify each before the next.
   - `src/lib/deadlock-api.ts`: typed fetchers for `/v1/analytics/item-stats`, `/v1/analytics/item-flow-stats`, `/v1/analytics/ability-max-first-stats`, `/v1/analytics/ability-order-stats`, and `/v1/analytics/hero-build-stats/{hero_id}`.
   - New Prisma model `AnalyticsSnapshot` keyed by `(endpoint, paramsHash, rankBracket)` with a `Json` payload and a `fetchedAt` timestamp. **Caching is required, not an optimisation:** the API rate-limits at 200 req/min per IP and `item-flow-stats` for a single hero is a 1.7 MB response. Refresh lazily on first request after expiry.
   - TTL is 24 hours. The data does not move meaningfully hour to hour.
+  - **The API host is `api.deadlock-api.com`.** `api.deadlock.com` is a different host and does not resolve.
+  - **Pick rate is computed, not taken from the API.** The API's own `popular_items.pick_pct` has an undocumented denominator and no per-bracket variant. Ours is `item-stats.players` over `hero-stats.matches`: `item-stats.matches` is the wrong denominator because a match has several players, and using it yields 35–91% pick rates where the real figure is 10–19%. `/v1/analytics/hero-stats` supplies the denominator; it takes no `hero_id` and rejects `bucket=month`, and returns one row per hero with its `matches`.
   - `src/lib/rank-brackets.ts`: four **non-overlapping** brackets, labelled by rank name, derived from the API's own `/v1/analytics/badge-distribution`:
 
     | Bracket | Tiers | Measured share |
@@ -458,6 +460,7 @@ Work milestone by milestone. Finish and verify each before the next.
 
     These are the real measured shares, stable across a 30-day and a 13-month window. Do **not** label brackets with "top 5% / top 25%" style figures: those numbers do not match the API's distribution, and `min_average_badge` filters on the average badge of *both teams*, so a "top" bracket still contains lower-badge players. Show the measured share next to the bracket name.
   - A single global rank-bracket picker, visible on the pages that show play data, with the current bracket indicated.
+  - *Built (M11a):* the `AnalyticsSnapshot` model and its migration, `src/lib/deadlock-api.ts` (typed fetchers), `src/lib/analytics.ts` (the read-through cache), and `src/lib/rank-brackets.ts` (the four brackets plus `?rank=` parsing). `scripts/verify-analytics.ts` checks the cache rather than assuming it: a cold read fetches, the next read is served from the cache with no network call, parameter order does not create a second row, the bracket filter changes the numbers, a failed fetch falls back to the stored payload, and the pick rate lands in a plausible band. The bracket picker itself arrives with M11b, where there is something for it to filter.
 - **M11b — item pick rates and buy timing.**
   - `/items`: each card shows its **pick rate** and **average buy time** as `mm:ss` plus the percentage into the match (the API gives `avg_buy_time_s` and `avg_buy_time_relative`). Pick rate is sortable.
   - Per item: the buy-time band (early / mid / late) derived from `item-flow-stats` phases, and the phase-to-phase transitions ("players who bought this next bought X").

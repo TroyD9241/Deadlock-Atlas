@@ -118,3 +118,14 @@ export type Location = Prisma.LocationModel
  * /v1/analytics/hero-stats. Blocked on the same deferral as the formula.
  */
 export type HeroPlayStat = Prisma.HeroPlayStatModel
+/**
+ * Model AnalyticsSnapshot
+ * One cached analytics response from the Deadlock API.
+ * 
+ * The API rate-limits at 200 req/min per IP, and `item-flow-stats` is a
+ * 1.7 MB response for a single hero, so every analytics read goes through
+ * this table rather than straight to the network. The key is the endpoint
+ * plus the query parameters, so the same request is stored once and a
+ * re-read refreshes the row in place.
+ */
+export type AnalyticsSnapshot = Prisma.AnalyticsSnapshotModel

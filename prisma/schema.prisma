@@ -282,3 +282,23 @@ model HeroPlayStat {
 
   @@unique([heroId, windowStart, windowEnd])
 }
+
+/// One cached analytics response from the Deadlock API.
+///
+/// The API rate-limits at 200 req/min per IP, and `item-flow-stats` is a
+/// 1.7 MB response for a single hero, so every analytics read goes through
+/// this table rather than straight to the network. The key is the endpoint
+/// plus the query parameters, so the same request is stored once and a
+/// re-read refreshes the row in place.
+model AnalyticsSnapshot {
+  id          Int      @id @default(autoincrement())
+  endpoint    String
+  paramsHash  String
+  /// The rank bracket the request was filtered by; "all" for no filter.
+  rankBracket String   @default("all")
+  payload     Json
+  fetchedAt   DateTime @default(now())
+
+  @@unique([endpoint, paramsHash, rankBracket])
+  @@index([fetchedAt])
+}

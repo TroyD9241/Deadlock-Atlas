@@ -410,7 +410,8 @@ export const ModelName = {
   Relationship: 'Relationship',
   Faction: 'Faction',
   Location: 'Location',
-  HeroPlayStat: 'HeroPlayStat'
+  HeroPlayStat: 'HeroPlayStat',
+  AnalyticsSnapshot: 'AnalyticsSnapshot'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -426,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "patch" | "hero" | "heroModel" | "heroPoi" | "heroSnapshot" | "ability" | "heroAbility" | "abilitySnapshot" | "item" | "itemSnapshot" | "relationship" | "faction" | "location" | "heroPlayStat"
+    modelProps: "patch" | "hero" | "heroModel" | "heroPoi" | "heroSnapshot" | "ability" | "heroAbility" | "abilitySnapshot" | "item" | "itemSnapshot" | "relationship" | "faction" | "location" | "heroPlayStat" | "analyticsSnapshot"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1466,6 +1467,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AnalyticsSnapshot: {
+      payload: Prisma.$AnalyticsSnapshotPayload<ExtArgs>
+      fields: Prisma.AnalyticsSnapshotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnalyticsSnapshotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnalyticsSnapshotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+        }
+        findFirst: {
+          args: Prisma.AnalyticsSnapshotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnalyticsSnapshotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+        }
+        findMany: {
+          args: Prisma.AnalyticsSnapshotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>[]
+        }
+        create: {
+          args: Prisma.AnalyticsSnapshotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+        }
+        createMany: {
+          args: Prisma.AnalyticsSnapshotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnalyticsSnapshotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>[]
+        }
+        delete: {
+          args: Prisma.AnalyticsSnapshotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+        }
+        update: {
+          args: Prisma.AnalyticsSnapshotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+        }
+        deleteMany: {
+          args: Prisma.AnalyticsSnapshotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnalyticsSnapshotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnalyticsSnapshotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>[]
+        }
+        upsert: {
+          args: Prisma.AnalyticsSnapshotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+        }
+        aggregate: {
+          args: Prisma.AnalyticsSnapshotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnalyticsSnapshot>
+        }
+        groupBy: {
+          args: Prisma.AnalyticsSnapshotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalyticsSnapshotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnalyticsSnapshotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalyticsSnapshotCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1733,6 +1808,18 @@ export const HeroPlayStatScalarFieldEnum = {
 } as const
 
 export type HeroPlayStatScalarFieldEnum = (typeof HeroPlayStatScalarFieldEnum)[keyof typeof HeroPlayStatScalarFieldEnum]
+
+
+export const AnalyticsSnapshotScalarFieldEnum = {
+  id: 'id',
+  endpoint: 'endpoint',
+  paramsHash: 'paramsHash',
+  rankBracket: 'rankBracket',
+  payload: 'payload',
+  fetchedAt: 'fetchedAt'
+} as const
+
+export type AnalyticsSnapshotScalarFieldEnum = (typeof AnalyticsSnapshotScalarFieldEnum)[keyof typeof AnalyticsSnapshotScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2030,6 +2117,7 @@ export type GlobalOmitConfig = {
   faction?: Prisma.FactionOmit
   location?: Prisma.LocationOmit
   heroPlayStat?: Prisma.HeroPlayStatOmit
+  analyticsSnapshot?: Prisma.AnalyticsSnapshotOmit
 }
 
 /* Types for Logging */

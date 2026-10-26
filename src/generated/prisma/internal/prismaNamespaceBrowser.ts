@@ -64,7 +64,8 @@ export const ModelName = {
   Relationship: 'Relationship',
   Faction: 'Faction',
   Location: 'Location',
-  HeroPlayStat: 'HeroPlayStat'
+  HeroPlayStat: 'HeroPlayStat',
+  AnalyticsSnapshot: 'AnalyticsSnapshot'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -311,6 +312,18 @@ export const HeroPlayStatScalarFieldEnum = {
 } as const
 
 export type HeroPlayStatScalarFieldEnum = (typeof HeroPlayStatScalarFieldEnum)[keyof typeof HeroPlayStatScalarFieldEnum]
+
+
+export const AnalyticsSnapshotScalarFieldEnum = {
+  id: 'id',
+  endpoint: 'endpoint',
+  paramsHash: 'paramsHash',
+  rankBracket: 'rankBracket',
+  payload: 'payload',
+  fetchedAt: 'fetchedAt'
+} as const
+
+export type AnalyticsSnapshotScalarFieldEnum = (typeof AnalyticsSnapshotScalarFieldEnum)[keyof typeof AnalyticsSnapshotScalarFieldEnum]
 
 
 export const SortOrder = {
