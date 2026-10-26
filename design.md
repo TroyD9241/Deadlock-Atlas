@@ -114,6 +114,8 @@ Two layers of this pattern, one already shipped and one to build on:
 
 **Shipped — ability icon field (`AbilityIconField`).** The hero profile's background gradient carries the hero's own ability icons: the API gives every hero ability class its own art (`abilities/vampirebat/vampirebat_love_bites.png`), so each hero's page is themed by its own kit. Signature and innate abilities render large and stronger; the shared universal ones render small and faint. The banner uses a stronger field; the page background uses a fainter, sticky one that drifts behind the sections as you scroll.
 
+**Shipped/planned — ability reference.** `/abilities` began as a flat alphabetical index (M2) and is slated for a rebuild as a cross-hero reference grouped by what an ability does (damage, crowd control, mobility, healing, buff/debuff, universal). Its job is lookup across heroes — "which hero slows?" / "what does this status do?" — not restating hero pages. Valve's own `description.desc` and per-tier upgrade text (`t1_desc`/`t2_desc`/`t3_desc`) are the content; the kind tag comes from `HeroAbility.slot` (since `Ability.kind` is only set for universal abilities). The universal list is filtered to the genuinely shared movement/innate abilities. Categories will be verified against the real data before committing to the final grouping.
+
 **To build on — character assets on blank backgrounds.** The API ships several renders per hero and we currently use one:
 
 | Key | Size | Shape | Used today |
@@ -365,6 +367,8 @@ VOICE LINES: https://deadlock.wiki/Deadman_Danny/Voice_lines
 | `/lore` | General lore overview (kept simple for now) |
 | `/map` | Interactive map (later) |
 | `/stats`, `/esports` | Later phases; shown as "coming soon" |
+
+**Play data (M11, M12).** Item pick rates, buy timing and ability max rates are a layer over the existing `/items`, `/heroes/[slug]` and theorycraft pages, not a separate route — the nav gains no `/stats` entry. A global rank-bracket picker (four brackets: Initiate–Sentinel, Mystic–Ritualist, Emissary–Oracle, Phantom–Eternus) filters every play-data figure, with the current bracket indicated wherever the data appears. Buy times are shown as `mm:ss` plus the percentage into the match. Pick rate is the only sortable metric; win rate is shown but never sorted on, because it reflects who buys an item rather than the item's effect.
 
 ### 5.2 Header and navigation
 

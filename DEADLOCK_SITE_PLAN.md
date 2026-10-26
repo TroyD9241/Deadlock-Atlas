@@ -433,6 +433,46 @@ Work milestone by milestone. Finish and verify each before the next.
 - Search, mobile layout, performance, accessibility pass, deployment.
 - Art-forward backgrounds: use the API's unused character renders (`cardCritical`, `cardGloat`, `vertical`, `small`) and the `background` motif on the blank areas left by placeholder sections, the 3D fallback, directory cards and section headings (design.md 2.6). Decorative only, deterministic placement.
 
+**M10: Ability reference rebuild (/abilities)**
+- The M2 `/abilities` index is a flat alphabetical list (name, quip, owning hero). Rebuild it as a cross-hero reference grouped by what an ability does — damage, crowd control, mobility, healing, buff/debuff, and the genuinely shared universal abilities — so the page answers "which hero slows?" or "what does this status do?" rather than only "what is it called?"
+- **Verify the categories against the real data first.** Derive groupings from ability properties (`css_class`, effect types) and the description HTML; do not hard-code a fixed list until the spread of categories is known.
+- Show Valve's own description prose (`description.desc`) and the per-tier upgrade text (`t1_desc`/`t2_desc`/`t3_desc`). The API has a full description for 169 of the 176 released-hero signature abilities; the current page reads only `quip`. Derive the kind tag from `HeroAbility.slot` (not `Ability.kind`, which is only populated for universal abilities — 322 of 436 are null).
+- Filter the universal list to the genuinely shared abilities (zip line, jump, slide, mantle, climb rope, zipline boost, dash, sprint, parry). The API's `hero: null` set includes hero internals (e.g. `citadel_ability_kali_spinning_blade`, `ability_boho_ridebroom`) which are not universal and must not be listed as such.
+- Add search across every ability and hero.
+- *Done when:* the page groups by function, shows description and tier text, searches across heroes, no hero-specific ability appears under universal, and categories were verified against the data.
+
+**M11: Play data (pick rates, buy timing, ability max rates)**
+- The Deadlock API's analytics endpoints are live and verified, but nothing in the site uses them yet. This milestone turns them into real features: item pick rates, when items are bought and upgraded, and which ability players max first.
+- **M11a — analytics client, cache and rank brackets (the foundation).**
+  - `src/lib/deadlock-api.ts`: typed fetchers for `/v1/analytics/item-stats`, `/v1/analytics/item-flow-stats`, `/v1/analytics/ability-max-first-stats`, `/v1/analytics/ability-order-stats`, and `/v1/analytics/hero-build-stats/{hero_id}`.
+  - New Prisma model `AnalyticsSnapshot` keyed by `(endpoint, paramsHash, rankBracket)` with a `Json` payload and a `fetchedAt` timestamp. **Caching is required, not an optimisation:** the API rate-limits at 200 req/min per IP and `item-flow-stats` for a single hero is a 1.7 MB response. Refresh lazily on first request after expiry.
+  - TTL is 24 hours. The data does not move meaningfully hour to hour.
+  - `src/lib/rank-brackets.ts`: four **non-overlapping** brackets, labelled by rank name, derived from the API's own `/v1/analytics/badge-distribution`:
+
+    | Bracket | Tiers | Measured share |
+    | --- | --- | --- |
+    | Initiate – Sentinel | 1–4 | 59.8% |
+    | Mystic – Ritualist | 5–6 | 20.0% |
+    | Emissary – Oracle | 7–8 | 15.6% |
+    | Phantom – Eternus | 9–11 | 4.6% |
+
+    These are the real measured shares, stable across a 30-day and a 13-month window. Do **not** label brackets with "top 5% / top 25%" style figures: those numbers do not match the API's distribution, and `min_average_badge` filters on the average badge of *both teams*, so a "top" bracket still contains lower-badge players. Show the measured share next to the bracket name.
+  - A single global rank-bracket picker, visible on the pages that show play data, with the current bracket indicated.
+- **M11b — item pick rates and buy timing.**
+  - `/items`: each card shows its **pick rate** and **average buy time** as `mm:ss` plus the percentage into the match (the API gives `avg_buy_time_s` and `avg_buy_time_relative`). Pick rate is sortable.
+  - Per item: the buy-time band (early / mid / late) derived from `item-flow-stats` phases, and the phase-to-phase transitions ("players who bought this next bought X").
+- **M11c — ability max rates and upgrade order.**
+  - Per ability, the share of players who **maxed that ability first**, split by bracket. The difference is large and worth showing: for one hero the top ability goes from 54% of all players to 79.6% of high-bracket players.
+  - The typical upgrade order per hero, as the modal unlock sequence with per-upgrade timings (`avg_upgrade_times_s`).
+  - Shown on the **hero page** as social proof ("maxed first by X% of high-bracket players") and on the **theorycraft page** as advice ("what to level, and when"). One shared component, two framings.
+- **Win rate policy.** The API's win rates (and its net-worth-adjusted variant) are observational, not causal. Show them, but **never sort by them** — pick rate is the only sortable metric. A tooltip states that a high win rate reflects who buys the item, not that the item wins games.
+- *Done when:* `/items` shows pick rate and buy timing with a working rank-bracket filter, hero pages show max-first rates and upgrade order per bracket, and every analytics response is served from the cache rather than hitting the API per request.
+
+**M12: Popular builds**
+- `/v1/analytics/hero-build-stats/{hero_id}` returns the community's named builds for a hero. Show them on the hero page with the items they use, and let the reader load a build straight into the theorycraft tool.
+- Split out from M11 so M11 stays small and shippable. The theorycraft build model already lives in the URL (`?build=…&up=…`), so loading a build is a link, not a new state mechanism.
+- *Done when:* a hero page lists the popular builds with their items, and "use this build" opens the theorycraft page with that build loaded.
+
 **Deferred: patch work.** `Patch` stays in the schema as a build-version container so nothing needs backfilling when this resumes.
 
 - **M3** (`PatchTimeline`, `DiffBox`, `ChangeRow`, `Badge`) — blocked.
@@ -461,6 +501,7 @@ Work milestone by milestone. Finish and verify each before the next.
 - **Voice lines:** the explorer is blocked until there is an allowed data source (`design.md` section 11, question 2).
 - **Unreleased game:** heroes and content change or get removed often. The pipeline must be re-runnable, and removed content should be a first-class field.
 - **API stability:** the community API can change or rate-limit. Always normalize into our own schema, and cache raw responses.
+- **Analytics data is observational.** The `/v1/analytics` endpoints report what players did, not what caused it. Win rates in particular are confounded: players who are already ahead have more souls and buy items sooner. The API's `adjusted_win_rate` re-weights across net-worth buckets but remains observational. Never sort or rank by win rate, and never describe an item as "winning games".
 - **Palette quality:** automatic extraction can pick a poor accent. The manual override field must always win.
 - **Hero of the Patch formula:** incomplete by design. Do not build beyond the temporary rule before M8.
 - **No structured changelog endpoint.** `/v2/patches` returns Steam and forum news as raw HTML with no per-entity data, and `/v1/assets/client-versions` is only a flat list of build numbers. There is no machine-readable diff, so per-hero and per-item changes must be computed by diffing our own snapshots across `clientVersion`s. This is the main reason M3, M4, M6 and M8 are deferred, and it should be proven on real data before any patch UI is built.
@@ -474,6 +515,6 @@ Work milestone by milestone. Finish and verify each before the next.
 
 ## 10. Later phases (stubs only, don't build yet)
 
-**Phase 2: Play data.** A `/stats` section: hero pick/win rates, item popularity, by rank bracket, from the Deadlock API. Differentiator: link stats back to patch history ("why did this hero rise?").
+**Phase 2: Play data.** Hero pick/win rates, item popularity, buy timing and ability max rates, by rank bracket, from the Deadlock API. Shipped as M11 and M12 in section 7; the data lives on the existing item, hero and theorycraft pages rather than in a separate `/stats` section. Differentiator: link stats back to patch history ("why did this hero rise?") — still blocked on the patch work.
 
 **Phase 3: Esports.** A `/esports` section: tournaments, results, rosters, player pages. Seed from Liquipedia-style public data and organizer results; scope to whatever the scene supports at the time.
