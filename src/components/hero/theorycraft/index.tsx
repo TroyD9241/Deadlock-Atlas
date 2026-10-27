@@ -37,7 +37,7 @@ import type {
   Highlight,
   HeroAbility,
   ItemIndexRow,
-  PopularBuilds,
+  ItemPlayData,
   StatMap,
 } from "./types";
 import type { ConditionOutcome } from "@/lib/damage";
@@ -58,7 +58,16 @@ type Props = {
   heroSlug: string;
   startingStats: unknown;
   abilities: HeroAbility[];
-  popular: PopularBuilds;
+  /**
+   * The hero's most-picked items, from live play data.
+   *
+   * Sorted by pick rate, most-picked first.
+   */
+  popular: ItemPlayData[];
+  /** The rank bracket the play data is filtered by. */
+  bracketLabel: string;
+  /** The number of matches behind the pick rates. */
+  heroMatches: number;
   statMap: StatMap;
   /**
    * The build in the URL, read on the server.
@@ -78,6 +87,8 @@ export function Theorycraft({
   startingStats,
   abilities,
   popular,
+  bracketLabel,
+  heroMatches,
   statMap,
   initialBuild,
   initialItems,
@@ -91,7 +102,6 @@ export function Theorycraft({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [highlight, setHighlight] = useState<Highlight>(null);
   const [pinned, setPinned] = useState<string | null>(null);
-  const [stage, setStage] = useState<"early" | "mid" | "late">("mid");
 
   const storedBuild = useStoredBuild(heroSlug);
   const [edited, setEdited] = useState<Build | null>(null);
@@ -237,21 +247,19 @@ export function Theorycraft({
   );
 
   const loadPopular = useCallback(
-    (which: "early" | "mid" | "late") => {
-      const picks = popular[which];
-      if (!picks.length) return;
+    (slugs: string[]) => {
+      if (!slugs.length) return;
       const items = Array.from({ length: TOTAL_SLOTS }, () => "");
       let slot = 0;
-      for (const pick of picks) {
+      for (const slug of slugs) {
         if (slot >= TOTAL_SLOTS) break;
-        const slug = slugForClassName(pick.className);
         if (!slug) continue;
         items[slot] = slug;
         slot += 1;
       }
       updateBuild((current) => ({ ...current, items }));
     },
-    [popular, updateBuild],
+    [updateBuild],
   );
 
   // The readout, computed from the items in the build.
@@ -297,11 +305,9 @@ export function Theorycraft({
   // The pick rate of each item in the build, for the popular markers.
   const buildPicks = useMemo(() => {
     const picks: Record<string, number> = {};
-    for (const list of Object.values(popular)) {
-      for (const pick of list) {
-        const slug = slugForClassName(pick.className);
-        if (build.items.includes(slug)) picks[slug] = pick.pickPct;
-      }
+    for (const pick of popular) {
+      if (!pick.slug) continue;
+      if (build.items.includes(pick.slug)) picks[pick.slug] = pick.pickRatePct;
     }
     return picks;
   }, [popular, build.items]);
@@ -437,8 +443,8 @@ export function Theorycraft({
 
         <Popular
           popular={popular}
-          stage={stage}
-          onStage={setStage}
+          bracketLabel={bracketLabel}
+          heroMatches={heroMatches}
           onLoad={loadPopular}
           buildPicks={buildPicks}
         />
@@ -522,13 +528,3 @@ function useStoredBuild(heroSlug: string): Build {
   }, [raw]);
 }
 
-/**
- * The item slug for an API class name.
- *
- * The ingest slugs an item by replacing underscores with hyphens and keeping
- * the whole class name, so `upgrade_acolytes_glove` becomes
- * `upgrade-acolytes-glove`.
- */
-function slugForClassName(className: string): string {
-  return className.replace(/_/g, "-");
-}

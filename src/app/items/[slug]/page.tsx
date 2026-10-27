@@ -3,11 +3,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { itemImage } from "@/components/item/item-card";
+import { PlayDataPanel } from "@/components/play-data/figures";
+import { BuyBandPanel, TransitionsPanel } from "@/components/play-data/flow-panels";
+import { FlowHeroPicker } from "@/components/play-data/flow-hero-picker";
+import { RankPicker } from "@/components/play-data/rank-picker";
 import { themeStyle } from "@/lib/theme";
 import { costLabel } from "@/lib/item-filter-shared";
 import { slotLabel } from "@/lib/item-colors";
 import { itemEffectText, itemStats, itemUpgrades, sanitizeItemHtml, splitItemParagraphs } from "@/lib/item-text";
 import { getItem } from "@/lib/queries";
+import { db } from "@/lib/db";
+import { getItemPlayData } from "@/lib/play-data";
+import {
+  buildBuyBands,
+  buildTransitions,
+  getFlowItemNames,
+  getItemFlow,
+} from "@/lib/item-flow";
+import { bracketFromParam } from "@/lib/rank-brackets";
 
 export const instant = false;
 
@@ -27,12 +40,60 @@ export async function generateMetadata({
 
 export default async function ItemPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ rank?: string; hero?: string }>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
   const item = await getItem(slug);
   if (!item) notFound();
+
+  const bracket = bracketFromParam(query.rank);
+
+  /*
+   * The item's own play data. The API's rows are keyed by numeric id and
+   * the site has no numeric id on an item, so the row is matched by the
+   * item's API id.
+   */
+  const playRows = await getItemPlayData(bracket);
+  const apiId = item.apiId ? Number(item.apiId) : null;
+  const playData = apiId
+    ? (playRows.find((row) => row.apiId === apiId) ?? null)
+    : null;
+
+  /*
+   * The purchase flow is per hero, and it is a large response — about 3 MB
+   * for one hero — so it is fetched for one hero at a time and read from
+   * the URL. The hero chosen in the URL wins; otherwise the first
+   * released hero is used.
+   */
+  const flowHeroes = await db.hero.findMany({
+    where: { isReleased: true, apiId: { not: null } },
+    orderBy: { name: "asc" },
+    select: { apiId: true, slug: true, name: true },
+  });
+
+  const flowHeroId = Number(query.hero);
+  const chosenHero =
+    flowHeroes.find((h) => h.apiId === flowHeroId) ?? flowHeroes[0] ?? null;
+
+  const heroFlow = chosenHero?.apiId
+    ? await getItemFlow(chosenHero.apiId, bracket)
+    : null;
+
+  const flowNames = heroFlow
+    ? await getFlowItemNames([
+        ...heroFlow.nodes.map((n) => n.item_id),
+        ...heroFlow.edges.map((e) => e.to_item_id),
+      ])
+    : new Map<string, { slug: string; name: string }>();
+
+  const bands = heroFlow ? buildBuyBands(heroFlow, flowNames) : [];
+  const band = apiId ? (bands.find((b) => b.apiId === apiId) ?? null) : null;
+  const transitions =
+    apiId && heroFlow ? buildTransitions(heroFlow, apiId, flowNames) : [];
 
   const art = itemImage(item);
   const effect = itemEffectText(item.description, item.tooltipSections);
@@ -196,6 +257,68 @@ export default async function ItemPage({
             <div className="stat-value">{(item.slotType ?? "[not available]").toUpperCase()}</div>
           </div>
         </div>
+
+        {/* Play data */}
+        {playData || band ? (
+          <section className="section">
+            <div className="section-head">
+              <div>
+                <h2>Play data</h2>
+                <p>What players actually do with this item.</p>
+              </div>
+            </div>
+            <div style={{ display: "grid", gap: 12 }}>
+              <div className="plate" style={{ padding: 16 }}>
+                <RankPicker
+                  current={bracket}
+                  pathname={`/items/${item.slug}`}
+                  otherParams={query.hero ? [["hero", query.hero]] : []}
+                />
+              </div>
+              {playData ? <PlayDataPanel data={playData} /> : null}
+              {heroFlow ? (
+                <div className="plate" style={{ padding: 16 }}>
+                  <FlowHeroPicker
+                    heroes={flowHeroes
+                      .filter((h): h is { apiId: number; slug: string; name: string } =>
+                        h.apiId != null,
+                      )
+                      .map((h) => ({ apiId: h.apiId, slug: h.slug, name: h.name }))}
+                    current={
+                      chosenHero && chosenHero.apiId != null
+                        ? {
+                            apiId: chosenHero.apiId,
+                            slug: chosenHero.slug,
+                            name: chosenHero.name,
+                          }
+                        : null
+                    }
+                    pathname={`/items/${item.slug}`}
+                    otherParams={bracket.id === "all" ? [] : [["rank", bracket.id]]}
+                  />
+                  <p
+                    style={{
+                      margin: "12px 0 0",
+                      fontSize: 10,
+                      color: "var(--muted)",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    The purchase flow for {chosenHero?.name}. It shows what
+                    that hero&apos;s players buy and in what order.
+                  </p>
+                </div>
+              ) : null}
+              {band ? <BuyBandPanel band={band} /> : null}
+              {transitions.length > 0 ? (
+                <TransitionsPanel
+                  transitions={transitions}
+                  fromName={item.name}
+                />
+              ) : null}
+            </div>
+          </section>
+        ) : null}
 
         {/* Effect */}
         <section className="section" id="effect">

@@ -2,10 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Theorycraft } from "@/components/hero/theorycraft";
+import { RankPicker } from "@/components/play-data/rank-picker";
 import { themeStyle } from "@/lib/theme";
 import { getStatMap } from "@/lib/stat-map.server";
 import { parseBuild } from "@/lib/build";
 import { getHero, getHeroAbilities, getItemsBySlugs } from "@/lib/queries";
+import { getHeroItemPlayData, getHeroMatches } from "@/lib/play-data";
+import { bracketFromParam } from "@/lib/rank-brackets";
 
 export const instant = false;
 
@@ -23,60 +26,19 @@ export async function generateMetadata({
   };
 }
 
-/** The API's popular picks for a hero, by match stage. */
-function popularBuilds(raw: unknown) {
-  const empty = { early: [], mid: [], late: [] } as {
-    early: { className: string; pickPct: number; winRatePct: number }[];
-    mid: { className: string; pickPct: number; winRatePct: number }[];
-    late: { className: string; pickPct: number; winRatePct: number }[];
-  };
-
-  if (!raw || typeof raw !== "object") return empty;
-  const data = raw as {
-    early_game?: unknown;
-    mid_game?: unknown;
-    late_game?: unknown;
-  };
-
-  const read = (list: unknown) => {
-    if (!Array.isArray(list)) return [];
-    return list
-      .map((entry) => {
-        const e = entry as {
-          class_name?: string;
-          pick_pct?: number;
-          winrate_pct?: number;
-        };
-        if (!e?.class_name) return null;
-        return {
-          className: e.class_name,
-          pickPct: typeof e.pick_pct === "number" ? e.pick_pct : 0,
-          winRatePct:
-            typeof e.winrate_pct === "number" ? e.winrate_pct : 0,
-        };
-      })
-      .filter((x): x is { className: string; pickPct: number; winRatePct: number } => !!x)
-      .sort((a, b) => b.pickPct - a.pickPct);
-  };
-
-  return {
-    early: read(data.early_game),
-    mid: read(data.mid_game),
-    late: read(data.late_game),
-  };
-}
-
 export default async function TheorycraftPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ build?: string; up?: string }>;
+  searchParams: Promise<{ build?: string; up?: string; rank?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
   const hero = await getHero(slug);
   if (!hero) notFound();
+
+  const bracket = bracketFromParam(query.rank);
 
   /*
    * The build in the URL is read on the server, so the board renders with
@@ -96,6 +58,26 @@ export default async function TheorycraftPage({
     getStatMap(),
     getItemsBySlugs(urlSlugs),
   ]);
+
+  /*
+   * The popular picks come from live play data rather than the hero
+   * record's stored `popular_items`. The stored figure is a snapshot from
+   * ingest time and drifts out of date; this comes through the analytics
+   * cache and is filtered by the rank bracket.
+   *
+   * A failure here leaves the tool intact — it just means no pick rates.
+   */
+  const heroApiId = hero.apiId;
+  const [picks, heroMatches] = heroApiId
+    ? await Promise.all([
+        getHeroItemPlayData(heroApiId, bracket),
+        getHeroMatches(heroApiId, bracket),
+      ])
+    : [[], 0];
+
+  const popular = [...picks].sort(
+    (a, b) => b.pickRatePct - a.pickRatePct,
+  );
 
   return (
     <div
@@ -154,6 +136,27 @@ export default async function TheorycraftPage({
                 this as a guide rather than an exact answer.
               </p>
             </div>
+
+            {popular.length > 0 ? (
+              <div
+                className="plate"
+                style={{
+                  marginTop: 16,
+                  padding: 16,
+                  display: "grid",
+                  gap: 12,
+                }}
+              >
+                <RankPicker
+                  current={bracket}
+                  pathname={`/theorycraft/${hero.slug}`}
+                  otherParams={[
+                    ...(query.build ? [["build", query.build] as [string, string]] : []),
+                    ...(query.up ? [["up", query.up] as [string, string]] : []),
+                  ]}
+                />
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -178,7 +181,9 @@ export default async function TheorycraftPage({
               upgrades: entry.ability.upgrades,
             },
           }))}
-          popular={popularBuilds(hero.popularItems)}
+          popular={popular}
+          bracketLabel={bracket.label}
+          heroMatches={heroMatches}
           statMap={statMap}
         />
       </div>

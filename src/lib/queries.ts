@@ -31,6 +31,8 @@ export type HeroArtwork = {
 export type HeroSummary = {
   slug: string;
   name: string;
+  /** The hero's id in the API, used to key the analytics endpoints. */
+  apiId: number | null;
   heroType: string | null;
   complexity: number | null;
   accent: string | null;
@@ -91,6 +93,7 @@ function firstSentence(text: string): string {
 const HERO_SELECT = {
   slug: true,
   name: true,
+  apiId: true,
   heroType: true,
   complexity: true,
   accent: true,
@@ -110,6 +113,7 @@ const HERO_SELECT = {
 function toSummary(row: {
   slug: string;
   name: string;
+  apiId: number | null;
   heroType: string | null;
   complexity: number | null;
   accent: string | null;
@@ -197,7 +201,6 @@ export async function getHero(slug: string) {
       startingStats: true,
       itemSlots: true,
       itemSlotInfo: true,
-      popularItems: true,
       draftBucketing: true,
       heroStatsUi: true,
       statsDisplay: true,
@@ -236,7 +239,6 @@ export async function getHero(slug: string) {
     isReleased: row.isReleased,
     needsReview: row.needsReview,
     startingStats: row.startingStats,
-    popularItems: row.popularItems,
     abilities: row.abilities,
   };
 }
@@ -252,6 +254,8 @@ export async function getHero(slug: string) {
 export type ItemSummary = {
   slug: string;
   name: string;
+  /** The item's id in the API, used to key the analytics endpoints. */
+  apiId: string | null;
   nameSource: string;
   slotType: string | null;
   tier: number | null;
@@ -440,6 +444,8 @@ export async function getHeroAbilities(slug: string) {
 const ITEM_SELECT = {
   slug: true,
   name: true,
+  /** The item's id in the API, used to key the analytics endpoints. */
+  apiId: true,
   nameSource: true,
   slotType: true,
   tier: true,

@@ -4,8 +4,10 @@
 
 import type { Build } from "@/lib/build";
 import type { StatLine, StatMap } from "@/lib/stat-map";
+import type { ItemPlayData } from "@/lib/play-data-format";
 
 export type { Build };
+export type { ItemPlayData };
 
 /**
  * One item as the tool sees it.
@@ -60,19 +62,6 @@ export type HeroAbility = {
     properties: unknown;
     upgrades: unknown;
   };
-};
-
-/** One popular pick for a hero, with the API's pick and win rates. */
-export type PopularItem = {
-  className: string;
-  pickPct: number;
-  winRatePct: number;
-};
-
-export type PopularBuilds = {
-  early: PopularItem[];
-  mid: PopularItem[];
-  late: PopularItem[];
 };
 
 /**

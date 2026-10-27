@@ -51,6 +51,7 @@ export type ItemFilterRow = ItemSummary & {
 const SELECT = {
   slug: true,
   name: true,
+  apiId: true,
   nameSource: true,
   slotType: true,
   tier: true,

@@ -1,37 +1,47 @@
 "use client";
 
-import { PopularBuilds } from "./types";
+import Link from "next/link";
+
+import { buyTimeLabel, buyStageFor, buyStageLabel } from "@/lib/play-data-format";
+
+import type { ItemPlayData } from "@/lib/play-data-format";
 
 /**
- * The popular picks.
+ * The popular picks, from live play data.
  *
- * The API's per-item pick rates for a hero, by match stage. These are the
- * most-picked items, not a loadout — so loading one assembles a build from
- * the top picks and says so.
+ * These are the most-picked items for a hero, computed from the analytics
+ * API rather than the hero record's stored `popular_items`. The stored
+ * figure is a snapshot from ingest time and drifts out of date; this one
+ * comes through the cache and is filtered by the rank bracket.
+ *
+ * These are the most-picked items, not a loadout — so loading one
+ * assembles a build from the top picks and says so.
  */
 
 type Props = {
-  popular: PopularBuilds;
-  stage: "early" | "mid" | "late";
-  onStage: (stage: "early" | "mid" | "late") => void;
-  onLoad: (stage: "early" | "mid" | "late") => void;
+  /** The hero's items, with their play data. */
+  popular: ItemPlayData[];
+  /** The bracket the figures are filtered by. */
+  bracketLabel: string;
+  /** The sample size behind the figures. */
+  heroMatches: number;
+  onLoad: (slugs: string[]) => void;
   /** The pick rate of each item in the current build, by slug. */
   buildPicks: Record<string, number>;
 };
 
-/** The item slug for an API class name. */
-function slugForClassName(className: string): string {
-  return className.replace(/_/g, "-");
-}
-
 export function Popular({
   popular,
-  stage,
-  onStage,
+  bracketLabel,
+  heroMatches,
   onLoad,
   buildPicks,
 }: Props) {
-  const picks = popular[stage] ?? [];
+  const top = popular.slice(0, 10);
+
+  const loadable = top
+    .map((pick) => pick.slug)
+    .filter((slug): slug is string => !!slug);
 
   return (
     <div className="plate" style={{ padding: 16 }}>
@@ -58,19 +68,15 @@ export function Popular({
           Popular picks
         </div>
 
-        <div style={{ display: "flex", gap: 6 }}>
-          {(["early", "mid", "late"] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              className={`chip${stage === option ? " active" : ""}`}
-              onClick={() => onStage(option)}
-              style={{ cursor: "pointer", border: "none", font: "inherit" }}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 10,
+            color: "var(--muted)",
+          }}
+        >
+          {bracketLabel}
+        </span>
       </div>
 
       <p
@@ -81,23 +87,24 @@ export function Popular({
           lineHeight: 1.6,
         }}
       >
-        The API&apos;s pick rates for this hero in the {stage} game. These are
-        the most-picked items, not a loadout — loading one assembles a build
-        from the top picks.
+        The most-bought items for this hero
+        {heroMatches ? ` across ${heroMatches.toLocaleString()} matches` : ""}.
+        These are the most-picked items, not a loadout — loading one
+        assembles a build from the top picks.
       </p>
 
-      {picks.length === 0 ? (
+      {top.length === 0 ? (
         <p style={{ margin: 0, fontSize: 12, color: "var(--muted)" }}>
-          [no pick data for this stage]
+          [no pick data available]
         </p>
       ) : (
         <div style={{ display: "grid", gap: 3, marginBottom: 12 }}>
-          {picks.slice(0, 8).map((pick) => {
-            const slug = slugForClassName(pick.className);
-            const inBuild = buildPicks[slug];
+          {top.map((pick) => {
+            const inBuild = pick.slug ? buildPicks[pick.slug] : undefined;
+            const stage = buyStageFor(pick.avgBuyTimeRelative);
             return (
               <div
-                key={pick.className}
+                key={pick.apiId}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -120,7 +127,16 @@ export function Popular({
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {pick.className.replace(/^upgrade_/, "").replace(/_/g, " ")}
+                  {pick.slug ? (
+                    <Link
+                      href={`/items/${pick.slug}`}
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
+                      {pick.name}
+                    </Link>
+                  ) : (
+                    pick.name
+                  )}
                   {inBuild ? (
                     <span
                       className="tag"
@@ -136,9 +152,20 @@ export function Popular({
                     fontSize: 10,
                     color: "var(--accent-text)",
                     flex: "0 0 auto",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {pick.pickPct.toFixed(1)}%
+                  {pick.pickRatePct.toFixed(1)}%
+                  <span
+                    style={{
+                      color: "var(--muted)",
+                      marginLeft: 7,
+                      fontSize: 9,
+                    }}
+                    title={`Bought at ${buyTimeLabel(pick.avgBuyTimeS)}, ${Math.round(pick.avgBuyTimeRelative)}% into the match`}
+                  >
+                    {buyTimeLabel(pick.avgBuyTimeS)} · {buyStageLabel(stage)}
+                  </span>
                 </span>
               </div>
             );
@@ -149,16 +176,16 @@ export function Popular({
       <button
         type="button"
         className="chip"
-        onClick={() => onLoad(stage)}
-        disabled={picks.length === 0}
+        onClick={() => onLoad(loadable)}
+        disabled={loadable.length === 0}
         style={{
-          cursor: picks.length ? "pointer" : "not-allowed",
+          cursor: loadable.length ? "pointer" : "not-allowed",
           border: "none",
           font: "inherit",
-          opacity: picks.length ? 1 : 0.4,
+          opacity: loadable.length ? 1 : 0.4,
         }}
       >
-        Load {stage} build
+        Load top picks
       </button>
     </div>
   );

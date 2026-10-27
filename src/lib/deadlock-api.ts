@@ -88,6 +88,7 @@ export type HeroBuildStat = {
 /** The endpoints this client knows about. */
 export type AnalyticsEndpoint =
   | "item-stats"
+  | "item-flow-stats"
   | "hero-stats"
   | "ability-max-first-stats"
   | "ability-order-stats"
@@ -152,6 +153,16 @@ export function buildQuery(
 }
 
 /**
+ * How long an analytics request may take before it is abandoned.
+ *
+ * The API occasionally takes a long time on a cold cache — an unfiltered
+ * `item-stats` has timed out at the gateway before. A page should not hang
+ * waiting for it, so the request is abandoned and the cached payload (or
+ * nothing) is used instead.
+ */
+export const ANALYTICS_TIMEOUT_MS = 20_000;
+
+/**
  * Fetch a payload from an analytics endpoint.
  *
  * The badge filter is applied from the bracket. `hero-build-stats` is the
@@ -171,6 +182,7 @@ export async function fetchAnalytics<T>(
     headers: { accept: "application/json" },
     // The API's own cache headers are not used: our cache decides freshness.
     cache: "no-store",
+    signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -230,6 +242,52 @@ export function fetchAbilityOrderStats(
     bracket,
   );
 }
+
+/**
+ * The item purchase flow for a hero.
+ *
+ * This is the heaviest endpoint: about 3 MB for one hero with no rank
+ * filter. It takes `hero_ids`, not `hero_id`.
+ */
+export function fetchItemFlowStats(
+  heroId: number,
+  bracket: RankBracket = ALL_RANKS,
+): Promise<ItemFlowStats> {
+  return fetchAnalytics<ItemFlowStats>(
+    "item-flow-stats",
+    { hero_ids: heroId },
+    bracket,
+  );
+}
+
+/** The item purchase flow graph, as the API returns it. */
+export type ItemFlowStats = {
+  nodes: {
+    column: number;
+    item_id: number;
+    wins: number;
+    losses: number;
+    matches: number;
+    players: number;
+    adjusted_win_rate: number;
+    avg_net_worth_at_buy: number;
+  }[];
+  edges: {
+    from_column: number;
+    from_item_id: number;
+    to_item_id: number;
+    wins: number;
+    losses: number;
+    matches: number;
+  }[];
+  summary: {
+    wins: number;
+    losses: number;
+    matches: number;
+    players: number;
+    avg_duration_s: number;
+  } | null;
+};
 
 /** The community's named builds for a hero. */
 export function fetchHeroBuildStats(

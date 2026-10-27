@@ -5,7 +5,9 @@ import { themeStyle } from "@/lib/theme";
 import { costLabel } from "@/lib/item-filter-shared";
 import { slotLabel } from "@/lib/item-colors";
 import { itemEffectText, itemText, itemStats, itemUpgrades } from "@/lib/item-text";
+import { PlayDataLine } from "@/components/play-data/figures";
 
+import type { ItemPlayData } from "@/lib/play-data-format";
 import type { ItemDetail, ItemSummary } from "@/lib/queries";
 
 /**
@@ -31,7 +33,14 @@ export function itemImage(item: Pick<ItemSummary, "image" | "imageWebp" | "shopI
   return item.imageWebp ?? item.image;
 }
 
-export function ItemCard({ item }: { item: ItemSummary }) {
+export function ItemCard({
+  item,
+  playData,
+}: {
+  item: ItemSummary;
+  /** The item's play data, when the page fetched it. */
+  playData?: ItemPlayData;
+}) {
   const src = itemImage(item);
 
   return (
@@ -116,6 +125,18 @@ export function ItemCard({ item }: { item: ItemSummary }) {
           <span className="tag-muted">{costLabel(item.cost)}</span>
         ) : null}
       </div>
+
+      {playData ? (
+        <div
+          style={{
+            borderTop: "1px solid var(--line)",
+            paddingTop: 8,
+            marginTop: 2,
+          }}
+        >
+          <PlayDataLine data={playData} />
+        </div>
+      ) : null}
     </Link>
   );
 }
