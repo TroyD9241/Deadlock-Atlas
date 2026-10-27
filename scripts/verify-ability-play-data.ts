@@ -23,11 +23,11 @@
 
 import { db } from "@/lib/db";
 import {
-  getAbilityLevelSpread,
   getAbilityMaxFirst,
   getAbilityMaxFirstSample,
-  getAbilityOrder,
+  getAbilityNames,
   getAbilityOrderRows,
+  getBuildOrders,
 } from "@/lib/ability-play-data";
 import { getAnalytics } from "@/lib/analytics";
 import { ALL_RANKS, RANK_BRACKETS, bracketById } from "@/lib/rank-brackets";
@@ -149,6 +149,24 @@ async function main() {
     maxFirst.map((m) => m.className).join(", "),
   );
 
+  /*
+   * The hero's own ability ids, so the build orders can be checked against
+   * the right set.
+   *
+   * The source of truth is the max-first response, which lists exactly the
+   * hero's four real abilities. Counting the links in the database is not
+   * enough: Abrams' melee attack is linked to only one hero too, but it is
+   * not an ability players choose.
+   */
+  const heroAbilityIds = new Set(
+    identified.map((row) => row.ability_id as number),
+  );
+  check(
+    "the hero has four own abilities",
+    heroAbilityIds.size === 4,
+    `${heroAbilityIds.size}`,
+  );
+
   // ---------------------------------------------------------------------
   console.log("\n4. The bracket filter changes the figures");
   const top = bracketById("phantom-eternus");
@@ -210,167 +228,94 @@ async function main() {
   check("no ability is levelled past its real tier count", tierOk);
 
   // ---------------------------------------------------------------------
-  console.log("\n6. The level spread is a proper distribution");
-  const spread = await getAbilityLevelSpread(HERO_ID, top);
-  check("the spread has rows", spread.length > 0, `${spread.length}`);
+  console.log("\n6. The build orders are few and legible");
+  const orders = await getBuildOrders(HERO_ID, top);
+  check("the orders have rows", orders.length > 0, `${orders.length}`);
   check(
-    "every ability resolved to a name",
-    spread.every((s) => !s.name.startsWith("ability ")),
-    spread.map((s) => s.name).join(", "),
+    "there are only a handful of distinct orders",
+    orders.length <= 12,
+    `${orders.length}`,
   );
-
-  for (const row of spread) {
-    const sum = row.levelPct.reduce((s, v) => s + v, 0);
-    check(
-      `${row.name}: the levels add up to 100%`,
-      Math.abs(sum - 100) < 0.001,
-      `${sum.toFixed(2)}%`,
-    );
-    check(
-      `${row.name}: the average level is between 1 and 4`,
-      row.avgLevel >= 1 && row.avgLevel <= 4,
-      `${row.avgLevel.toFixed(2)}`,
-    );
-    check(
-      `${row.name}: the level counts are whole numbers`,
-      row.levelPct.length >= 1 && row.levelPct.length <= 4,
-      `${row.levelPct.length} levels`,
-    );
-  }
-
-  /*
-   * The reason the "usual level" was dropped: the mode is level 4 nearly
-   * everywhere, so it says nothing. This is a documented fact rather
-   * than something to assert as desirable.
-   */
-  const modeIsFour = spread.filter((s) => {
-    const highest = s.levelPct.indexOf(Math.max(...s.levelPct));
-    return highest === s.levelPct.length - 1;
-  }).length;
   check(
-    "the mode is level 4 for most abilities, which is why it was dropped",
-    modeIsFour >= spread.length - 1,
-    `${modeIsFour} of ${spread.length}`,
+    "the shares add up to 100%",
+    Math.abs(orders.reduce((s, o) => s + o.sharePct, 0) - 100) < 0.001,
+    `${orders.reduce((s, o) => s + o.sharePct, 0).toFixed(3)}%`,
+  );
+  check(
+    "the orders are sorted by how common they are",
+    orders.every((o, i) => i === 0 || orders[i - 1].players >= o.players),
+  );
+  check(
+    "every order holds the hero's own abilities, each once",
+    orders.every(
+      (o) =>
+        o.apiIds.length === 4 &&
+        new Set(o.apiIds).size === o.apiIds.length &&
+        o.apiIds.every((id) => heroAbilityIds.has(id)),
+    ),
+    orders[0]?.apiIds.join(" > "),
   );
 
   /*
-   * The spread's real value: the abilities differ from each other. For
-   * Abrams, Power Surge is nearly always maxed and Static Charge is split.
+   * The order is on first-taken position: for each ability in a chain,
+   * no earlier ability in that chain was taken after it. This is what
+   * makes the chain a build order rather than an arbitrary listing.
    */
-  const avgLevels = spread.map((s) => s.avgLevel);
-  const spreadOfAverages = Math.max(...avgLevels) - Math.min(...avgLevels);
-  check(
-    "the abilities differ in how far they are levelled",
-    spreadOfAverages > 0.3,
-    `${spreadOfAverages.toFixed(2)} between the highest and lowest`,
-  );
+  const orderIsFirstTaken = await (async () => {
+    const result = await getAnalytics<AbilityOrderStat[]>(
+      "ability-order-stats",
+      { hero_id: HERO_ID },
+      top,
+    );
+    const rows = result.payload;
 
-  // ---------------------------------------------------------------------
-  console.log("\n7. The upgrade order is antisymmetric");
-  const order = await getAbilityOrder(HERO_ID, top);
-  check("the order has rows", order.length > 0, `${order.length}`);
-  check(
-    "every ability resolved to a name",
-    order.every((o) => !o.name.startsWith("ability ")),
-    order.map((o) => o.name).join(", "),
-  );
-  check(
-    "the next lists are within range",
-    order.every((o) => o.next.every((n) => n.sharePct >= 0 && n.sharePct <= 100)),
-  );
-  check(
-    "the before lists are within range",
-    order.every((o) => o.before.every((b) => b.sharePct >= 0 && b.sharePct <= 100)),
-  );
-  check(
-    "an ability is never in its own before list",
-    order.every((o) => o.before.every((b) => b.apiId !== o.apiId)),
-  );
-  check(
-    "the next list never contains itself",
-    order.every((o) => o.next.every((n) => n.apiId !== o.apiId)),
-  );
-
-  /*
-   * The important one: if A was taken first more often than not against
-   * B, then B's share against A must be the complement. This is the check
-   * that the two directions come from the same counts.
-   */
-  let antisymmetric = true;
-  let checkedPairs = 0;
-  for (const a of order) {
-    for (const b of a.before) {
-      const bRow = order.find((o) => o.apiId === b.apiId);
-      if (!bRow) continue;
-      const mirror = bRow.before.find((x) => x.apiId === a.apiId);
-      if (!mirror) {
-        antisymmetric = false;
-        continue;
+    /*
+     * Each order must be exactly the first-taken order of the rows it
+     * was counted from. So build each row's first-taken order and check
+     * that one of the counted orders matches it exactly — not merely that
+     * the chain is a subsequence.
+     */
+    const counted = new Set(orders.map((o) => o.apiIds.join(">")));
+    for (const row of rows) {
+      const seen = new Set<number>();
+      const firstTaken: number[] = [];
+      for (const apiId of row.abilities) {
+        if (apiId == null || seen.has(apiId)) continue;
+        seen.add(apiId);
+        firstTaken.push(apiId);
       }
-      checkedPairs += 1;
-      if (Math.abs(b.sharePct + mirror.sharePct - 100) > 0.01) {
-        antisymmetric = false;
-      }
+      if (firstTaken.length === 0) continue;
+      if (!counted.has(firstTaken.join(">"))) return false;
     }
-  }
+    return true;
+  })();
   check(
-    "the two directions of every pair sum to 100%",
-    antisymmetric,
-    `${checkedPairs} pairs checked`,
+    "each order is the first-taken order of its rows",
+    orderIsFirstTaken,
+  );
+
+  const topThree = orders.slice(0, 3);
+  const covered = topThree.reduce((s, o) => s + o.sharePct, 0);
+  check(
+    "the top three cover at least half the players",
+    covered >= 50,
+    `${covered.toFixed(1)}%`,
   );
 
   /*
    * A spot check against figures measured directly from the API, so a
    * change in the counting cannot pass unnoticed. For Abrams at the top
-   * bracket, counted on when each ability was first taken:
-   *
-   *   Power Surge before Lightning Ball  88%
-   *   Power Surge before Static Charge   74%
-   *   Storm Cloud before anything          0%
+   * bracket, the three orders cover 97.6% and the most common is 51.1%.
    */
-  const powerSurge = order.find((o) => o.name === "Power Surge");
-  const stormCloud = order.find((o) => o.name === "Storm Cloud");
   check(
-    "Power Surge is taken first about 88% of the time against Lightning Ball",
-    Math.abs(
-      (powerSurge?.before.find((b) => b.name === "Lightning Ball")?.sharePct ?? 0) -
-        88,
-    ) < 2,
-    `${powerSurge?.before.find((b) => b.name === "Lightning Ball")?.sharePct.toFixed(1)}%`,
+    "the most common order is about half of all players",
+    Math.abs((orders[0]?.sharePct ?? 0) - 51) < 3,
+    `${orders[0]?.sharePct.toFixed(1)}%`,
   );
   check(
-    "Power Surge is taken first about 74% of the time against Static Charge",
-    Math.abs(
-      (powerSurge?.before.find((b) => b.name === "Static Charge")?.sharePct ?? 0) -
-        74,
-    ) < 2,
-    `${powerSurge?.before.find((b) => b.name === "Static Charge")?.sharePct.toFixed(1)}%`,
-  );
-  check(
-    "Storm Cloud is taken last, so it wins no pair",
-    (stormCloud?.before ?? []).every((b) => b.sharePct < 1),
-    stormCloud?.before.map((b) => `${b.name} ${b.sharePct.toFixed(0)}%`).join(", "),
-  );
-
-  /*
-   * And the ordering has to be stable across the ladder, or it is noise.
-   */
-  const lowOrder = await getAbilityOrder(HERO_ID, bracketById("initiate-sentinel"));
-  const lowPower = lowOrder.find((o) => o.name === "Power Surge");
-  const topPower = order.find((o) => o.name === "Power Surge");
-  check(
-    "the leading ability's ordering holds across brackets",
-    Boolean(
-      lowPower &&
-        topPower &&
-        Math.abs(
-          (lowPower.before.find((b) => b.name === "Lightning Ball")?.sharePct ?? 0) -
-            (topPower.before.find((b) => b.name === "Lightning Ball")?.sharePct ?? 0),
-        ) < 25,
-    ),
-    lowPower && topPower
-      ? `vs Lightning Ball: ${lowPower.before.find((b) => b.name === "Lightning Ball")?.sharePct.toFixed(0)}% at initiate, ${topPower.before.find((b) => b.name === "Lightning Ball")?.sharePct.toFixed(0)}% at the top`
-      : "",
+    "the top three cover about 98% of players",
+    Math.abs(covered - 97.6) < 3,
+    `${covered.toFixed(1)}%`,
   );
 
   // ---------------------------------------------------------------------
@@ -432,22 +377,14 @@ async function main() {
   for (const m of maxFirst) {
     console.log(`    ${m.name.padEnd(24)} ${m.sharePct.toFixed(1).padStart(5)}%`);
   }
-  console.log("\nThe level spread, top bracket:");
-  for (const s of spread) {
-    const levels = s.levelPct
-      .map((pct, index) => `L${index + 1} ${pct.toFixed(0)}%`)
-      .join("  ");
-    console.log(`    ${s.name.padEnd(24)} avg ${s.avgLevel.toFixed(2)}   ${levels}`);
-  }
-  console.log("\nThe upgrade order, top bracket:");
-  for (const o of order) {
-    const first = o.before
-      .map((b) => `${b.name} ${b.sharePct.toFixed(0)}%`)
-      .join(", ");
-    const next = o.next.map((n) => `${n.name} ${n.sharePct.toFixed(0)}%`).join(", ");
-    console.log(`    ${o.name}`);
-    console.log(`      taken first vs: ${first || "—"}`);
-    console.log(`      then next:      ${next || "—"}`);
+
+  console.log("\nThe build orders, top bracket:");
+  const names = await getAbilityNames(orders.flatMap((o) => o.apiIds));
+  for (const o of orders) {
+    const chain = o.apiIds
+      .map((id) => names.get(String(id))?.name ?? `ability ${id}`)
+      .join(" -> ");
+    console.log(`    ${o.sharePct.toFixed(1).padStart(5)}%  ${chain}`);
   }
 
   console.log(

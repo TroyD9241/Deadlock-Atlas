@@ -1,39 +1,45 @@
+import type { BuildOrder } from "@/lib/ability-play-data-format";
+
 /**
- * The typical upgrade order.
+ * The most common build orders.
  *
- * There is no single typical sequence — a hero can have thousands of
- * distinct ones, and the most common covers under 5% of players — so
- * this does not pretend otherwise. What it shows is the **pairwise**
- * order, which is well defined:
+ * There is no single build order — a hero has thousands of distinct
+ * upgrade sequences, and the most common one covers under 5% of players.
+ * But the order each ability is **first taken** in collapses to four to
+ * eight distinct orders per hero, and the top three cover 67–100% of
+ * players.
  *
- * - **taken first vs** — for each other ability, how often *this* one was
- *   taken first. So "Lightning Ball 88%" means this ability was taken
- *   first 88% of the time against Lightning Ball. For Abrams, Power Surge
- *   wins its pair against Lightning Ball 88% of the time and against
- *   Static Charge 74%, and Storm Cloud loses every pair — it is the
- *   ability players save until last.
- * - **then next** — what people level after this ability. The
- *   actionable half.
+ * So this shows the chains people actually follow, most common first:
  *
- * The order is computed on **when each ability was first taken**, not on
- * the raw sequence of upgrade points, so an ability being levelled twice
- * does not change its position in the order.
+ *   1  Power Surge → Static Charge → Lightning Ball → Storm Cloud    51%
+ *   2  Power Surge → Lightning Ball → Static Charge → Storm Cloud    25%
  *
- * A self-transition is not shown as a transition: an ability whose next is
- * mostly itself is simply levelled further, which is worth saying
- * plainly rather than dressing up as an ordering.
+ * The order is on first-taken position, so levelling the same ability
+ * twice does not move it in the chain.
  */
 
-import type { AbilityOrder } from "@/lib/ability-play-data-format";
+type Props = {
+  /** The orders, most common first. */
+  orders: BuildOrder[];
+  /** The ability names by API id. */
+  names: Map<number, string>;
+  /** The bracket the figures are filtered by. */
+  bracketLabel: string;
+  /** How many orders to show. */
+  limit?: number;
+};
 
 export function AbilityOrderPanel({
   orders,
+  names,
   bracketLabel,
-}: {
-  orders: AbilityOrder[];
-  bracketLabel: string;
-}) {
+  limit = 3,
+}: Props) {
   if (orders.length === 0) return null;
+
+  const shown = orders.slice(0, limit);
+  const covered = shown.reduce((sum, order) => sum + order.sharePct, 0);
+  const rest = orders.length - shown.length;
 
   return (
     <div className="plate" style={{ padding: 16 }}>
@@ -57,7 +63,7 @@ export function AbilityOrderPanel({
             color: "var(--accent)",
           }}
         >
-          Typical upgrade order
+          Most common build orders
         </div>
         <span
           style={{
@@ -78,109 +84,104 @@ export function AbilityOrderPanel({
           lineHeight: 1.6,
         }}
       >
-        What players take before and after each ability. No single build
-        order fits everyone, so these are the pairwise figures — the share
-        of the times one ability came before another.
+        The order each ability is first taken in.
       </p>
 
-      <div style={{ display: "grid", gap: 8 }}>
-        {orders.map((order) => (
+      <div style={{ display: "grid", gap: 5 }}>
+        {shown.map((order, index) => (
           <div
-            key={order.apiId}
+            key={order.apiIds.join(">")}
             style={{
               display: "grid",
-              gap: 3,
-              padding: "8px 10px",
+              gridTemplateColumns: "18px minmax(0, 1fr) auto",
+              gap: 10,
+              alignItems: "baseline",
+              padding: "7px 9px",
               borderRadius: 8,
               background: "#ffffff05",
+              fontSize: 11,
             }}
           >
-            <div
+            <span
               style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 12,
-                color: "#fff",
+                fontFamily: "var(--font-mono)",
+                fontSize: 10,
+                color: "var(--muted)",
               }}
             >
-              {order.name}
-            </div>
+              {index + 1}
+            </span>
 
-            {order.before.length > 0 ? (
-              <Line label="taken first vs">
-                {order.before.map((b) => (
-                  <Share key={b.apiId} name={b.name} pct={b.sharePct} />
-                ))}
-              </Line>
-            ) : null}
-            {order.next.length > 0 ? (
-              <Line label="then next">
-                {order.next.map((n) => (
-                  <Share key={n.apiId} name={n.name} pct={n.sharePct} />
-                ))}
-              </Line>
-            ) : null}
+            <span
+              style={{
+                minWidth: 0,
+                color: "#c3c5d4",
+                lineHeight: 1.7,
+              }}
+            >
+              {order.apiIds.map((apiId, position) => (
+                <span key={`${apiId}-${position}`}>
+                  {position > 0 ? (
+                    <span
+                      aria-hidden="true"
+                      style={{ color: "var(--line)", margin: "0 6px" }}
+                    >
+                      →
+                    </span>
+                  ) : null}
+                  {names.get(apiId) ?? `ability ${apiId}`}
+                </span>
+              ))}
+            </span>
+
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                color: "var(--accent-text)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {order.sharePct.toFixed(1)}%
+            </span>
           </div>
         ))}
       </div>
-    </div>
-  );
-}
 
-function Line({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: 10,
-        alignItems: "baseline",
-        flexWrap: "wrap",
-        fontSize: 10,
-      }}
-    >
-      <span
+      <p
         style={{
+          margin: "12px 0 0",
+          fontSize: 10,
           color: "var(--muted)",
-          minWidth: 84,
-          letterSpacing: "0.04em",
+          lineHeight: 1.6,
         }}
       >
-        {label}
-      </span>
-      <span
-        style={{
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-          alignItems: "baseline",
-          minWidth: 0,
-        }}
-      >
-        {children}
-      </span>
+        These {shown.length} cover {covered.toFixed(0)}% of players.
+        {rest > 0
+          ? ` The other ${rest} order${rest === 1 ? "" : "s"} cover the remaining ${(100 - covered).toFixed(1)}%.`
+          : ""}
+      </p>
     </div>
   );
 }
 
-function Share({ name, pct }: { name: string; pct: number }) {
-  return (
-    <span style={{ color: "#c3c5d4" }}>
-      {name}
-      <span
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: 9,
-          color: "var(--accent-text)",
-          marginLeft: 5,
-        }}
-      >
-        {pct.toFixed(0)}%
-      </span>
-    </span>
-  );
+/**
+ * The names for the abilities in a set of orders.
+ *
+ * Kept separate so the panel can take a plain map rather than the whole
+ * shape.
+ */
+export function orderNames(
+  orders: BuildOrder[],
+  lookup: Map<string, string>,
+): Map<number, string> {
+  const out = new Map<number, string>();
+  for (const order of orders) {
+    for (const apiId of order.apiIds) {
+      if (out.has(apiId)) continue;
+      const name = lookup.get(String(apiId));
+      if (name) out.set(apiId, name);
+    }
+  }
+  return out;
 }

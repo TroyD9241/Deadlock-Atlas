@@ -25,78 +25,25 @@ export type AbilityMaxFirst = {
 };
 
 /**
- * One ability's level spread.
+ * One build order.
  *
- * Derived from `ability-order-stats`, which gives the whole sequence of
- * upgrade points a player spent.
+ * The order the abilities were **first taken** in, which is the readable
+ * unit. The API's raw sequence is the full list of upgrade points — an
+ * ability repeated once per tier bought — so it is 15 entries for a hero
+ * with four abilities at four levels each, and there are thousands of
+ * distinct ones.
  *
- * The **distribution** is what matters here, not the mode. The most
- * common final level is level 4 for every ability of every hero, so a
- * "usual level" says nothing at all. The distribution does: for Abrams,
- * Power Surge ends at level 4 almost every time while Static Charge is
- * split roughly half and half between levels 3 and 4.
+ * Collapsing to the first-taken order gives 4–8 distinct orders per hero,
+ * and the top three cover 67–100% of players.
  */
-export type AbilityLevelSpread = {
-  /** The API's numeric ability id. */
-  apiId: number;
-  /** The ability's class name, which is how the site identifies it. */
-  className: string | null;
-  name: string;
-  /**
-   * The share of sequences ending at each level, as a percentage.
-   *
-   * Index 0 is level 1. The entries sum to 100.
-   */
-  levelPct: number[];
-  /** The average final level, weighted by player count. */
-  avgLevel: number;
-  /** How many sequences include this ability at all. */
-  totalRows: number;
-};
-
-/**
- * One "what comes next" transition.
- *
- * The share is of the pairs it belongs to, so the two directions of a
- * pair add up to 100.
- */
-export type AbilityTransition = {
-  /** The API's numeric ability id. */
-  apiId: number;
-  /** The ability's class name, which is how the site identifies it. */
-  className: string | null;
-  name: string;
-  /** The share of this ability's sequences that go this way, as a percentage. */
+export type BuildOrder = {
+  /** The ability ids, in the order they were first taken. */
+  apiIds: number[];
+  /** The share of players who followed this order, as a percentage. */
   sharePct: number;
+  /** How many players followed it. */
+  players: number;
 };
-
-/**
- * One ability's upgrade order.
- *
- * There is no single typical sequence — a hero can have thousands, and
- * the most common covers under 5% of players — but the *pairwise* order
- * is well defined: for any two abilities, how often one is taken before
- * the other.
- *
- * The order is on **when each ability was first taken**, not on the raw
- * sequence of upgrade points, so levelling the same ability twice does
- * not move it.
- */
-export type AbilityOrder = {
-  /** The API's numeric ability id. */
-  apiId: number;
-  /** The ability's class name, which is how the site identifies it. */
-  className: string | null;
-  name: string;
-  /** The abilities that come next, most common first. */
-  next: AbilityTransition[];
-  /**
-   * The other abilities, most common first.
-   *
-   * The share is **this ability's** share of the pair — how often it was
-   * taken first against that ability. The two directions sum to 100.
-   */
-  before: AbilityTransition[];};
 
 /**
  * The format for a time into the match.

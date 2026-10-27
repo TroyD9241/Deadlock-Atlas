@@ -6,17 +6,16 @@ import { HeroBanner } from "@/components/hero/hero-banner";
 import { ModelSection } from "@/components/hero/model-section";
 import { BuildSummary } from "@/components/hero/build-summary";
 import { AbilityIconField, type FieldIcon } from "@/components/hero/ability-icon-field";
-import { AbilityLevelBar } from "@/components/play-data/ability-level-bar";
 import { AbilityOrderPanel } from "@/components/play-data/ability-order-panel";
 import { RankPicker } from "@/components/play-data/rank-picker";
 import { themeStyle } from "@/lib/theme";
 import { getStatMap } from "@/lib/stat-map.server";
 import { getHero, getHeroesByClass, getItemIndex } from "@/lib/queries";
 import {
-  getAbilityLevelSpread,
   getAbilityMaxFirst,
   getAbilityMaxFirstSample,
-  getAbilityOrder,
+  getAbilityNames,
+  getBuildOrders,
 } from "@/lib/ability-play-data";
 import { bracketFromParam } from "@/lib/rank-brackets";
 
@@ -122,31 +121,33 @@ export default async function HeroProfilePage({
     : [];
 
   /*
-   * The max-first rates. The bracket is the reader's, so the shift up the
-   * ladder is visible — but it is not the same for every hero, and the
-   * panel shows the figures rather than claiming a shift that is not
-   * there.
+   * The max-first rates and the most common build orders. The bracket is
+   * the reader's, so the shift up the ladder is visible — but it is not
+   * the same for every hero, and the panel shows the figures rather than
+   * claiming a shift that is not there.
    */
   const bracket = bracketFromParam(query.rank);
   const heroApiId = hero.apiId;
-  const [maxFirst, maxFirstSample, levelSpread, order] = heroApiId
+  const [maxFirst, maxFirstSample, orders] = heroApiId
     ? await Promise.all([
         getAbilityMaxFirst(heroApiId, bracket),
         getAbilityMaxFirstSample(heroApiId, bracket),
-        getAbilityLevelSpread(heroApiId, bracket),
-        getAbilityOrder(heroApiId, bracket),
+        getBuildOrders(heroApiId, bracket),
       ])
-    : [[], 0, [], []];
+    : [[], 0, []];
 
   /*
-   * The level spread, keyed by the ability's class name so the cards can
-   * find their own. The universal abilities are not in the analytics
-   * response and get no indicator.
+   * The names for the abilities in the orders, so the panel can read
+   * "Power Surge" rather than the API's numeric id.
    */
-  const spreadByClassName = new Map(
-    levelSpread
-      .filter((s) => s.className)
-      .map((s) => [s.className as string, s]),
+  const orderNameLookup = await getAbilityNames(
+    orders.flatMap((order) => order.apiIds),
+  );
+  const orderNames = new Map(
+    [...orderNameLookup].map(([apiId, meta]) => [
+      Number(apiId),
+      meta.name,
+    ]),
   );
 
   // The build summary needs each item's properties to compute the deltas.
@@ -349,11 +350,6 @@ export default async function HeroProfilePage({
                           ))}
                         </div>
                       ) : null}
-                      {spreadByClassName.has(a.className) ? (
-                        <AbilityLevelBar
-                          spread={spreadByClassName.get(a.className)!}
-                        />
-                      ) : null}
                       <span className="tag">SIGNATURE</span>
                     </div>
                   </article>
@@ -399,11 +395,6 @@ export default async function HeroProfilePage({
                             </span>
                           ))}
                         </div>
-                      ) : null}
-                      {spreadByClassName.has(a.className) ? (
-                        <AbilityLevelBar
-                          spread={spreadByClassName.get(a.className)!}
-                        />
                       ) : null}
                       <span className="tag">INNATE</span>
                     </div>
@@ -541,7 +532,11 @@ export default async function HeroProfilePage({
                 ))}
               </div>
             </div>
-            <AbilityOrderPanel orders={order} bracketLabel={bracket.label} />
+            <AbilityOrderPanel
+              orders={orders}
+              names={orderNames}
+              bracketLabel={bracket.label}
+            />
           </div>
         </section>
       ) : null}
