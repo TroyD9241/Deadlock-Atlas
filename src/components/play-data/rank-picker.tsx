@@ -41,8 +41,12 @@ type Props = {
 export function RankPicker({ current, pathname, otherParams = [] }: Props) {
   const hrefFor = (bracket: RankBracket) => {
     const params = new URLSearchParams(otherParams);
-    if (bracket.id === "all") params.delete("rank");
-    else params.set("rank", bracket.id);
+    /*
+     * "All ranks" is spelled out rather than left as an absent parameter,
+     * because the default bracket is now Initiate – Sentinel — leaving the
+     * parameter off would land on that, not on all ranks.
+     */
+    params.set("rank", bracket.id);
     const search = params.toString();
     return search ? `${pathname}?${search}` : pathname;
   };

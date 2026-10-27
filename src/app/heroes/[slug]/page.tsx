@@ -6,14 +6,17 @@ import { HeroBanner } from "@/components/hero/hero-banner";
 import { ModelSection } from "@/components/hero/model-section";
 import { BuildSummary } from "@/components/hero/build-summary";
 import { AbilityIconField, type FieldIcon } from "@/components/hero/ability-icon-field";
-import { AbilityPlayData } from "@/components/play-data/ability-play-data";
+import { AbilityLevelBar } from "@/components/play-data/ability-level-bar";
+import { AbilityOrderPanel } from "@/components/play-data/ability-order-panel";
 import { RankPicker } from "@/components/play-data/rank-picker";
 import { themeStyle } from "@/lib/theme";
 import { getStatMap } from "@/lib/stat-map.server";
 import { getHero, getHeroesByClass, getItemIndex } from "@/lib/queries";
 import {
+  getAbilityLevelSpread,
   getAbilityMaxFirst,
   getAbilityMaxFirstSample,
+  getAbilityOrder,
 } from "@/lib/ability-play-data";
 import { bracketFromParam } from "@/lib/rank-brackets";
 
@@ -126,12 +129,25 @@ export default async function HeroProfilePage({
    */
   const bracket = bracketFromParam(query.rank);
   const heroApiId = hero.apiId;
-  const [maxFirst, maxFirstSample] = heroApiId
+  const [maxFirst, maxFirstSample, levelSpread, order] = heroApiId
     ? await Promise.all([
         getAbilityMaxFirst(heroApiId, bracket),
         getAbilityMaxFirstSample(heroApiId, bracket),
+        getAbilityLevelSpread(heroApiId, bracket),
+        getAbilityOrder(heroApiId, bracket),
       ])
-    : [[], 0];
+    : [[], 0, [], []];
+
+  /*
+   * The level spread, keyed by the ability's class name so the cards can
+   * find their own. The universal abilities are not in the analytics
+   * response and get no indicator.
+   */
+  const spreadByClassName = new Map(
+    levelSpread
+      .filter((s) => s.className)
+      .map((s) => [s.className as string, s]),
+  );
 
   // The build summary needs each item's properties to compute the deltas.
   const itemIndex = await getItemIndex();
@@ -333,6 +349,11 @@ export default async function HeroProfilePage({
                           ))}
                         </div>
                       ) : null}
+                      {spreadByClassName.has(a.className) ? (
+                        <AbilityLevelBar
+                          spread={spreadByClassName.get(a.className)!}
+                        />
+                      ) : null}
                       <span className="tag">SIGNATURE</span>
                     </div>
                   </article>
@@ -378,6 +399,11 @@ export default async function HeroProfilePage({
                             </span>
                           ))}
                         </div>
+                      ) : null}
+                      {spreadByClassName.has(a.className) ? (
+                        <AbilityLevelBar
+                          spread={spreadByClassName.get(a.className)!}
+                        />
                       ) : null}
                       <span className="tag">INNATE</span>
                     </div>
@@ -448,13 +474,74 @@ export default async function HeroProfilePage({
                 pathname={`/heroes/${hero.slug}`}
               />
             </div>
-            <AbilityPlayData
-              maxFirst={maxFirst}
-              timings={[]}
-              bracketLabel={bracket.label}
-              sample={maxFirstSample}
-              framing="social"
-            />
+            <div className="plate" style={{ padding: 16 }}>
+              <div
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "var(--accent)",
+                  marginBottom: 8,
+                }}
+              >
+                What players max first
+              </div>
+              <p
+                style={{
+                  margin: "0 0 12px",
+                  fontSize: 11,
+                  color: "var(--muted)",
+                  lineHeight: 1.6,
+                }}
+              >
+                The share of players who put all their points into one
+                ability before any other.
+                {maxFirstSample
+                  ? ` Based on ${maxFirstSample.toLocaleString()} players at ${bracket.label}.`
+                  : ""}
+              </p>
+              <div style={{ display: "grid", gap: 6 }}>
+                {maxFirst.map((ability) => (
+                  <div
+                    key={ability.apiId}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                      gap: 10,
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      background: "#ffffff05",
+                      fontSize: 11,
+                      color: "#c3c5d4",
+                    }}
+                  >
+                    <span
+                      style={{
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {ability.name}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 12,
+                        color: "var(--accent-text)",
+                      }}
+                    >
+                      {ability.sharePct.toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <AbilityOrderPanel orders={order} bracketLabel={bracket.label} />
           </div>
         </section>
       ) : null}

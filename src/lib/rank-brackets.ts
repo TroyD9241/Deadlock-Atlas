@@ -83,6 +83,28 @@ export const RANK_BRACKETS: RankBracket[] = [
 export const ALL_RANKS = RANK_BRACKETS[0];
 
 /**
+ * The bracket a reader gets when they have not chosen one.
+ *
+ * **Initiate – Sentinel**, not "All ranks".
+ *
+ * The four bands partition the *ranked* ladder, and between them they
+ * cover about 13% of the all-ranks sample — the other 87% is matches
+ * with no badge at all, which is unranked and new-player play rather
+ * than a rank anyone chose. So "All ranks" is mostly unranked matches,
+ * and the bands are strict subsets of it rather than the other way round.
+ *
+ * Initiate – Sentinel is the largest band (45.9% of ranked matches), so
+ * it is the most representative of the ranked population, and it is
+ * where the play differs most from the bands above it: at initiate a
+ * hero's leading ability is picked first 104 seconds into the match,
+ * and from Mystic upward it is 16 seconds. Starting there means the
+ * reader sees a real difference when they move up the ladder.
+ *
+ * "All ranks" is still one click away — the picker's first chip.
+ */
+export const DEFAULT_BRACKET = RANK_BRACKETS[1];
+
+/**
  * The badge bounds to send to the API for a bracket.
  *
  * Returns null for the unfiltered bracket, which means the caller sends no
@@ -98,20 +120,25 @@ export function badgeRangeFor(
 /**
  * The bracket a `?rank=` value refers to.
  *
- * Anything unrecognised falls back to "all" rather than erroring, so a stale
- * or hand-edited link still renders the page.
+ * Anything unrecognised falls back to the default band rather than
+ * erroring, so a stale or hand-edited link still renders the page.
  */
 export function bracketFromParam(param: string | null | undefined): RankBracket {
-  if (!param) return ALL_RANKS;
+  if (!param) return DEFAULT_BRACKET;
   const wanted = param.trim().toLowerCase();
   return (
     RANK_BRACKETS.find((b) => b.id === wanted) ??
     RANK_BRACKETS.find((b) => b.label.toLowerCase() === wanted) ??
-    ALL_RANKS
+    DEFAULT_BRACKET
   );
 }
 
-/** The bracket with the given id, or "all" when there is no match. */
+/**
+ * The bracket with the given id.
+ *
+ * Unlike `bracketFromParam` this falls back to the default band, not to
+ * "all" — an unknown id is a bad link, not a request for everything.
+ */
 export function bracketById(id: string): RankBracket {
-  return RANK_BRACKETS.find((b) => b.id === id) ?? ALL_RANKS;
+  return RANK_BRACKETS.find((b) => b.id === id) ?? DEFAULT_BRACKET;
 }

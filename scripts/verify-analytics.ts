@@ -21,6 +21,7 @@ import { clearAnalyticsCache, getAnalytics, listAnalyticsCache } from "@/lib/ana
 import { fetchAnalytics, hashParams } from "@/lib/deadlock-api";
 import {
   ALL_RANKS,
+  DEFAULT_BRACKET,
   RANK_BRACKETS,
   bracketById,
   bracketFromParam,
@@ -220,8 +221,32 @@ async function main() {
     `${ranged.reduce((sum, b) => sum + b.sharePct, 0).toFixed(1)}%`,
   );
   check(
-    "an unknown rank parameter falls back to all ranks",
-    bracketFromParam("not-a-bracket").id === ALL_RANKS.id,
+    "an unknown rank parameter falls back to the default bracket",
+    bracketFromParam("not-a-bracket").id === DEFAULT_BRACKET.id,
+    DEFAULT_BRACKET.label,
+  );
+  check(
+    "a missing rank parameter falls back to the default bracket",
+    bracketFromParam(null).id === DEFAULT_BRACKET.id,
+  );
+  check(
+    "the default bracket is a ranked band, not all ranks",
+    DEFAULT_BRACKET.id !== ALL_RANKS.id,
+    DEFAULT_BRACKET.label,
+  );
+  check(
+    "all ranks is still reachable as an explicit choice",
+    bracketFromParam("all").id === ALL_RANKS.id,
+  );
+  check(
+    "the four bands cover the ladder contiguously",
+    ranged.every(
+      (band, i) =>
+        i === 0 ||
+        (ranged[i - 1].maxBadge + 1 === band.minBadge &&
+          band.minBadge <= band.maxBadge),
+    ),
+    ranged.map((b) => `${b.minBadge}-${b.maxBadge}`).join(", "),
   );
 
   // ---------------------------------------------------------------------

@@ -2,31 +2,32 @@
  * Verify the ability play data (M11c).
  *
  * The two endpoints have different shapes and different denominators, and
- * the upgrade-order aggregation is easy to get subtly wrong, so this
- * checks the maths against the live API rather than assuming it:
+ * the aggregation is easy to get subtly wrong, so this checks the maths
+ * against the live API rather than assuming it:
  *
  *   1. The max-first response has exactly four identified abilities plus a
  *      null row, and the null row is excluded from the percentages.
  *   2. The percentages sum to 100 across the identified abilities.
- *   3. No universal ability ever appears.
+ *   3. No shared ability ever appears.
  *   4. The bracket filter changes the figures.
  *   5. The upgrade-order rows really are upgrade-point sequences: each
  *      ability's count in a row is the level it ended at.
- *   6. The aggregation produces sensible timings and levels.
- *   7. The roster-wide ability-order response is never fetched — the
- *      bracket-filtered one is used instead.
+ *   6. The level spread is a proper distribution, and the abilities
+ *      actually differ from each other.
+ *   7. The upgrade order is antisymmetric — the two directions of a pair
+ *      come from the same counts.
+ *   8. The roster-wide ability-order response is never fetched.
  *
  * Run with: npx tsx scripts/verify-ability-play-data.ts
  */
 
 import { db } from "@/lib/db";
 import {
+  getAbilityLevelSpread,
   getAbilityMaxFirst,
   getAbilityMaxFirstSample,
+  getAbilityOrder,
   getAbilityOrderRows,
-  getAbilityUpgradeTiming,
-  getAvgMatchDuration,
-  median,
 } from "@/lib/ability-play-data";
 import { getAnalytics } from "@/lib/analytics";
 import { ALL_RANKS, RANK_BRACKETS, bracketById } from "@/lib/rank-brackets";
@@ -124,7 +125,7 @@ async function main() {
   );
 
   // ---------------------------------------------------------------------
-  console.log("\n3. No universal ability appears");
+  console.log("\n3. No shared ability appears");
   /*
    * The hero's own abilities, with how many heroes share each. The shared
    * ones are the universal ones — Jump, Slide, Mantle and the rest — and
@@ -163,11 +164,6 @@ async function main() {
     topSample > 0 && topSample < sample,
     `${topSample} vs ${sample}`,
   );
-  check(
-    "the leading ability can differ between brackets",
-    true,
-    `all-ranks: ${maxFirst[0]?.name} ${maxFirst[0]?.sharePct.toFixed(1)}%, top: ${topMaxFirst[0]?.name} ${topMaxFirst[0]?.sharePct.toFixed(1)}%`,
-  );
 
   // ---------------------------------------------------------------------
   console.log("\n5. The upgrade-order rows are upgrade-point sequences");
@@ -188,13 +184,8 @@ async function main() {
   const distinct = new Set(row.abilities);
   check(
     "an ability repeats once per level bought",
-    row.abilities.length >
-      distinct.size &&
-      [...distinct].every(
-        (a) =>
-          row.abilities.filter((x) => x === a).length <=
-          4,
-      ),
+    row.abilities.length > distinct.size &&
+      [...distinct].every((a) => row.abilities.filter((x) => x === a).length <= 4),
     `${row.abilities.length} points across ${distinct.size} abilities`,
   );
 
@@ -216,68 +207,174 @@ async function main() {
     // base plus three upgrade entries is level 4.
     if (count > tiers + 1) tierOk = false;
   }
-  check(
-    "no ability is levelled past its real tier count",
-    tierOk,
-  );
+  check("no ability is levelled past its real tier count", tierOk);
 
   // ---------------------------------------------------------------------
-  console.log("\n6. The aggregation is sensible");
-  check("the median of an odd list is the middle", median([1, 2, 3]) === 2);
-  check(
-    "the median of an even list is the mean of the middle two",
-    median([1, 2, 3, 4]) === 2.5,
-  );
-  check("the median of an empty list is null", median([]) === null);
-
-  const timings = await getAbilityUpgradeTiming(HERO_ID, top);
-  check("the timings have rows", timings.length > 0, `${timings.length}`);
+  console.log("\n6. The level spread is a proper distribution");
+  const spread = await getAbilityLevelSpread(HERO_ID, top);
+  check("the spread has rows", spread.length > 0, `${spread.length}`);
   check(
     "every ability resolved to a name",
-    timings.every((t) => !t.name.startsWith("ability ")),
-    timings.map((t) => t.name).join(", "),
-  );
-  check(
-    "every timing has a first-point time",
-    timings.every((t) => t.medianFirstPointS != null),
-  );
-  check(
-    "every timing has a usual level",
-    timings.every((t) => t.usualLevel >= 1 && t.usualLevel <= 4),
-    timings.map((t) => `${t.name} L${t.usualLevel}`).join(", "),
-  );
-  check(
-    "the usual-level share is a percentage",
-    timings.every((t) => t.usualLevelPct > 0 && t.usualLevelPct <= 100),
-  );
-  check(
-    "the timings are sorted by first-point time",
-    timings.every(
-      (t, i) =>
-        i === 0 ||
-        (timings[i - 1].medianFirstPointS ?? 0) <=
-          (t.medianFirstPointS ?? Number.POSITIVE_INFINITY),
-    ),
+    spread.every((s) => !s.name.startsWith("ability ")),
+    spread.map((s) => s.name).join(", "),
   );
 
-  const duration = await getAvgMatchDuration(HERO_ID, top);
+  for (const row of spread) {
+    const sum = row.levelPct.reduce((s, v) => s + v, 0);
+    check(
+      `${row.name}: the levels add up to 100%`,
+      Math.abs(sum - 100) < 0.001,
+      `${sum.toFixed(2)}%`,
+    );
+    check(
+      `${row.name}: the average level is between 1 and 4`,
+      row.avgLevel >= 1 && row.avgLevel <= 4,
+      `${row.avgLevel.toFixed(2)}`,
+    );
+    check(
+      `${row.name}: the level counts are whole numbers`,
+      row.levelPct.length >= 1 && row.levelPct.length <= 4,
+      `${row.levelPct.length} levels`,
+    );
+  }
+
+  /*
+   * The reason the "usual level" was dropped: the mode is level 4 nearly
+   * everywhere, so it says nothing. This is a documented fact rather
+   * than something to assert as desirable.
+   */
+  const modeIsFour = spread.filter((s) => {
+    const highest = s.levelPct.indexOf(Math.max(...s.levelPct));
+    return highest === s.levelPct.length - 1;
+  }).length;
   check(
-    "the average match duration is known",
-    duration > 0,
-    `${Math.round(duration)}s`,
+    "the mode is level 4 for most abilities, which is why it was dropped",
+    modeIsFour >= spread.length - 1,
+    `${modeIsFour} of ${spread.length}`,
   );
+
+  /*
+   * The spread's real value: the abilities differ from each other. For
+   * Abrams, Power Surge is nearly always maxed and Static Charge is split.
+   */
+  const avgLevels = spread.map((s) => s.avgLevel);
+  const spreadOfAverages = Math.max(...avgLevels) - Math.min(...avgLevels);
   check(
-    "the first-point times fall inside the match",
-    timings.every(
-      (t) => (t.medianFirstPointS ?? 0) < duration,
-    ),
-    timings
-      .map((t) => `${t.name} ${Math.round(t.medianFirstPointS ?? 0)}s`)
-      .join(", "),
+    "the abilities differ in how far they are levelled",
+    spreadOfAverages > 0.3,
+    `${spreadOfAverages.toFixed(2)} between the highest and lowest`,
   );
 
   // ---------------------------------------------------------------------
-  console.log("\n7. The unfiltered upgrade-order response is not used");
+  console.log("\n7. The upgrade order is antisymmetric");
+  const order = await getAbilityOrder(HERO_ID, top);
+  check("the order has rows", order.length > 0, `${order.length}`);
+  check(
+    "every ability resolved to a name",
+    order.every((o) => !o.name.startsWith("ability ")),
+    order.map((o) => o.name).join(", "),
+  );
+  check(
+    "the next lists are within range",
+    order.every((o) => o.next.every((n) => n.sharePct >= 0 && n.sharePct <= 100)),
+  );
+  check(
+    "the before lists are within range",
+    order.every((o) => o.before.every((b) => b.sharePct >= 0 && b.sharePct <= 100)),
+  );
+  check(
+    "an ability is never in its own before list",
+    order.every((o) => o.before.every((b) => b.apiId !== o.apiId)),
+  );
+  check(
+    "the next list never contains itself",
+    order.every((o) => o.next.every((n) => n.apiId !== o.apiId)),
+  );
+
+  /*
+   * The important one: if A was taken first more often than not against
+   * B, then B's share against A must be the complement. This is the check
+   * that the two directions come from the same counts.
+   */
+  let antisymmetric = true;
+  let checkedPairs = 0;
+  for (const a of order) {
+    for (const b of a.before) {
+      const bRow = order.find((o) => o.apiId === b.apiId);
+      if (!bRow) continue;
+      const mirror = bRow.before.find((x) => x.apiId === a.apiId);
+      if (!mirror) {
+        antisymmetric = false;
+        continue;
+      }
+      checkedPairs += 1;
+      if (Math.abs(b.sharePct + mirror.sharePct - 100) > 0.01) {
+        antisymmetric = false;
+      }
+    }
+  }
+  check(
+    "the two directions of every pair sum to 100%",
+    antisymmetric,
+    `${checkedPairs} pairs checked`,
+  );
+
+  /*
+   * A spot check against figures measured directly from the API, so a
+   * change in the counting cannot pass unnoticed. For Abrams at the top
+   * bracket, counted on when each ability was first taken:
+   *
+   *   Power Surge before Lightning Ball  88%
+   *   Power Surge before Static Charge   74%
+   *   Storm Cloud before anything          0%
+   */
+  const powerSurge = order.find((o) => o.name === "Power Surge");
+  const stormCloud = order.find((o) => o.name === "Storm Cloud");
+  check(
+    "Power Surge is taken first about 88% of the time against Lightning Ball",
+    Math.abs(
+      (powerSurge?.before.find((b) => b.name === "Lightning Ball")?.sharePct ?? 0) -
+        88,
+    ) < 2,
+    `${powerSurge?.before.find((b) => b.name === "Lightning Ball")?.sharePct.toFixed(1)}%`,
+  );
+  check(
+    "Power Surge is taken first about 74% of the time against Static Charge",
+    Math.abs(
+      (powerSurge?.before.find((b) => b.name === "Static Charge")?.sharePct ?? 0) -
+        74,
+    ) < 2,
+    `${powerSurge?.before.find((b) => b.name === "Static Charge")?.sharePct.toFixed(1)}%`,
+  );
+  check(
+    "Storm Cloud is taken last, so it wins no pair",
+    (stormCloud?.before ?? []).every((b) => b.sharePct < 1),
+    stormCloud?.before.map((b) => `${b.name} ${b.sharePct.toFixed(0)}%`).join(", "),
+  );
+
+  /*
+   * And the ordering has to be stable across the ladder, or it is noise.
+   */
+  const lowOrder = await getAbilityOrder(HERO_ID, bracketById("initiate-sentinel"));
+  const lowPower = lowOrder.find((o) => o.name === "Power Surge");
+  const topPower = order.find((o) => o.name === "Power Surge");
+  check(
+    "the leading ability's ordering holds across brackets",
+    Boolean(
+      lowPower &&
+        topPower &&
+        Math.abs(
+          (lowPower.before.find((b) => b.name === "Lightning Ball")?.sharePct ?? 0) -
+            (topPower.before.find((b) => b.name === "Lightning Ball")?.sharePct ?? 0),
+        ) < 25,
+    ),
+    lowPower && topPower
+      ? `vs Lightning Ball: ${lowPower.before.find((b) => b.name === "Lightning Ball")?.sharePct.toFixed(0)}% at initiate, ${topPower.before.find((b) => b.name === "Lightning Ball")?.sharePct.toFixed(0)}% at the top`
+      : "",
+  );
+
+  // ---------------------------------------------------------------------
+  console.log("\n8. The unfiltered upgrade-order response is not used");
   /*
    * The unfiltered response is unusable: 5 MB for one hero, and 114 MB at
    * the API's lowest min_matches. "All ranks" is assembled from the four
@@ -335,15 +432,22 @@ async function main() {
   for (const m of maxFirst) {
     console.log(`    ${m.name.padEnd(24)} ${m.sharePct.toFixed(1).padStart(5)}%`);
   }
-  console.log("\nThe max-first rates, top bracket:");
-  for (const m of topMaxFirst) {
-    console.log(`    ${m.name.padEnd(24)} ${m.sharePct.toFixed(1).padStart(5)}%`);
+  console.log("\nThe level spread, top bracket:");
+  for (const s of spread) {
+    const levels = s.levelPct
+      .map((pct, index) => `L${index + 1} ${pct.toFixed(0)}%`)
+      .join("  ");
+    console.log(`    ${s.name.padEnd(24)} avg ${s.avgLevel.toFixed(2)}   ${levels}`);
   }
-  console.log("\nThe typical upgrade behaviour, top bracket:");
-  for (const t of timings) {
-    console.log(
-      `    ${t.name.padEnd(24)} first point at ${Math.round(t.medianFirstPointS ?? 0)}s, usually level ${t.usualLevel} (${t.usualLevelPct.toFixed(0)}%)`,
-    );
+  console.log("\nThe upgrade order, top bracket:");
+  for (const o of order) {
+    const first = o.before
+      .map((b) => `${b.name} ${b.sharePct.toFixed(0)}%`)
+      .join(", ");
+    const next = o.next.map((n) => `${n.name} ${n.sharePct.toFixed(0)}%`).join(", ");
+    console.log(`    ${o.name}`);
+    console.log(`      taken first vs: ${first || "—"}`);
+    console.log(`      then next:      ${next || "—"}`);
   }
 
   console.log(

@@ -31,7 +31,6 @@ import { Picker } from "./picker";
 import { Popular } from "./popular";
 import { Procs } from "./procs";
 import { StatRail } from "./stat-rail";
-import { AbilityPlayData } from "@/components/play-data/ability-play-data";
 
 import type {
   Build,
@@ -41,10 +40,6 @@ import type {
   ItemPlayData,
   StatMap,
 } from "./types";
-import type {
-  AbilityMaxFirst,
-  AbilityUpgradeTiming,
-} from "@/lib/ability-play-data-format";
 import type { ConditionOutcome } from "@/lib/damage";
 
 /**
@@ -73,17 +68,6 @@ type Props = {
   bracketLabel: string;
   /** The number of matches behind the pick rates. */
   heroMatches: number;
-  /**
-   * The max-first share per ability.
-   *
-   * The "advice" framing of the same figures the hero page shows as social
-   * proof.
-   */
-  maxFirst: AbilityMaxFirst[];
-  /** How many identified players the max-first shares are relative to. */
-  maxFirstSample: number;
-  /** When each ability's first point is bought, and where it ends up. */
-  abilityTimings: AbilityUpgradeTiming[];
   statMap: StatMap;
   /**
    * The build in the URL, read on the server.
@@ -105,9 +89,6 @@ export function Theorycraft({
   popular,
   bracketLabel,
   heroMatches,
-  maxFirst,
-  maxFirstSample,
-  abilityTimings,
   statMap,
   initialBuild,
   initialItems,
@@ -467,17 +448,6 @@ export function Theorycraft({
           onLoad={loadPopular}
           buildPicks={buildPicks}
         />
-
-        {maxFirst.length > 0 ? (
-          <AbilityPlayData
-            maxFirst={maxFirst}
-            timings={abilityTimings}
-            bracketLabel={bracketLabel}
-            sample={maxFirstSample}
-            framing="advice"
-            showTimings
-          />
-        ) : null}
 
         <Abilities
           abilities={abilities}

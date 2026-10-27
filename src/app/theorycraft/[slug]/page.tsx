@@ -8,11 +8,6 @@ import { getStatMap } from "@/lib/stat-map.server";
 import { parseBuild } from "@/lib/build";
 import { getHero, getHeroAbilities, getItemsBySlugs } from "@/lib/queries";
 import { getHeroItemPlayData, getHeroMatches } from "@/lib/play-data";
-import {
-  getAbilityMaxFirst,
-  getAbilityMaxFirstSample,
-  getAbilityUpgradeTiming,
-} from "@/lib/ability-play-data";
 import { bracketFromParam } from "@/lib/rank-brackets";
 
 export const instant = false;
@@ -83,19 +78,6 @@ export default async function TheorycraftPage({
   const popular = [...picks].sort(
     (a, b) => b.pickRatePct - a.pickRatePct,
   );
-
-  /*
-   * The ability play data: when each ability's first point is bought, and
-   * what level it usually ends up at. This is the "advice" framing of the
-   * same figures the hero page shows as social proof.
-   */
-  const [maxFirst, maxFirstSample, abilityTimings] = heroApiId
-    ? await Promise.all([
-        getAbilityMaxFirst(heroApiId, bracket),
-        getAbilityMaxFirstSample(heroApiId, bracket),
-        getAbilityUpgradeTiming(heroApiId, bracket),
-      ])
-    : [[], 0, []];
 
   return (
     <div
@@ -202,9 +184,6 @@ export default async function TheorycraftPage({
           popular={popular}
           bracketLabel={bracket.label}
           heroMatches={heroMatches}
-          maxFirst={maxFirst}
-          maxFirstSample={maxFirstSample}
-          abilityTimings={abilityTimings}
           statMap={statMap}
         />
       </div>
