@@ -6,9 +6,16 @@ import { HeroBanner } from "@/components/hero/hero-banner";
 import { ModelSection } from "@/components/hero/model-section";
 import { BuildSummary } from "@/components/hero/build-summary";
 import { AbilityIconField, type FieldIcon } from "@/components/hero/ability-icon-field";
+import { AbilityPlayData } from "@/components/play-data/ability-play-data";
+import { RankPicker } from "@/components/play-data/rank-picker";
 import { themeStyle } from "@/lib/theme";
 import { getStatMap } from "@/lib/stat-map.server";
 import { getHero, getHeroesByClass, getItemIndex } from "@/lib/queries";
+import {
+  getAbilityMaxFirst,
+  getAbilityMaxFirstSample,
+} from "@/lib/ability-play-data";
+import { bracketFromParam } from "@/lib/rank-brackets";
 
 export const instant = false;
 
@@ -78,10 +85,13 @@ export async function generateMetadata({
 
 export default async function HeroProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ rank?: string }>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
   const hero = await getHero(slug);
 
   if (!hero) notFound();
@@ -107,6 +117,21 @@ export default async function HeroProfilePage({
   const classHeroes = hero.heroType
     ? await getHeroesByClass(hero.heroType)
     : [];
+
+  /*
+   * The max-first rates. The bracket is the reader's, so the shift up the
+   * ladder is visible — but it is not the same for every hero, and the
+   * panel shows the figures rather than claiming a shift that is not
+   * there.
+   */
+  const bracket = bracketFromParam(query.rank);
+  const heroApiId = hero.apiId;
+  const [maxFirst, maxFirstSample] = heroApiId
+    ? await Promise.all([
+        getAbilityMaxFirst(heroApiId, bracket),
+        getAbilityMaxFirstSample(heroApiId, bracket),
+      ])
+    : [[], 0];
 
   // The build summary needs each item's properties to compute the deltas.
   const itemIndex = await getItemIndex();
@@ -406,6 +431,33 @@ export default async function HeroProfilePage({
           </div>
         </div>
       </section>
+
+      {/* Play data — what players actually max first */}
+      {maxFirst.length > 0 ? (
+        <section className="section" id="play-data">
+          <div className="section-head">
+            <div>
+              <h2>Play data</h2>
+              <p>What this hero&apos;s players put their points into first.</p>
+            </div>
+          </div>
+          <div style={{ display: "grid", gap: 12 }}>
+            <div className="plate" style={{ padding: 16 }}>
+              <RankPicker
+                current={bracket}
+                pathname={`/heroes/${hero.slug}`}
+              />
+            </div>
+            <AbilityPlayData
+              maxFirst={maxFirst}
+              timings={[]}
+              bracketLabel={bracket.label}
+              sample={maxFirstSample}
+              framing="social"
+            />
+          </div>
+        </section>
+      ) : null}
 
       {/* Build summary — the full tool lives on its own page */}
       <BuildSummary
