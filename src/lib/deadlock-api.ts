@@ -20,12 +20,29 @@ import type { RankBracket } from "@/lib/rank-brackets";
 
 export const ANALYTICS_BASE = "https://api.deadlock-api.com/v1/analytics";
 
+/**
+ * The base for the build endpoints.
+ *
+ * The build definitions live outside `/v1/analytics` — they are published
+ * content rather than aggregates — so they have their own base and their
+ * own cache entries.
+ */
+export const BUILDS_BASE = "https://api.deadlock-api.com/v1/builds";
+
 /** How long a cached response stays fresh. The data moves daily, not hourly. */
 export const ANALYTICS_TTL_MS = 24 * 60 * 60 * 1000;
 
 /** One item's statistics. */
 export type ItemStat = {
   item_id: number;
+  /**
+   * The group the row falls in.
+   *
+   * Usually zero. With `bucket=game_time_min` it is the minute of the
+   * match the item was bought in, which is what the build phases are
+   * derived from.
+   */
+  bucket: number;
   wins: number;
   losses: number;
   matches: number;
@@ -85,6 +102,92 @@ export type HeroBuildStat = {
   players: number;
 };
 
+/**
+ * One item in a build's phase.
+ *
+ * The field is named `ability_id` but holds an **item** id — the same ids
+ * the item endpoints use.
+ */
+export type BuildMod = {
+  ability_id: number;
+  /** The author's note on the item, if any. */
+  annotation: string | null;
+  required_flex_slots: string | null;
+  sell_priority: string | null;
+  imbue_target_ability_id: number | null;
+};
+
+/** One phase of a build — "EARLY GAME", "MID GAME", and so on. */
+export type BuildModCategory = {
+  name: string;
+  width: number | null;
+  height: number | null;
+  description: string | null;
+  mods: BuildMod[];
+  /** True for the alternative set, the items the author suggests instead. */
+  optional: boolean | null;
+};
+
+/** One ability point spent, in the build's skill order. */
+export type BuildAbilityPoint = {
+  ability_id: number;
+  currency_type: number;
+  /** How many points went in at once: 1, 2 or 5. */
+  delta: number;
+  annotation: string | null;
+};
+
+/** A build's definition. */
+export type HeroBuild = {
+  hero_id: number;
+  hero_build_id: number;
+  author_account_id: number;
+  last_updated_timestamp: number;
+  publish_timestamp: number;
+  /** The name the author gave it. May be in any language. */
+  name: string;
+  description: string | null;
+  /** Valve's language code. 0 is English. */
+  language: number;
+  version: number;
+  origin_build_id: number;
+  /** The item ids the author tagged as this build's core. */
+  tags: number[];
+  details: {
+    mod_categories: BuildModCategory[];
+    ability_order: { currency_changes: BuildAbilityPoint[] } | null;
+  };
+};
+
+/** The endpoint wrapper the builds come in. */
+export type HeroBuildResponse = {
+  hero_build: HeroBuild;
+  num_favorites: number | null;
+  num_ignores: number | null;
+  num_reports: number | null;
+  num_weekly_favorites: number | null;
+  rollup_category: string | null;
+};
+
+/**
+ * One point on a performance curve.
+ *
+ * The curve is sampled at regular points across the match, with the average
+ * and spread of every metric at each one.
+ */
+export type PerformancePoint = {
+  /** The point in the match, as a percentage unless the resolution was 0. */
+  game_time: number;
+  net_worth_avg: number;
+  net_worth_std: number;
+  kills_avg: number;
+  deaths_avg: number;
+  assists_avg: number;
+  player_damage_avg: number;
+  /** How many players the point was measured over. */
+  samples: number;
+};
+
 /** The endpoints this client knows about. */
 export type AnalyticsEndpoint =
   | "item-stats"
@@ -92,7 +195,8 @@ export type AnalyticsEndpoint =
   | "hero-stats"
   | "ability-max-first-stats"
   | "ability-order-stats"
-  | "hero-build-stats";
+  | "hero-build-stats"
+  | "player-performance-curve";
 
 /** Raised when the API answers with an error status. */
 export class AnalyticsApiError extends Error {
@@ -293,11 +397,45 @@ export type ItemFlowStats = {
 export function fetchHeroBuildStats(
   heroId: number,
   bracket: RankBracket = ALL_RANKS,
+  options: { minMatches?: number } = {},
 ): Promise<HeroBuildStat[]> {
   return fetchAnalytics<HeroBuildStat[]>(
     "hero-build-stats",
-    {},
+    { min_matches: options.minMatches },
     bracket,
     `/${heroId}`,
   );
+}
+
+/**
+ * A build's definition.
+ *
+ * This one is **not** under `/v1/analytics` — the build definitions are
+ * published content rather than aggregates — so it has its own base and its
+ * own fetch.
+ *
+ * The definition is fetched per build id, never from the list endpoint.
+ * The list's `only_latest` filter returns 100 distinct builds but none of
+ * the top popular ones, because the stats reference specific *versions*
+ * and the filter drops the version the stats point at.
+ */
+export async function fetchHeroBuild(
+  heroId: number,
+  buildId: number,
+): Promise<HeroBuildResponse> {
+  const response = await fetch(`${BUILDS_BASE}/${heroId}/${buildId}`, {
+    headers: { accept: "application/json" },
+    cache: "no-store",
+    signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    throw new AnalyticsApiError(
+      "hero-build",
+      response.status,
+      await response.text(),
+    );
+  }
+
+  return (await response.json()) as HeroBuildResponse;
 }

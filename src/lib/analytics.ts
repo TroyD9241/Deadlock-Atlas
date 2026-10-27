@@ -22,6 +22,7 @@
 import { db } from "@/lib/db";
 import { ALL_RANKS } from "@/lib/rank-brackets";
 import {
+  ANALYTICS_TIMEOUT_MS,
   ANALYTICS_TTL_MS,
   fetchAnalytics,
   hashParams,
@@ -71,7 +72,17 @@ export async function getAnalytics<T>(
     fetchImpl?: typeof fetchAnalytics;
   } = {},
 ): Promise<AnalyticsResult<T>> {
-  const paramsHash = hashParams(params);
+  /*
+   * The path suffix is part of the cache key, not just of the URL.
+   *
+   * `hero-build-stats` takes the hero in the path, so without this every
+   * hero's builds would share one cache row and the first hero fetched
+   * would be served to all the others.
+   */
+  const paramsHash = hashParams({
+    ...params,
+    ...(options.pathSuffix ? { path: options.pathSuffix } : {}),
+  });
 
   const stored = await db.analyticsSnapshot.findUnique({
     where: {
@@ -138,6 +149,98 @@ export async function getAnalytics<T>(
     }
     throw new AnalyticsUnavailableError(endpoint, error);
   }
+}
+
+/**
+ * Read an arbitrary URL through the cache.
+ *
+ * The build definitions are not under `/v1/analytics`, so they cannot go
+ * through `getAnalytics`. They are cached the same way — same table, same
+ * TTL, same stale fallback — under their own endpoint name.
+ */
+export async function getCachedUrl<T>(
+  endpoint: string,
+  url: string,
+  options: {
+    /** Overrides the network call. Used by the verification script. */
+    fetchImpl?: () => Promise<T>;
+  } = {},
+): Promise<AnalyticsResult<T>> {
+  /*
+   * The URL is the key, so a build definition is cached per build id and
+   * a curve per hero and bracket.
+   */
+  const paramsHash = hashParams({ url });
+
+  const stored = await db.analyticsSnapshot.findUnique({
+    where: {
+      endpoint_paramsHash_rankBracket: {
+        endpoint,
+        paramsHash,
+        rankBracket: ALL_RANKS.id,
+      },
+    },
+  });
+
+  const isFresh =
+    stored != null && Date.now() - stored.fetchedAt.getTime() < ANALYTICS_TTL_MS;
+
+  if (stored && isFresh) {
+    return {
+      payload: stored.payload as T,
+      fetchedAt: stored.fetchedAt,
+      stale: false,
+    };
+  }
+
+  try {
+    const doFetch = options.fetchImpl ?? (() => fetchJson<T>(url));
+    const payload = await doFetch();
+
+    const saved = await db.analyticsSnapshot.upsert({
+      where: {
+        endpoint_paramsHash_rankBracket: {
+          endpoint,
+          paramsHash,
+          rankBracket: ALL_RANKS.id,
+        },
+      },
+      create: {
+        endpoint,
+        paramsHash,
+        rankBracket: ALL_RANKS.id,
+        payload: payload as Prisma.InputJsonValue,
+      },
+      update: {
+        payload: payload as Prisma.InputJsonValue,
+        fetchedAt: new Date(),
+      },
+    });
+
+    return { payload, fetchedAt: saved.fetchedAt, stale: false };
+  } catch (error) {
+    if (stored) {
+      return {
+        payload: stored.payload as T,
+        fetchedAt: stored.fetchedAt,
+        stale: true,
+      };
+    }
+    throw new AnalyticsUnavailableError(endpoint, error);
+  }
+}
+
+/** Fetch and parse a JSON URL, with the shared timeout. */
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, {
+    headers: { accept: "application/json" },
+    cache: "no-store",
+    signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    throw new Error(`${response.status} for ${url}`);
+  }
+  return (await response.json()) as T;
 }
 
 /**

@@ -1,12 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 import { HeroBanner } from "@/components/hero/hero-banner";
 import { ModelSection } from "@/components/hero/model-section";
 import { BuildSummary } from "@/components/hero/build-summary";
 import { AbilityIconField, type FieldIcon } from "@/components/hero/ability-icon-field";
 import { AbilityOrderPanel } from "@/components/play-data/ability-order-panel";
+import { PopularBuilds } from "@/components/play-data/popular-builds";
 import { RankPicker } from "@/components/play-data/rank-picker";
 import { themeStyle } from "@/lib/theme";
 import { getStatMap } from "@/lib/stat-map.server";
@@ -17,6 +19,11 @@ import {
   getAbilityNames,
   getBuildOrders,
 } from "@/lib/ability-play-data";
+import {
+  getBuildDetail,
+  getBuildItemSlugs,
+  getRankedBuilds,
+} from "@/lib/build-play-data";
 import { bracketFromParam } from "@/lib/rank-brackets";
 
 export const instant = false;
@@ -92,6 +99,13 @@ export default async function HeroProfilePage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ rank?: string }>;
 }) {
+  /*
+   * The play data reads the clock to decide whether its cached copy is
+   * fresh, so this page cannot be prerendered — the result would depend
+   * on when it was built. `connection()` stops the prerender here.
+   */
+  await connection();
+
   const { slug } = await params;
   const query = await searchParams;
   const hero = await getHero(slug);
@@ -149,6 +163,27 @@ export default async function HeroProfilePage({
       meta.name,
     ]),
   );
+
+  /*
+   * The builds players use, ranked by how well they do against the hero's
+   * own average — not by popularity, which measures something else.
+   */
+  const { builds, baseline } = heroApiId
+    ? await getRankedBuilds(heroApiId, bracket)
+    : { builds: [], baseline: null };
+
+  /*
+   * The top build gets its detail — the net worth curve and the items it
+   * is made of. The curve is 29 KB; the item timings behind the phases
+   * are 1.3 MB and are only fetched when a reader asks for them.
+   */
+  const topBuild = builds[0] ?? null;
+  const topDetail = heroApiId && topBuild
+    ? (await getBuildDetail(heroApiId, topBuild.buildId, bracket))
+    : null;
+  const topItemSlugs = topDetail
+    ? await getBuildItemSlugs(topDetail.coreItemIds)
+    : [];
 
   // The build summary needs each item's properties to compute the deltas.
   const itemIndex = await getItemIndex();
@@ -536,6 +571,14 @@ export default async function HeroProfilePage({
               orders={orders}
               names={orderNames}
               bracketLabel={bracket.label}
+            />
+            <PopularBuilds
+              builds={builds}
+              baseline={baseline}
+              bracketLabel={bracket.label}
+              heroSlug={hero.slug}
+              topDetail={topDetail}
+              topItemSlugs={topItemSlugs}
             />
           </div>
         </section>
