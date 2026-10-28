@@ -517,6 +517,43 @@ Work milestone by milestone. Finish and verify each before the next.
 - **M6** (`/patches` list and patch pages) — blocked.
 - **M8** (Hero of the Patch formula) — blocked twice over; it needs both change impact and play counts.
 
+**The patch blocker was wrong, and the work is now done.** The plan recorded
+that patch work was blocked because "there is no structured changelog
+endpoint" — which is true, but it was never the reason. The API *does*
+serve historical asset snapshots, and they hold real differences: **853 of
+the 858 listed builds serve data**, back to build 5059. The blocker was
+that only one build had ever been ingested.
+
+Two things made it look impossible at first, and both are worth recording:
+
+- The builds are **sparse, not contiguous** — 6820 and 6816 do not exist,
+  and a build that 404s is not a build.
+- **13 of the 45 most recent builds are byte-identical** to the current
+  one, so comparing two adjacent builds often finds exactly nothing.
+
+The diffs themselves are small. Across nineteen patches, only **three** had
+any per-hero balance change: Nurse Harrow at 6801 (max move speed, sprint
+speed, max health), Violet at 6790, Deadman Danny and Baba at 6785, Deadman
+Danny at 6779, Solomon at 6769. Across **120 versions and 9 releases** there
+were **zero** per-hero stat changes — only releases, prose, and global
+system rules.
+
+*Built:* `src/lib/patch-snapshot.ts` is the snapshot shape — normalised, so
+the values are plain scalars rather than the engine's 441-key property
+objects, which is the difference between 2.22 MB and 7.84 MB per build.
+`src/lib/patch-diffs.ts` compares two builds and classifies every change
+before scoring it, because `purchase_bonuses` and
+`standard_level_up_upgrades` change for **all 65 heroes** on most patches
+and would otherwise make every patch look enormous. `scripts/ingest/fetch.ts`
+takes `--build <n>` and `scripts/ingest/load.ts` takes `--history`, which
+writes the snapshots and leaves the live rows alone — without it, loading
+an older build overwrites the live data and the site shows old heroes.
+`ItemSnapshot` is now written, which it never was. `scripts/verify-patch-diffs.ts`
+checks the diff against the API's own two responses rather than against a
+hand-written expectation, and confirms that a release is a release and not a
+buff, that a removed property is found, and that the live rows still hold
+the current build's data afterwards.
+
 **Not scheduled:** Map (on hold) and the voiceline explorer (open question).
 
 ## 8. Suggested opencode workflow

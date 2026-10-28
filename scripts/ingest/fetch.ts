@@ -6,8 +6,14 @@
  * split is deliberate, so an API change cannot corrupt stored data.
  *
  * Usage:
- *   npx tsx scripts/ingest/fetch.ts           # sweep everything, newest build
- *   npx tsx scripts/ingest/fetch.ts --list    # endpoint names only
+ *   npx tsx scripts/ingest/fetch.ts                    # newest build
+ *   npx tsx scripts/ingest/fetch.ts --build 6793       # a specific build
+ *   npx tsx scripts/ingest/fetch.ts --list             # endpoint names only
+ *
+ * `--build` matters for the patch history. The API serves an older build's
+ * assets as well as the current one's, and diffing two builds is how the
+ * site knows what a patch changed. The builds are sparse, not contiguous —
+ * 6820 and 6816 do not exist — so a build that 404s is not a build.
  */
 import { endpointNames, sweepAssets } from "./api";
 
@@ -17,7 +23,25 @@ async function main() {
     return;
   }
 
+  /*
+   * `--build <n>` targets a specific build. The flag is read by hand
+   * because the argument list is positional otherwise, and a bare
+   * `--build` with no number is a mistake worth catching rather than
+   * defaulting to the newest build.
+   */
+  let build: number | undefined;
+  const buildFlag = process.argv.indexOf("--build");
+  if (buildFlag >= 0) {
+    const value = Number(process.argv[buildFlag + 1]);
+    if (!Number.isInteger(value) || value <= 0) {
+      console.error("--build needs a build number, e.g. --build 6793");
+      process.exit(1);
+    }
+    build = value;
+  }
+
   const sweep = await sweepAssets({
+    clientVersion: build,
     onResult: (r) => {
       const status = r.status === 200 ? "ok  " : `FAIL ${r.status}`;
       const rows = r.rows === null ? "-" : `${r.rows} rows`;

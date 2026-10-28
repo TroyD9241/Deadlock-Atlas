@@ -17,6 +17,11 @@ import { ApiHeroSchema, ApiItemSchema, type ApiHero, type ApiItem } from "@/lib/
 import { RAW_DIR, latestClientVersion } from "./api";
 import { extractFolderPalettes, readAllCharacterFolders } from "./characters";
 import {
+  abilitySnapshotRecord,
+  heroSnapshotRecord,
+  itemSnapshotRecord,
+} from "@/lib/patch-snapshot";
+import {
   heroAbilityRefs,
   normaliseAbility,
   normaliseHero,
@@ -60,7 +65,19 @@ async function main() {
   const clientVersion = arg ? Number(arg) : (await latestClientVersion()).clientVersion;
   const dir = path.join(RAW_DIR, String(clientVersion));
 
-  console.log(`loading build ${clientVersion}`);
+  /*
+   * `--history` loads a build as history rather than as the current one.
+   *
+   * Without it, loading a build overwrites the live `Hero` and `Item` rows
+   * and flips `isCurrent`, so the site would show old heroes. With it, only
+   * the snapshots are written and the live rows are left alone — which is
+   * what ingesting an older build for the patch history needs.
+   */
+  const history = process.argv.includes("--history");
+
+  console.log(
+    `loading build ${clientVersion}${history ? " (history only)" : ""}`,
+  );
   console.log("");
 
   // ── read and validate the cache ─────────────────────────────────────────
@@ -110,15 +127,17 @@ async function main() {
   // ── the build record ────────────────────────────────────────────────────
   await db.patch.upsert({
     where: { clientVersion },
-    create: { clientVersion, isCurrent: true },
-    update: { isCurrent: true },
+    create: { clientVersion, isCurrent: !history },
+    update: history ? {} : { isCurrent: true },
   });
 
-  // Only one build can be current.
-  await db.patch.updateMany({
-    where: { clientVersion: { not: clientVersion } },
-    data: { isCurrent: false },
-  });
+  // Only one build can be current. A history load must not steal that.
+  if (!history) {
+    await db.patch.updateMany({
+      where: { clientVersion: { not: clientVersion } },
+      data: { isCurrent: false },
+    });
+  }
 
   // ── heroes ──────────────────────────────────────────────────────────────
   const normalisedHeroes = heroes.map((raw) => {
@@ -137,6 +156,9 @@ async function main() {
 
   let heroCount = 0;
   for (const h of normalisedHeroes) {
+    // A history load writes snapshots only. The live rows hold the current
+    // build's data and must not be overwritten with an older build's.
+    if (history) continue;
     const slug = h.slug;
     await db.hero.upsert({
       where: { slug },
@@ -226,19 +248,25 @@ async function main() {
     });
     heroCount += 1;
   }
-  console.log(`upserted ${heroCount} heroes`);
+  console.log(
+    history ? "skipped live hero rows (history load)" : `upserted ${heroCount} heroes`,
+  );
 
-  // Resolve database ids now that every hero exists, keyed by slug.
+  /*
+   * Resolve database ids now that every hero exists, keyed by slug.
+   *
+   * A history load can meet a hero that only existed in the build being
+   * loaded — the game has removed heroes before, and a hero that has been
+   * removed is not in the live table. Those cannot be snapshotted against
+   * a row, so they are skipped rather than failing the load.
+   */
   const dbHeroes = await db.hero.findMany({ select: { id: true, slug: true } });
   const heroIdBySlug = new Map(dbHeroes.map((h) => [h.slug, h.id]));
-  const heroId = (slug: string): number => {
-    const id = heroIdBySlug.get(slug);
-    if (id === undefined) throw new Error(`no hero row for slug ${slug}`);
-    return id;
-  };
+  const heroId = (slug: string): number | null =>
+    heroIdBySlug.get(slug) ?? null;
 
   // ── 3D models ────────────────────────────────────────────────────────────
-  if (rawModels) {
+  if (rawModels && !history) {
     let modelCount = 0;
     for (const h of normalisedHeroes) {
       const id = heroIdBySlug.get(h.slug);
@@ -267,6 +295,8 @@ async function main() {
 
   let abilityCount = 0;
   for (const n of abilityByClass.values()) {
+    // History mode writes the snapshot only.
+    if (history) continue;
     await db.ability.upsert({
       where: { className: n.className },
       create: {
@@ -305,6 +335,7 @@ async function main() {
   let joinCount = 0;
   let dangling = 0;
   for (const h of normalisedHeroes) {
+    if (history) continue;
     const raw = rawById.get(h.apiId);
     if (!raw) continue;
     const refs = heroAbilityRefs(h, raw);
@@ -318,10 +349,12 @@ async function main() {
         dangling += 1;
         continue;
       }
+      const hId = heroId(h.slug);
+      if (hId === null) continue;
       await db.heroAbility.upsert({
-        where: { heroId_slot: { heroId: heroId(h.slug), slot: ref.slot } },
+        where: { heroId_slot: { heroId: hId, slot: ref.slot } },
         create: {
-          heroId: heroId(h.slug),
+          heroId: hId,
           abilityId: ability.id,
           slot: ref.slot,
           displayOrder: ref.displayOrder,
@@ -337,14 +370,17 @@ async function main() {
     }
   }
   console.log(
-    `upserted ${abilityCount} abilities, ${joinCount} hero-ability links` +
-      (dangling ? `, ${dangling} refs had no matching ability` : ""),
+    history
+      ? "skipped live ability and join rows (history load)"
+      : `upserted ${abilityCount} abilities, ${joinCount} hero-ability links` +
+          (dangling ? `, ${dangling} refs had no matching ability` : ""),
   );
 
   // ── shop items ──────────────────────────────────────────────────────────
   const shopItems = items.filter((i) => i.type !== "ability");
   let itemCount = 0;
   for (const raw of shopItems) {
+    if (history) continue;
     const n = normaliseItem(raw);
     await db.item.upsert({
       where: { slug: n.slug },
@@ -396,21 +432,46 @@ async function main() {
     });
     itemCount += 1;
   }
-  console.log(`upserted ${itemCount} shop items`);
+  console.log(
+    history
+      ? "skipped live shop items (history load)"
+      : `upserted ${itemCount} shop items`,
+  );
 
   // ── snapshots ───────────────────────────────────────────────────────────
+  /*
+   * The snapshot is what a patch diff reads, so it is written in the
+   * normalised shape rather than the raw API record: values rather than the
+   * engine's full property objects, which is the difference between 2.22 MB
+   * and 7.84 MB per build.
+   *
+   * A snapshot is keyed on the entity's own row, so an entity that only
+   * existed in the build being loaded — a hero the game has since removed
+   * — cannot be snapshotted and is skipped.
+   */
   const patch = await db.patch.findUniqueOrThrow({ where: { clientVersion } });
 
+  const rawHeroById = new Map(heroes.map((h) => [h.id, h]));
+
   let snapHeroes = 0;
+  let skippedHeroes = 0;
   for (const h of normalisedHeroes) {
+    const hId = heroId(h.slug);
+    if (hId === null) {
+      skippedHeroes += 1;
+      continue;
+    }
+    const raw = rawHeroById.get(h.apiId);
+    if (!raw) continue;
+    const record = heroSnapshotRecord(raw as unknown as Record<string, unknown>);
     await db.heroSnapshot.upsert({
-      where: { heroId_patchId: { heroId: heroId(h.slug), patchId: patch.id } },
+      where: { heroId_patchId: { heroId: hId, patchId: patch.id } },
       create: {
-        heroId: heroId(h.slug),
+        heroId: hId,
         patchId: patch.id,
-        stats: (h.startingStats ?? {}) as never,
+        stats: record as never,
       },
-      update: { stats: (h.startingStats ?? {}) as never },
+      update: { stats: record as never },
     });
     snapHeroes += 1;
   }
@@ -422,19 +483,62 @@ async function main() {
       select: { id: true },
     });
     if (!row) continue;
+    // The snapshot is built from the raw API record, not the normalised
+    // one, because the raw record still has the fields a diff needs.
+    const rawAbility = items.find((i) => i.class_name === a.className);
+    if (!rawAbility) continue;
+    const record = abilitySnapshotRecord(
+      rawAbility as unknown as Record<string, unknown>,
+    );
     await db.abilitySnapshot.upsert({
       where: { abilityId_patchId: { abilityId: row.id, patchId: patch.id } },
       create: {
         abilityId: row.id,
         patchId: patch.id,
-        values: (a.properties ?? {}) as never,
+        values: record as never,
       },
-      update: { values: (a.properties ?? {}) as never },
+      update: { values: record as never },
     });
     snapAbilities += 1;
   }
 
-  console.log(`upserted ${snapHeroes} hero snapshots, ${snapAbilities} ability snapshots`);
+  /*
+   * The item snapshots, which were never written before. An item can leave
+   * the shop and come back, so the item rows are looked up rather than
+   * assumed.
+   */
+  let snapItems = 0;
+  let skippedItems = 0;
+  const itemRows = await db.item.findMany({
+    where: { apiId: { in: items.map((i) => String(i.id)) } },
+    select: { id: true, apiId: true },
+  });
+  const itemRowByApiId = new Map(itemRows.map((r) => [String(r.apiId), r.id]));
+
+  for (const raw of items) {
+    const rowId = itemRowByApiId.get(String(raw.id));
+    if (rowId === undefined) {
+      skippedItems += 1;
+      continue;
+    }
+    const record = itemSnapshotRecord(raw as unknown as Record<string, unknown>);
+    await db.itemSnapshot.upsert({
+      where: { itemId_patchId: { itemId: rowId, patchId: patch.id } },
+      create: {
+        itemId: rowId,
+        patchId: patch.id,
+        data: record as never,
+      },
+      update: { data: record as never },
+    });
+    snapItems += 1;
+  }
+
+  console.log(
+    `upserted ${snapHeroes} hero, ${snapAbilities} ability and ${snapItems} item snapshots` +
+      (skippedHeroes ? `, ${skippedHeroes} heroes had no row` : "") +
+      (skippedItems ? `, ${skippedItems} items had no row` : ""),
+  );
   console.log("");
 
   await db.$disconnect();
